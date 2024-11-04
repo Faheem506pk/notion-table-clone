@@ -1,0 +1,15 @@
+.notion-table {
+    table-layout: auto; /* Allow the table to adjust column widths automatically */
+    width: 100%; /* Optional: ensure the table takes the full width of the container */
+  }
+  
+  .notion-table th,
+  .notion-table td {
+    white-space: nowrap; /* Prevent wrapping of text */
+    padding: 0px; /* Add padding for better spacing */
+  }
+  .main{
+
+    display: flex;
+    justify-content: center;
+  }
