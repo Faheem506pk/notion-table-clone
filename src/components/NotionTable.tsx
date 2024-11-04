@@ -37,27 +37,32 @@ interface Row {
 const NotionTable: React.FC = () => {
   const [columns, setColumns] = useState<Column[]>(() => {
     const storedColumns = localStorage.getItem("columns");
-    return storedColumns ? JSON.parse(storedColumns) : [
-      { name: "Name", dataType: "string", width: 150 },
-      { name: "Age", dataType: "number", width: 100 },
-      { name: "Date of Birth", dataType: "date", width: 150 },
-    ];
+    return storedColumns
+      ? JSON.parse(storedColumns)
+      : [
+          { name: "Name", dataType: "string", width: 150 },
+          { name: "Age", dataType: "number", width: 100 },
+          { name: "Date of Birth", dataType: "date", width: 150 },
+        ];
   });
 
   const [rows, setRows] = useState<Row[]>(() => {
     const storedRows = localStorage.getItem("rows");
-    return storedRows ? JSON.parse(storedRows) : [
-      { Name: "", Age: null, "Date of Birth": null },
-      { Name: "", Age: null, "Date of Birth": null },
-      { Name: "", Age: null, "Date of Birth": null },
-      { Name: "", Age: null, "Date of Birth": null },
-      { Name: "", Age: null, "Date of Birth": null },
-    ];
+    return storedRows
+      ? JSON.parse(storedRows)
+      : [
+          { Name: "", Age: null, "Date of Birth": null },
+          { Name: "", Age: null, "Date of Birth": null },
+          { Name: "", Age: null, "Date of Birth": null },
+          { Name: "", Age: null, "Date of Birth": null },
+          { Name: "", Age: null, "Date of Birth": null },
+        ];
   });
 
   const [newColumnName, setNewColumnName] = useState<string>("New Column");
   const [newColumnType, setNewColumnType] = useState<string>("string");
-  const [editingCell, setEditingCell] = useState<{ rowIndex: number; colIndex: number } | null>(null);
+  const [editingCell, setEditingCell] =
+    useState<{ rowIndex: number; colIndex: number } | null>(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   // Save rows to local storage
@@ -78,7 +83,9 @@ const NotionTable: React.FC = () => {
     const handleMouseMove = (moveEvent: MouseEvent) => {
       const newWidth = Math.max(startWidth + moveEvent.clientX - startX, 50);
       setColumns((prevColumns) =>
-        prevColumns.map((col, i) => (i === index ? { ...col, width: newWidth } : col))
+        prevColumns.map((col, i) =>
+          i === index ? { ...col, width: newWidth } : col
+        )
       );
     };
 
@@ -101,18 +108,18 @@ const NotionTable: React.FC = () => {
 
   const handleAddColumn = () => {
     if (newColumnName) {
-      const newColumn: Column = { name: newColumnName, dataType: newColumnType, width: 150 };
+      const newColumn: Column = {
+        name: newColumnName,
+        dataType: newColumnType,
+        width: 150,
+      };
       setColumns((prevColumns) => [...prevColumns, newColumn]);
-      setNewColumnName(""); // Resetting the new column name after adding
+      setNewColumnName("");
       setNewColumnType("string");
       onClose();
     }
   };
 
-  const handleDeleteRow = (index: number) => {
-    const updatedRows = rows.filter((_, i) => i !== index);
-    setRows(updatedRows);
-  };
 
   const handleDeleteColumn = (columnName: string) => {
     const updatedColumns = columns.filter((col) => col.name !== columnName);
@@ -136,9 +143,9 @@ const NotionTable: React.FC = () => {
         }
         return newRow;
       });
-      
+
       setRows(updatedRows);
-      
+
       setColumns((prevColumns) => {
         const newColumns = [...prevColumns];
         newColumns[index].name = newName;
@@ -147,8 +154,14 @@ const NotionTable: React.FC = () => {
     }
   };
 
-  const renderInputField = (row: Row, col: Column, rowIndex: number, colIndex: number) => {
-    const isEditing = editingCell?.rowIndex === rowIndex && editingCell?.colIndex === colIndex;
+  const renderInputField = (
+    row: Row,
+    col: Column,
+    rowIndex: number,
+    colIndex: number
+  ) => {
+    const isEditing =
+      editingCell?.rowIndex === rowIndex && editingCell?.colIndex === colIndex;
 
     const handleCellClick = () => {
       if (!isEditing) {
@@ -162,7 +175,9 @@ const NotionTable: React.FC = () => {
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value;
-      setRows(rows.map((r, i) => (i === rowIndex ? { ...r, [col.name]: value } : r)));
+      setRows(
+        rows.map((r, i) => (i === rowIndex ? { ...r, [col.name]: value } : r))
+      );
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -197,16 +212,25 @@ const NotionTable: React.FC = () => {
 
   return (
     <div className="main">
-      <Box p={5} >
-        <Table className="notion-table" >
+      <Box p={5}>
+        <Table className="notion-table">
           <Thead>
             <Tr>
               {columns.map((col, index) => (
-                <Th key={index} borderColor="gray.200" width={col.width} textColor="gray.400">
-                  <Flex align="left" >
-                    <Popover placement="bottom"  >
-                      <PopoverTrigger  >
-                        <Button leftIcon={<VscListFlat />}  bg="none" textColor="gray.400"  >
+                <Th
+                  key={index}
+                  borderColor="gray.200"
+                  width={col.width}
+                  textColor="gray.400"
+                >
+                  <Flex align="left">
+                    <Popover placement="bottom">
+                      <PopoverTrigger>
+                        <Button
+                          leftIcon={<VscListFlat />}
+                          bg="none"
+                          textColor="gray.400"
+                        >
                           {col.name}
                         </Button>
                       </PopoverTrigger>
@@ -216,10 +240,15 @@ const NotionTable: React.FC = () => {
                         <PopoverBody>
                           <Input
                             defaultValue={col.name}
-                            onBlur={(e) => handleChangeColumnName(index, e.target.value)}
+                            onBlur={(e) =>
+                              handleChangeColumnName(index, e.target.value)
+                            }
                             onKeyDown={(e) => {
                               if (e.key === "Enter") {
-                                handleChangeColumnName(index, e.currentTarget.value);
+                                handleChangeColumnName(
+                                  index,
+                                  e.currentTarget.value
+                                );
                               }
                             }}
                             size="sm"
@@ -228,13 +257,17 @@ const NotionTable: React.FC = () => {
                           />
                         </PopoverBody>
                         <PopoverFooter display="flex" justifyContent="flex-start">
-                          <Button onClick={() => handleDeleteColumn(col.name)} bg="none" color="gray.400">
+                          <Button
+                            onClick={() => handleDeleteColumn(col.name)}
+                            bg="none"
+                            color="gray.400"
+                          >
                             Delete
                           </Button>
                         </PopoverFooter>
                       </PopoverContent>
                     </Popover>
-                    {/* Resizer */}
+
                     <Box
                       onMouseDown={handleMouseDown(index)}
                       cursor="ew-resize"
@@ -248,10 +281,18 @@ const NotionTable: React.FC = () => {
                   </Flex>
                 </Th>
               ))}
-              <Th >
+              <Th>
                 <Popover placement="bottom" isOpen={isOpen} onClose={onClose}>
                   <PopoverTrigger>
-                  <Button onClick={() => { setNewColumnName("New Column"); onOpen(); }} leftIcon={<FaPlus />} textColor="gray.400" bg="none" />
+                    <Button
+                      onClick={() => {
+                        setNewColumnName("New Column");
+                        onOpen();
+                      }}
+                      leftIcon={<FaPlus />}
+                      textColor="gray.400"
+                      bg="none"
+                    />
                   </PopoverTrigger>
                   <PopoverContent>
                     <PopoverArrow />
@@ -261,21 +302,22 @@ const NotionTable: React.FC = () => {
                         placeholder="Column Name"
                         value={newColumnName}
                         onChange={(e) => setNewColumnName(e.target.value)}
+                        size="sm"
+                        variant="flushed"
                       />
                       <Select
-                        mt={2}
                         value={newColumnType}
                         onChange={(e) => setNewColumnType(e.target.value)}
+                        mt={2}
+                        size="sm"
                       >
                         <option value="string">String</option>
                         <option value="number">Number</option>
                         <option value="date">Date</option>
                       </Select>
                     </PopoverBody>
-                    <PopoverFooter>
-                      <Button colorScheme="blue" onClick={handleAddColumn}>
-                        Add
-                      </Button>
+                    <PopoverFooter display="flex" justifyContent="flex-start">
+                      <Button onClick={handleAddColumn}>Add</Button>
                     </PopoverFooter>
                   </PopoverContent>
                 </Popover>
@@ -286,12 +328,15 @@ const NotionTable: React.FC = () => {
             {rows.map((row, rowIndex) => (
               <Tr key={rowIndex} >
                 {columns.map((col, colIndex) => (
-                  <Td key={colIndex} width={col.width} position="relative" borderRight="1px "  borderColor="gray.200">
+                  <Td key={colIndex} borderRight="1px" borderColor="gray.200">
                     {renderInputField(row, col, rowIndex, colIndex)}
                   </Td>
                 ))}
                 <Td>
-                <Button onClick={() => handleDeleteRow(rowIndex)}  bg="none">
+                <Button onClick={() => ((index: number) => {
+                    const updatedRows = rows.filter((_, i) => i !== index);
+                    setRows(updatedRows);
+                  })(rowIndex)}  bg="none">
                     <MdDeleteOutline />
                   </Button>
                 </Td>
@@ -299,9 +344,14 @@ const NotionTable: React.FC = () => {
             ))}
           </Tbody>
         </Table>
-        <Button leftIcon={<FaPlus />} onClick={handleAddRow} colorScheme="gray" size="lg" bg="none" borderTop="1px" borderBottom="1px " borderRadius={0} borderColor="gray.200" width={"full"}  justifyContent="left" textColor="gray.400">
+        <Box display="flex" justifyContent="flex-start" >
+        <Button leftIcon={<FaPlus />} onClick={handleAddRow} colorScheme="gray" size="lg" bg="none" borderTop="1px" borderBottom="1px" borderRadius={0} borderColor="gray.200" width={"full"}  justifyContent="left" textColor="gray.400">
         Add Row
       </Button>
+        </Box>
+        <Box mt={4} textAlign="left">
+          <strong>Row count:</strong> {rows.length}
+        </Box>
       </Box>
     </div>
   );
