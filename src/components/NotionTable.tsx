@@ -34,11 +34,6 @@ interface Row {
   [key: string]: any;
 }
 
-
-
- 
-
- 
 const NotionTable: React.FC = () => {
   const [columns, setColumns] = useState<Column[]>(() => {
     const storedColumns = localStorage.getItem("columns");
@@ -57,7 +52,6 @@ const NotionTable: React.FC = () => {
     setRows(updatedRows);
   };
 
-
   const [rows, setRows] = useState<Row[]>(() => {
     const storedRows = localStorage.getItem("rows");
     return storedRows
@@ -73,8 +67,10 @@ const NotionTable: React.FC = () => {
 
   const [newColumnName, setNewColumnName] = useState<string>("New Column");
   const [newColumnType, setNewColumnType] = useState<string>("string");
-  const [editingCell, setEditingCell] =
-    useState<{ rowIndex: number; colIndex: number } | null>(null);
+  const [editingCell, setEditingCell] = useState<{
+    rowIndex: number;
+    colIndex: number;
+  } | null>(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   // Save rows to local storage
@@ -118,6 +114,23 @@ const NotionTable: React.FC = () => {
     setRows([...rows, newRow]);
   };
 
+  const handleAddRowUnder = (index?: number) => {
+    const newRow: Row = {};
+    columns.forEach((col) => {
+      newRow[col.name] = "";
+    });
+
+    if (typeof index === "number") {
+      // Insert the new row directly below the given index
+      const updatedRows = [...rows];
+      updatedRows.splice(index + 1, 0, newRow);
+      setRows(updatedRows);
+    } else {
+      // Add row at the end if no index is provided
+      setRows([...rows, newRow]);
+    }
+  };
+
   const handleAddColumn = () => {
     if (newColumnName) {
       const newColumn: Column = {
@@ -131,7 +144,6 @@ const NotionTable: React.FC = () => {
       onClose();
     }
   };
-
 
   const handleDeleteColumn = (columnName: string) => {
     const updatedColumns = columns.filter((col) => col.name !== columnName);
@@ -228,6 +240,7 @@ const NotionTable: React.FC = () => {
         <Table className="notion-table">
           <Thead>
             <Tr>
+              <Th></Th>
               {columns.map((col, index) => (
                 <Th
                   key={index}
@@ -268,7 +281,10 @@ const NotionTable: React.FC = () => {
                             autoFocus
                           />
                         </PopoverBody>
-                        <PopoverFooter display="flex" justifyContent="flex-start">
+                        <PopoverFooter
+                          display="flex"
+                          justifyContent="flex-start"
+                        >
                           <Button
                             onClick={() => handleDeleteColumn(col.name)}
                             bg="none"
@@ -334,38 +350,59 @@ const NotionTable: React.FC = () => {
                   </PopoverContent>
                 </Popover>
               </Th>
+              
             </Tr>
           </Thead>
           <Tbody>
             {rows.map((row, rowIndex) => (
-              <Tr key={rowIndex} 
-              onMouseEnter={() => setHoveredRowIndex(rowIndex)}
-              onMouseLeave={() => setHoveredRowIndex(null)} >
+              <Tr
+                key={rowIndex}
+                onMouseEnter={() => setHoveredRowIndex(rowIndex)}
+                onMouseLeave={() => setHoveredRowIndex(null)}
+              >
+                <Td>
+  <Flex justifyContent="flex-start" alignItems="center">
+    {hoveredRowIndex === rowIndex && (
+      <>
+        <Button onClick={() => handleAddRowUnder(rowIndex)} bg="none" color="gray.400">
+          <FaPlus />
+        </Button>
+        <Button onClick={() => handleDeleteRow(rowIndex)} bg="none" color="gray.400">
+          <MdDeleteOutline />
+        </Button>
+      </>
+    )}
+  </Flex>
+</Td>
                 {columns.map((col, colIndex) => (
-                  <Td key={colIndex} borderRight="1px" borderColor="gray.200">
+                  <Td key={colIndex} borderRight="1px" borderColor="gray.200"  width="199px" height="32px">
                     {renderInputField(row, col, rowIndex, colIndex)}
                   </Td>
                 ))}
-                <Td>
-                {hoveredRowIndex === rowIndex && (
-              <Button
-                onClick={() => handleDeleteRow(rowIndex)}
-                bg="none"
-                color="gray.400"
-              >
-                <MdDeleteOutline />
-              </Button>
-            )}
-                </Td>
+                
+                <Td></Td>
               </Tr>
             ))}
           </Tbody>
-        </Table>
-        <Box display="flex" justifyContent="flex-start" >
-        <Button leftIcon={<FaPlus />} onClick={handleAddRow} colorScheme="gray" size="lg" bg="none" borderTop="1px" borderBottom="1px" borderRadius={0} borderColor="gray.200" width={"full"}  justifyContent="left" textColor="gray.400">
-        Add Row
-      </Button>
+        <Box display="flex" justifyContent="flex-start">
+          <Button
+            leftIcon={<FaPlus />}
+            onClick={handleAddRow}
+            colorScheme="gray"
+            size="lg"
+            bg="none"
+            borderTop="1px"
+            borderBottom="1px"
+            borderRadius={0}
+            borderColor="gray.200"
+            width={"full"}
+            justifyContent="left"
+            textColor="gray.400"
+          >
+            Add Row
+          </Button>
         </Box>
+        </Table>
         <Box mt={4} textAlign="left">
           <strong>Row count:</strong> {rows.length}
         </Box>

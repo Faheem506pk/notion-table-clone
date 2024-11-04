@@ -1,3 +1,10 @@
+*{
+    margin: 0;
+    padding: 0;
+    font-size: 14px;
+}
+
+
 .notion-table {
     table-layout: auto; /* Allow the table to adjust column widths automatically */
     width: 100%; /* Optional: ensure the table takes the full width of the container */
