@@ -34,6 +34,11 @@ interface Row {
   [key: string]: any;
 }
 
+
+
+ 
+
+ 
 const NotionTable: React.FC = () => {
   const [columns, setColumns] = useState<Column[]>(() => {
     const storedColumns = localStorage.getItem("columns");
@@ -45,6 +50,13 @@ const NotionTable: React.FC = () => {
           { name: "Date of Birth", dataType: "date", width: 150 },
         ];
   });
+
+  const [hoveredRowIndex, setHoveredRowIndex] = useState<number | null>(null);
+  const handleDeleteRow = (index: number) => {
+    const updatedRows = rows.filter((_, i) => i !== index);
+    setRows(updatedRows);
+  };
+
 
   const [rows, setRows] = useState<Row[]>(() => {
     const storedRows = localStorage.getItem("rows");
@@ -326,19 +338,24 @@ const NotionTable: React.FC = () => {
           </Thead>
           <Tbody>
             {rows.map((row, rowIndex) => (
-              <Tr key={rowIndex} >
+              <Tr key={rowIndex} 
+              onMouseEnter={() => setHoveredRowIndex(rowIndex)}
+              onMouseLeave={() => setHoveredRowIndex(null)} >
                 {columns.map((col, colIndex) => (
                   <Td key={colIndex} borderRight="1px" borderColor="gray.200">
                     {renderInputField(row, col, rowIndex, colIndex)}
                   </Td>
                 ))}
                 <Td>
-                <Button onClick={() => ((index: number) => {
-                    const updatedRows = rows.filter((_, i) => i !== index);
-                    setRows(updatedRows);
-                  })(rowIndex)}  bg="none">
-                    <MdDeleteOutline />
-                  </Button>
+                {hoveredRowIndex === rowIndex && (
+              <Button
+                onClick={() => handleDeleteRow(rowIndex)}
+                bg="none"
+                color="gray.400"
+              >
+                <MdDeleteOutline />
+              </Button>
+            )}
                 </Td>
               </Tr>
             ))}
