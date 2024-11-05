@@ -68,3 +68,24 @@ margin-right: auto;
    
     
   }
+
+  .table-container {
+    max-height: calc(100vh ); /* Adjust the height as needed */
+    overflow-y: auto; /* Allow vertical scrolling */
+    overflow-x: hidden; /* Hide horizontal scrollbar */
+}
+
+/* Hide scrollbar for Chrome, Safari, and Opera */
+.table-container::-webkit-scrollbar {
+    width: 0; /* Set width to 0 to hide */
+}
+
+/* Hide scrollbar for Firefox */
+.table-container {
+    scrollbar-width: none; /* Hide scrollbar for Firefox */
+}
+
+/* Hide scrollbar for IE and Edge */
+.table-container {
+    -ms-overflow-style: none; /* Hide scrollbar for Internet Explorer and Edge */
+}

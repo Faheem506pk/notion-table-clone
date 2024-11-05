@@ -662,12 +662,12 @@ const NotionTable: React.FC = () => {
         </div>
       </div>
       <div className="main">
-        <div style={{ overflowX:"auto" , marginLeft: "auto", marginRight: "auto" }}>
+        <div style={{ overflowX:"auto" , marginLeft: "auto", marginRight: "auto" }} className="table-container">
           <Box p={5}>
-            <div className="table-container ">
+            <div className="table-container " >
               <Table className="notion-table">
-                <Thead>
-                  <Tr>
+                <Thead  >
+                  <Tr >
                     <Th borderBottom="0px"></Th>
                     {columns.map((col, index) => (
                       <Th
@@ -675,6 +675,10 @@ const NotionTable: React.FC = () => {
                         borderColor="gray.200"
                         width={col.width}
                         textColor="gray.400"
+                        position="sticky"
+                        top="0"
+                        zIndex="1"
+                        backgroundColor="white"
                       >
                         <Flex align="left">
                           <Popover placement="bottom">
