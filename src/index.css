@@ -20,7 +20,10 @@ thead th {
   background-color: #ffffff; /* Change the background color on hover */
 }
 
+#popover-content{
 
+  width: 150px;
+}
 
 
 

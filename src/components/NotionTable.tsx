@@ -24,7 +24,10 @@ import {
 import { FaPlus } from "react-icons/fa";
 import { VscListFlat } from "react-icons/vsc";
 import { MdDeleteOutline } from "react-icons/md";
-
+import { MdNumbers } from "react-icons/md";
+import { GrTextAlignFull } from "react-icons/gr";
+import { GoSingleSelect } from "react-icons/go";
+import { BsCalendarDate } from "react-icons/bs";
 interface Column {
   name: string;
   dataType: string;
@@ -56,6 +59,22 @@ const NotionTable: React.FC = () => {
   
   const [newOption, setNewOption] = useState<string>("");
   const [editingOption, setEditingOption] = useState<{ oldValue: string; newValue: string } | null>(null);
+
+  const getIconByType = (dataType: string) => { // Change parameter name to dataType
+    switch (dataType) {
+      case "string":
+        return <GrTextAlignFull style={{ marginRight: "5px" }} />;
+      case "number":
+        return <MdNumbers style={{ marginRight: "5px" }} />;
+      case "date":
+        return <BsCalendarDate style={{ marginRight: "5px" }} />;
+      case "select":
+        return <GoSingleSelect style={{ marginRight: "5px" }} />;
+      default:
+        return <VscListFlat style={{ marginRight: "5px" }} />;
+    }
+  };
+  
 
   // Function to update localStorage whenever selectOptions changes
   useEffect(() => {
@@ -633,16 +652,15 @@ const NotionTable: React.FC = () => {
                             <Popover placement="bottom">
                               <PopoverTrigger>
                                 <Button
-                                  leftIcon={<VscListFlat />}
+                                  leftIcon={getIconByType(col.dataType)}
                                   bg="none"
                                   textColor="gray.400"
                                 >
                                   {col.name}
                                 </Button>
                               </PopoverTrigger>
-                              <PopoverContent>
+                              <PopoverContent style={{width:"150px"}}>
                                 <PopoverArrow />
-                                <PopoverCloseButton />
                                 <PopoverBody>
                                   <Input
                                     defaultValue={col.name}
@@ -672,7 +690,8 @@ const NotionTable: React.FC = () => {
                                   <Button
                                     onClick={() => handleDeleteColumn(col.name)}
                                     bg="none"
-                                    color="gray.400"
+                                    color="gray.500"
+                                    paddingLeft={0}
                                   >
                                     Delete
                                   </Button>
@@ -697,6 +716,7 @@ const NotionTable: React.FC = () => {
                           placement="bottom"
                           isOpen={isOpen}
                           onClose={onClose}
+                          
                         >
                           <PopoverTrigger>
                             <Button
@@ -707,9 +727,9 @@ const NotionTable: React.FC = () => {
                               
                             />
                           </PopoverTrigger>
-                          <PopoverContent>
+                          <PopoverContent style={{width:"150px"}}>
                             <PopoverArrow />
-                            <PopoverCloseButton />
+                            
                             <PopoverBody>
                               <div>
                                 <Tr>
@@ -721,8 +741,9 @@ const NotionTable: React.FC = () => {
                                     }}
                                     bg="none"
                                     color="gray.500"
+                                    paddingLeft={0}
                                   >
-                                    String
+                                   <GrTextAlignFull style={{marginRight:"5px"}}  /> Text
                                   </Button>
                                 </Tr>
                                 <Tr>
@@ -734,8 +755,9 @@ const NotionTable: React.FC = () => {
                                     }}
                                     bg="none"
                                     color="gray.500"
+                                    paddingLeft={0}
                                   >
-                                    Number
+                                   <MdNumbers style={{marginRight:"5px"}}  /> Number
                                   </Button>
                                 </Tr>
                                 <Tr>
@@ -747,8 +769,9 @@ const NotionTable: React.FC = () => {
                                     }}
                                     bg="none"
                                     color="gray.500"
+                                    paddingLeft={0}
                                   >
-                                    Date
+                                    <BsCalendarDate style={{marginRight:"5px"}} /> Date
                                   </Button>
                                 </Tr>
                                 <Tr>
@@ -760,8 +783,9 @@ const NotionTable: React.FC = () => {
                                     }}
                                     bg="none"
                                     color="gray.500"
+                                    paddingLeft={0}
                                   >
-                                    Select
+                                   <GoSingleSelect style={{marginRight:"5px"}}  /> Select
                                   </Button>
                                 </Tr>
                               </div>
