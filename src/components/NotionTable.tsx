@@ -664,7 +664,7 @@ const NotionTable: React.FC = () => {
       <div className="main">
         <div style={{ overflowX:"auto" , marginLeft: "auto", marginRight: "auto" }} className="table-container">
           <Box p={5}>
-            <div className="table-container " >
+            <div >
               <Table className="notion-table">
                 <Thead  >
                   <Tr >
@@ -677,7 +677,7 @@ const NotionTable: React.FC = () => {
                         textColor="gray.400"
                         position="sticky"
                         top="0"
-                        zIndex="1"
+                        zIndex="2"
                         backgroundColor="white"
                       >
                         <Flex align="left">

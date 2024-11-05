@@ -73,6 +73,10 @@ margin-right: auto;
     max-height: calc(100vh ); /* Adjust the height as needed */
     overflow-y: auto; /* Allow vertical scrolling */
     overflow-x: hidden; /* Hide horizontal scrollbar */
+    position: "sticky";
+    Top: "0";
+   
+    
 }
 
 /* Hide scrollbar for Chrome, Safari, and Opera */
