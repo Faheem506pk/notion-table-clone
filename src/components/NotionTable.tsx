@@ -526,7 +526,7 @@ const NotionTable: React.FC = () => {
     return (
       <div
         onClick={handleCellClick}
-        style={{ cursor: "pointer", padding: "2px" }}
+        style={{ cursor: "pointer", padding: "15px" }}
       >
         {row[col.name] || ""}
       </div>

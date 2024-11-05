@@ -61,10 +61,7 @@ margin-right: auto;
     padding: 0px; /* Add padding for better spacing */
 
   }
-  .notion-table td{
-
-    padding-left: 10px;
-  }
+ 
   .main{
 
    display: flex;
