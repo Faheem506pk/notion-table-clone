@@ -1,0 +1,8 @@
+.tasknameHeading {
+    cursor: pointer;
+    font-size: 40px;
+    font-weight: bold;
+    border: none;
+    outline: none;
+    color: #37352F ;
+  }

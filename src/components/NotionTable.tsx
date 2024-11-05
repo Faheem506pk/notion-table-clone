@@ -19,6 +19,7 @@ import {
   useDisclosure,
   PopoverArrow,
   PopoverCloseButton,
+  Heading,
 } from "@chakra-ui/react";
 import { FaPlus } from "react-icons/fa";
 import { VscListFlat } from "react-icons/vsc";
@@ -35,55 +36,59 @@ interface Row {
 }
 
 const NotionTable: React.FC = () => {
-  const [columns, setColumns] = useState<Column[]>(() => {
-    const storedColumns = localStorage.getItem("columns");
-    return storedColumns
-      ? JSON.parse(storedColumns)
-      : [
-          { name: "Name", dataType: "string", width: 150 },
-          { name: "Age", dataType: "number", width: 100 },
-          { name: "Date of Birth", dataType: "date", width: 150 },
-        ];
-  });
-
+  const [taskName, setTaskName] = useState(
+    localStorage.getItem("taskName") || "Task Name"
+  );
+  const [tableName, setTableName] = useState(
+    localStorage.getItem("tableName") || "Table Name"
+  );
+  const [isEditingTask, setIsEditingTask] = useState(false);
+  const [isEditingTable, setIsEditingTable] = useState(false);
   const [hoveredRowIndex, setHoveredRowIndex] = useState<number | null>(null);
-  const handleDeleteRow = (index: number) => {
-    const updatedRows = rows.filter((_, i) => i !== index);
-    setRows(updatedRows);
+  const [newColumnName, setNewColumnName] = useState<string>("");
+  const [newColumnType, setNewColumnType] = useState<string>("");
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [selectOptions, setSelectOptions] = useState<string[]>(() => {
+    // Retrieve options from localStorage on initial render
+    const savedOptions = localStorage.getItem('selectOptions');
+    return savedOptions ? JSON.parse(savedOptions) : [''];
+  });
+  
+  const [newOption, setNewOption] = useState<string>("");
+  const [editingOption, setEditingOption] = useState<{ oldValue: string; newValue: string } | null>(null);
+
+  // Function to update localStorage whenever selectOptions changes
+  useEffect(() => {
+    localStorage.setItem('selectOptions', JSON.stringify(selectOptions));
+  }, [selectOptions]);
+
+  
+
+
+  useEffect(() => {
+    localStorage.setItem("taskName", taskName);
+  }, [taskName]);
+
+  useEffect(() => {
+    localStorage.setItem("tableName", tableName);
+  }, [tableName]);
+
+  const handleTaskClick = () => {
+    setIsEditingTask(true);
   };
 
-  const [rows, setRows] = useState<Row[]>(() => {
-    const storedRows = localStorage.getItem("rows");
-    return storedRows
-      ? JSON.parse(storedRows)
-      : [
-          { Name: "", Age: null, "Date of Birth": null },
-          { Name: "", Age: null, "Date of Birth": null },
-          { Name: "", Age: null, "Date of Birth": null },
-          { Name: "", Age: null, "Date of Birth": null },
-          { Name: "", Age: null, "Date of Birth": null },
-        ];
-  });
+  const handleTableClick = () => {
+    setIsEditingTable(true);
+  };
 
-  const [newColumnName, setNewColumnName] = useState<string>("New Column");
-  const [newColumnType, setNewColumnType] = useState<string>("string");
-  const [editingCell, setEditingCell] = useState<{
-    rowIndex: number;
-    colIndex: number;
-  } | null>(null);
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const handleTaskBlur = () => {
+    setIsEditingTask(false);
+  };
 
-  // Save rows to local storage
-  useEffect(() => {
-    localStorage.setItem("rows", JSON.stringify(rows));
-  }, [rows]);
+  const handleTableBlur = () => {
+    setIsEditingTable(false);
+  };
 
-  // Save columns to local storage
-  useEffect(() => {
-    localStorage.setItem("columns", JSON.stringify(columns));
-  }, [columns]);
-
-  // Handle mouse down event for resizing
   const handleMouseDown = (index: number) => (event: React.MouseEvent) => {
     const startX = event.clientX;
     const startWidth = columns[index].width;
@@ -114,6 +119,48 @@ const NotionTable: React.FC = () => {
     setRows([...rows, newRow]);
   };
 
+  const [columns, setColumns] = useState<Column[]>(() => {
+    const storedColumns = localStorage.getItem("columns");
+    return storedColumns
+      ? JSON.parse(storedColumns)
+      : [
+          { name: "Name", dataType: "string", width: 150 },
+          { name: "Age", dataType: "number", width: 100 },
+          { name: "Date of Birth", dataType: "date", width: 150 },
+        ];
+  });
+
+  const handleDeleteRow = (index: number) => {
+    const updatedRows = rows.filter((_, i) => i !== index);
+    setRows(updatedRows);
+  };
+
+  const [rows, setRows] = useState<Row[]>(() => {
+    const storedRows = localStorage.getItem("rows");
+    return storedRows
+      ? JSON.parse(storedRows)
+      : [
+          { Name: "", Age: null, "Date of Birth": null },
+          { Name: "", Age: null, "Date of Birth": null },
+          { Name: "", Age: null, "Date of Birth": null },
+          { Name: "", Age: null, "Date of Birth": null },
+          { Name: "", Age: null, "Date of Birth": null },
+        ];
+  });
+
+  const [editingCell, setEditingCell] = useState<{
+    rowIndex: number;
+    colIndex: number;
+  } | null>(null);
+
+  useEffect(() => {
+    localStorage.setItem("rows", JSON.stringify(rows));
+  }, [rows]);
+
+  useEffect(() => {
+    localStorage.setItem("columns", JSON.stringify(columns));
+  }, [columns]);
+
   const handleAddRowUnder = (index?: number) => {
     const newRow: Row = {};
     columns.forEach((col) => {
@@ -121,28 +168,343 @@ const NotionTable: React.FC = () => {
     });
 
     if (typeof index === "number") {
-      // Insert the new row directly below the given index
       const updatedRows = [...rows];
       updatedRows.splice(index + 1, 0, newRow);
       setRows(updatedRows);
     } else {
-      // Add row at the end if no index is provided
       setRows([...rows, newRow]);
     }
   };
 
-  const handleAddColumn = () => {
-    if (newColumnName) {
+  const handleAddColumn = (type: string, name: string) => {
+    // Check if a new column name is provided
+    if (name) {
+      // Create a new column object
       const newColumn: Column = {
-        name: newColumnName,
-        dataType: newColumnType,
-        width: 150,
+        name: name,
+        dataType: type,
+        width: 150, // Default width for the new column
       };
+
+      // Update the columns state by adding the new column
       setColumns((prevColumns) => [...prevColumns, newColumn]);
-      setNewColumnName("");
-      setNewColumnType("string");
-      onClose();
+
+      // Update each row to include the new column with a default value
+      setRows((prevRows) =>
+        prevRows.map((row) => ({
+          ...row,
+          [name]: type === "select" ? "" : "", // Set default value for new column
+        }))
+      );
+
+      // Reset the column name and type for future additions
+      setNewColumnName(""); // No need to reset since we're passing new names directly
+      setNewColumnType("string"); // Reset to default type if needed
+      onClose(); // Close the popover
     }
+  };
+
+  const renderInputField = (
+    row: Row,
+    col: Column,
+    rowIndex: number,
+    colIndex: number
+  ) => {
+    const isEditing =
+      editingCell?.rowIndex === rowIndex && editingCell?.colIndex === colIndex;
+
+    const handleCellClick = () => {
+      if (!isEditing) {
+        setEditingCell({ rowIndex, colIndex });
+      }
+    };
+
+    const handleBlur = () => {
+      setEditingCell(null);
+    };
+
+    const handleChange = (
+      e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    ) => {
+      const value = e.target.value;
+      setRows((prevRows) =>
+        prevRows.map((r, i) =>
+          i === rowIndex ? { ...r, [col.name]: value } : r
+        )
+      );
+    };
+
+    const handleAddOption = () => {
+      if (newOption && !selectOptions.includes(newOption)) {
+        setSelectOptions((prev) => [...prev, newOption]);
+        setNewOption("");
+      }
+    };
+  
+    const handleDeleteOption = (option: string) => {
+      setSelectOptions((prev) => prev.filter((opt) => opt !== option));
+    };
+  
+    const handleEditOption = (option: string) => {
+      if (editingOption?.oldValue === option) {
+        setEditingOption(null); // Exit edit mode
+      } else {
+        setEditingOption({ oldValue: option, newValue: option }); // Enter edit mode
+      }
+    };
+  
+    const handleSaveEdit = () => {
+      if (editingOption) {
+        setSelectOptions((prev) => prev.map((opt) => (opt === editingOption.oldValue ? editingOption.newValue : opt)));
+        setEditingOption(null);
+      }
+    };
+  
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (editingOption) {
+        setEditingOption({ ...editingOption, newValue: e.target.value });
+      }
+    };
+
+    const handleKeyDown = (
+      e: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>
+    ) => {
+      // Check if the input is focused to allow typing
+      if (
+        editingCell &&
+        editingCell.rowIndex === rowIndex &&
+        editingCell.colIndex === colIndex
+      ) {
+        switch (e.key) {
+          case "Enter":
+            handleBlur(); // Save data and exit editing mode
+            break;
+          case "Tab":
+            e.preventDefault(); // Prevent default tab behavior
+            const isShift = e.shiftKey;
+            const nextColIndex = colIndex + (isShift ? -1 : 1);
+            let nextRowIndex = rowIndex;
+
+            if (isShift) {
+              // Shift + Tab: Move to previous cell
+              if (colIndex > 0) {
+                setEditingCell({ rowIndex, colIndex: nextColIndex });
+              } else if (rowIndex > 0) {
+                nextRowIndex--; // Move up a row
+                setEditingCell({
+                  rowIndex: nextRowIndex,
+                  colIndex: columns.length - 1,
+                });
+              }
+            } else {
+              // Tab: Move to next cell
+              if (nextColIndex < columns.length) {
+                setEditingCell({ rowIndex, colIndex: nextColIndex });
+              } else {
+                nextRowIndex++; // Move to the next row
+                setEditingCell({ rowIndex: nextRowIndex, colIndex: 0 });
+              }
+            }
+            break;
+          case "ArrowRight":
+            e.preventDefault(); // Prevent default arrow key behavior
+            if (colIndex + 1 < columns.length) {
+              // Move to the next cell in the same row
+              setEditingCell({ rowIndex, colIndex: colIndex + 1 });
+            } else if (rowIndex + 1 < rows.length) {
+              // Move to the first cell in the next row
+              setEditingCell({ rowIndex: rowIndex + 1, colIndex: 0 });
+            }
+            break;
+          case "ArrowLeft":
+            e.preventDefault();
+            if (colIndex > 0) {
+              // Move to the previous cell in the same row
+              setEditingCell({ rowIndex, colIndex: colIndex - 1 });
+            }
+            break;
+          case "ArrowDown":
+            e.preventDefault();
+            if (rowIndex + 1 < rows.length) {
+              // Move to the first cell in the next row
+              setEditingCell({ rowIndex: rowIndex + 1, colIndex });
+            }
+            break;
+          case "ArrowUp":
+            e.preventDefault();
+            if (rowIndex > 0) {
+              // Move to the first cell in the previous row
+              setEditingCell({ rowIndex: rowIndex - 1, colIndex });
+            }
+            break;
+          default:
+            // Allow all other keys to work for input
+            break;
+        }
+      } else {
+        e.preventDefault(); // Prevent default behavior for all keys when not editing
+      }
+    };
+
+    // Render input based on column data type
+    if (isEditing) {
+      if (col.dataType === "select") {
+        return (
+          <div>
+            <Select
+              value={row[col.name] || ""}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              onKeyDown={handleKeyDown}
+            >
+              <option value="">Select...</option>
+              {selectOptions.map((option, index) => (
+                <option key={index} value={option}>
+                  {option}
+                </option>
+              ))}
+            </Select>
+            <div style={{ marginTop: '10px' }}>
+              <input
+                type="text"
+                value={newOption}
+                onChange={(e) => setNewOption(e.target.value)}
+                placeholder="Add new option"
+                style={{ marginRight: '5px' }}
+              />
+              <button onClick={handleAddOption}>Add</button>
+            </div>
+            <div style={{ marginTop: '5px' }}>
+              <h4>Existing Options:</h4>
+              <ul>
+                {selectOptions.map((option) => (
+                  <li key={option} style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    {editingOption?.oldValue === option ? (
+                      <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <input
+                          type="text"
+                          value={editingOption.newValue}
+                          onChange={handleInputChange}
+                          placeholder="Edit option"
+                          style={{ marginRight: '5px' }}
+                        />
+                        <button onClick={handleSaveEdit}>Save</button>
+                      </div>
+                    ) : (
+                      <>
+                        <span onClick={() => handleEditOption(option)} style={{ cursor: 'pointer' }}>
+                          {option}
+                        </span>
+                        <div>
+                          <button onClick={() => handleEditOption(option)} style={{ marginLeft: '5px' }}>
+                            Edit
+                          </button>
+                          <button onClick={() => handleDeleteOption(option)} style={{ marginLeft: '5px' }}>
+                            Delete
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        );
+      }
+     else if (col.dataType === "date") {
+        return (
+          <Input
+            type="date"
+            value={row[col.name] || ""}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
+            variant="flushed"
+            autoFocus
+            style={{
+              fontSize: "14px",
+              fontWeight: "600",
+              border: "none",
+              outline: "none",
+              textDecoration: "underline",
+              boxShadow: "-1px 0px 10px 0px gray  ",
+              borderRadius: " 5px",
+              padding: "10px",
+              width: "250px",
+              height: "38px",
+              position: "absolute",
+              backgroundColor: "white",
+              marginTop: "-16px",
+            }}
+          />
+        );
+      } else if (col.dataType === "number") {
+        return (
+          <Input
+            type="number"
+            value={row[col.name] || ""}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
+            variant="flushed"
+            autoFocus
+            style={{
+              fontSize: "14px",
+              fontWeight: "600",
+              border: "none",
+              outline: "none",
+              textDecoration: "underline",
+              boxShadow: "-1px 0px 10px 0px gray  ",
+              borderRadius: " 5px",
+              padding: "10px",
+              width: "250px",
+              height: "38px",
+              position: "absolute",
+              backgroundColor: "white",
+              marginTop: "-16px",
+            }}
+          />
+        );
+      }
+
+      // Default input for other types (string)
+      return (
+        <Input
+          value={row[col.name] || ""}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          onKeyDown={handleKeyDown}
+          variant="flushed"
+          autoFocus
+          style={{
+            fontSize: "14px",
+            fontWeight: "600",
+            border: "none",
+            outline: "none",
+            textDecoration: "underline",
+            boxShadow: "-1px 0px 10px 0px gray  ",
+            borderRadius: " 5px",
+            padding: "10px",
+            width: "250px",
+            height: "38px",
+            position: "absolute",
+            backgroundColor: "white",
+            marginTop: "-16px",
+          }}
+        />
+      );
+    }
+
+    // Render the cell's current value when not editing
+    return (
+      <div
+        onClick={handleCellClick}
+        style={{ cursor: "pointer", padding: "2px" }}
+      >
+        {row[col.name] || ""}
+      </div>
+    );
   };
 
   const handleDeleteColumn = (columnName: string) => {
@@ -178,236 +540,348 @@ const NotionTable: React.FC = () => {
     }
   };
 
-  const renderInputField = (
-    row: Row,
-    col: Column,
-    rowIndex: number,
-    colIndex: number
-  ) => {
-    const isEditing =
-      editingCell?.rowIndex === rowIndex && editingCell?.colIndex === colIndex;
-
-    const handleCellClick = () => {
-      if (!isEditing) {
-        setEditingCell({ rowIndex, colIndex });
-      }
-    };
-
-    const handleBlur = () => {
-      setEditingCell(null);
-    };
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const value = e.target.value;
-      setRows(
-        rows.map((r, i) => (i === rowIndex ? { ...r, [col.name]: value } : r))
-      );
-    };
-
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === "Tab") {
-        e.preventDefault();
-        const nextColIndex = colIndex + 1 < columns.length ? colIndex + 1 : 0;
-        const nextRowIndex = nextColIndex === 0 ? rowIndex + 1 : rowIndex;
-
-        if (nextRowIndex < rows.length) {
-          setEditingCell({ rowIndex: nextRowIndex, colIndex: nextColIndex });
-        } else {
-          setEditingCell(null);
-        }
-      }
-    };
-
-    return isEditing ? (
-      <Input
-        value={row[col.name] || ""}
-        onChange={handleChange}
-        onBlur={handleBlur}
-        onKeyDown={handleKeyDown}
-        variant="flushed"
-        autoFocus
-      />
-    ) : (
-      <Box onClick={handleCellClick} cursor="pointer" padding="2">
-        {row[col.name] || ""}
-      </Box>
-    );
-  };
-
   return (
-    <div className="main">
-      <Box p={5}>
-        <Table className="notion-table">
-          <Thead>
-            <Tr>
-              <Th></Th>
-              {columns.map((col, index) => (
-                <Th
-                  key={index}
-                  borderColor="gray.200"
-                  width={col.width}
-                  textColor="gray.400"
-                >
-                  <Flex align="left">
-                    <Popover placement="bottom">
-                      <PopoverTrigger>
-                        <Button
-                          leftIcon={<VscListFlat />}
-                          bg="none"
-                          textColor="gray.400"
-                        >
-                          {col.name}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent>
-                        <PopoverArrow />
-                        <PopoverCloseButton />
-                        <PopoverBody>
-                          <Input
-                            defaultValue={col.name}
-                            onBlur={(e) =>
-                              handleChangeColumnName(index, e.target.value)
-                            }
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter") {
-                                handleChangeColumnName(
-                                  index,
-                                  e.currentTarget.value
-                                );
-                              }
-                            }}
-                            size="sm"
-                            variant="flushed"
-                            autoFocus
-                          />
-                        </PopoverBody>
-                        <PopoverFooter
-                          display="flex"
-                          justifyContent="flex-start"
-                        >
-                          <Button
-                            onClick={() => handleDeleteColumn(col.name)}
-                            bg="none"
-                            color="gray.400"
-                          >
-                            Delete
-                          </Button>
-                        </PopoverFooter>
-                      </PopoverContent>
-                    </Popover>
+    <>
+      <div className="headings">
+        <div className="inner-headings">
+          {isEditingTask ? (
+            <input
+              type="text"
+              value={taskName}
+              onChange={(e) => setTaskName(e.target.value)}
+              onBlur={handleTaskBlur}
+              autoFocus
+              style={{
+                fontSize: "40px",
+                fontWeight: "bold",
+                border: "none",
+                outline: "none",
+                textDecoration: "underline",
+              }}
+            />
+          ) : (
+            <Heading
+              onClick={handleTaskClick}
+              style={{
+                cursor: "pointer",
+                fontSize: "40px",
+                fontWeight: "bold",
+                border: "none",
+                outline: "none",
+                color: "#37352F",
+              }}
+            >
+              {taskName}
+            </Heading>
+          )}
 
-                    <Box
-                      onMouseDown={handleMouseDown(index)}
-                      cursor="ew-resize"
-                      width="10px"
-                      height="100%"
-                      position="absolute"
-                      right="0"
-                      top="0"
-                      zIndex="1"
-                    />
-                  </Flex>
-                </Th>
-              ))}
-              <Th>
-                <Popover placement="bottom" isOpen={isOpen} onClose={onClose}>
-                  <PopoverTrigger>
-                    <Button
-                      onClick={() => {
-                        setNewColumnName("New Column");
-                        onOpen();
-                      }}
-                      leftIcon={<FaPlus />}
-                      textColor="gray.400"
-                      bg="none"
-                    />
-                  </PopoverTrigger>
-                  <PopoverContent>
-                    <PopoverArrow />
-                    <PopoverCloseButton />
-                    <PopoverBody>
-                      <Input
-                        placeholder="Column Name"
-                        value={newColumnName}
-                        onChange={(e) => setNewColumnName(e.target.value)}
-                        size="sm"
-                        variant="flushed"
-                      />
-                      <Select
-                        value={newColumnType}
-                        onChange={(e) => setNewColumnType(e.target.value)}
-                        mt={2}
-                        size="sm"
+          {isEditingTable ? (
+            <input
+              type="text"
+              value={tableName}
+              onChange={(e) => setTableName(e.target.value)}
+              onBlur={handleTableBlur} // Handle when input loses focus
+              autoFocus // Automatically focus on the input when editing starts
+              style={{
+                fontSize: "16px",
+                fontWeight: "400",
+                border: "none",
+                outline: "none",
+                textDecoration: "underline",
+              }}
+            />
+          ) : (
+            <Heading
+              onClick={handleTableClick}
+              style={{
+                cursor: "pointer",
+                fontSize: "16px",
+                fontWeight: "450",
+                border: "none",
+                outline: "none",
+                color: "#37352F",
+              }}
+            >
+              {tableName}
+            </Heading>
+          )}
+        </div>
+      </div>
+      <div className="main">
+        <div>
+          <Box p={5}>
+            <div className="table-container">
+              <Table className="notion-table">
+                <Thead>
+                  <Tr>
+                    <Th borderBottom="0px"></Th>
+                    {columns.map((col, index) => (
+                      <Th
+                        key={index}
+                        borderColor="gray.200"
+                        width={col.width}
+                        textColor="gray.400"
                       >
-                        <option value="string">String</option>
-                        <option value="number">Number</option>
-                        <option value="date">Date</option>
-                      </Select>
-                    </PopoverBody>
-                    <PopoverFooter display="flex" justifyContent="flex-start">
-                      <Button onClick={handleAddColumn}>Add</Button>
-                    </PopoverFooter>
-                  </PopoverContent>
-                </Popover>
-              </Th>
-              
-            </Tr>
-          </Thead>
-          <Tbody>
-            {rows.map((row, rowIndex) => (
-              <Tr
-                key={rowIndex}
-                onMouseEnter={() => setHoveredRowIndex(rowIndex)}
-                onMouseLeave={() => setHoveredRowIndex(null)}
-              >
-                <Td>
-  <Flex justifyContent="flex-start" alignItems="center">
-    {hoveredRowIndex === rowIndex && (
-      <>
-        <Button onClick={() => handleAddRowUnder(rowIndex)} bg="none" color="gray.400">
-          <FaPlus />
-        </Button>
-        <Button onClick={() => handleDeleteRow(rowIndex)} bg="none" color="gray.400">
-          <MdDeleteOutline />
-        </Button>
-      </>
-    )}
-  </Flex>
-</Td>
-                {columns.map((col, colIndex) => (
-                  <Td key={colIndex} borderRight="1px" borderColor="gray.200"  width="199px" height="32px">
-                    {renderInputField(row, col, rowIndex, colIndex)}
-                  </Td>
-                ))}
-                
-                <Td></Td>
-              </Tr>
-            ))}
-          </Tbody>
-        <Box display="flex" justifyContent="flex-start">
-          <Button
-            leftIcon={<FaPlus />}
-            onClick={handleAddRow}
-            colorScheme="gray"
-            size="lg"
-            bg="none"
-            borderTop="1px"
-            borderBottom="1px"
-            borderRadius={0}
-            borderColor="gray.200"
-            width={"full"}
-            justifyContent="left"
-            textColor="gray.400"
-          >
-            Add Row
-          </Button>
-        </Box>
-        </Table>
-        <Box mt={4} textAlign="left">
-          <strong>Row count:</strong> {rows.length}
-        </Box>
-      </Box>
-    </div>
+                        <Flex align="left">
+                          <Popover placement="bottom">
+                            <PopoverTrigger>
+                              <Button
+                                leftIcon={<VscListFlat />}
+                                bg="none"
+                                textColor="gray.400"
+                              >
+                                {col.name}
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent>
+                              <PopoverArrow />
+                              <PopoverCloseButton />
+                              <PopoverBody>
+                                <Input
+                                  defaultValue={col.name}
+                                  onBlur={(e) =>
+                                    handleChangeColumnName(
+                                      index,
+                                      e.target.value
+                                    )
+                                  }
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter") {
+                                      handleChangeColumnName(
+                                        index,
+                                        e.currentTarget.value
+                                      );
+                                    }
+                                  }}
+                                  size="sm"
+                                  variant="flushed"
+                                  autoFocus
+                                />
+                              </PopoverBody>
+                              <PopoverFooter
+                                display="flex"
+                                justifyContent="flex-start"
+                              >
+                                <Button
+                                  onClick={() => handleDeleteColumn(col.name)}
+                                  bg="none"
+                                  color="gray.400"
+                                >
+                                  Delete
+                                </Button>
+                              </PopoverFooter>
+                            </PopoverContent>
+                          </Popover>
+                          <Box
+                            onMouseDown={handleMouseDown(index)}
+                            cursor="ew-resize"
+                            width="10px"
+                            height="100%"
+                            position="absolute"
+                            right="0"
+                            top="0"
+                            zIndex="1"
+                          />
+                        </Flex>
+                      </Th>
+                    ))}
+                    <Th>
+                      <Popover
+                        placement="bottom"
+                        isOpen={isOpen}
+                        onClose={onClose}
+                      >
+                        <PopoverTrigger>
+                          <Button
+                            onClick={() => onOpen()}
+                            leftIcon={<FaPlus />}
+                            textColor="gray.400"
+                            bg="none"
+                          />
+                        </PopoverTrigger>
+                        <PopoverContent>
+                          <PopoverArrow />
+                          <PopoverCloseButton />
+                          <PopoverBody>
+                            <div>
+                              <Tr>
+                                <Button
+                                  onClick={() => {
+                                    setNewColumnType("string");
+                                    setNewColumnName("Text");
+                                    handleAddColumn("string", "Text"); // Add the column when button is clicked
+                                  }}
+                                  bg="none"
+                                  color="gray.500"
+                                >
+                                  String
+                                </Button>
+                              </Tr>
+                              <Tr>
+                                <Button
+                                  onClick={() => {
+                                    setNewColumnType("number");
+                                    setNewColumnName("Number");
+                                    handleAddColumn("number", "Number"); // Add the column when button is clicked
+                                  }}
+                                  bg="none"
+                                  color="gray.500"
+                                >
+                                  Number
+                                </Button>
+                              </Tr>
+                              <Tr>
+                                <Button
+                                  onClick={() => {
+                                    setNewColumnType("date");
+                                    setNewColumnName("Date");
+                                    handleAddColumn("date", "Date"); // Add the column when button is clicked
+                                  }}
+                                  bg="none"
+                                  color="gray.500"
+                                >
+                                  Date
+                                </Button>
+                              </Tr>
+                              <Tr>
+                                <Button
+                                  onClick={() => {
+                                    setNewColumnType("select");
+                                    setNewColumnName("Select");
+                                    handleAddColumn("select", "Select"); // Add the column when button is clicked
+                                  }}
+                                  bg="none"
+                                  color="gray.500"
+                                >
+                                  Select
+                                </Button>
+                              </Tr>
+                            </div>
+                          </PopoverBody>
+                        </PopoverContent>
+                      </Popover>
+                    </Th>
+                  </Tr>
+                </Thead>
+                <Tbody>
+                  {rows.map((row, rowIndex) => (
+                    <Tr
+                      key={rowIndex}
+                      onMouseEnter={() => setHoveredRowIndex(rowIndex)}
+                      onMouseLeave={() => setHoveredRowIndex(null)}
+                    >
+                      <Td borderBottom="0px" width="130px" height="32px">
+                        <Flex justifyContent="flex-end" alignItems="right">
+                          {hoveredRowIndex === rowIndex && (
+                            <>
+                              <Button
+                                onClick={() => handleAddRowUnder(rowIndex)}
+                                bg="none"
+                                color="gray.400"
+                                height="32px"
+                              >
+                                <FaPlus />
+                              </Button>
+                              <Button
+                                onClick={() => handleDeleteRow(rowIndex)}
+                                bg="none"
+                                color="gray.400"
+                                height="32px"
+                              >
+                                <MdDeleteOutline />
+                              </Button>
+                            </>
+                          )}
+                        </Flex>
+                      </Td>
+                      {columns.map((col, colIndex) => (
+                        <Td
+                          key={colIndex}
+                          borderRight="1px"
+                          borderColor="gray.200"
+                          width="199px"
+                          height="32px"
+                          textColor="gray.600"
+                          fontWeight="medium"
+                        >
+                          {renderInputField(row, col, rowIndex, colIndex)}
+                        </Td>
+                      ))}
+                      <Td></Td>
+                    </Tr>
+                  ))}
+                  <Tr>
+                    <Td borderBottom="0px" borderTop="0px"></Td>
+                    <div
+                      style={{
+                        position: "sticky",
+                        left: 0,
+                        zIndex: 2,
+                        backgroundColor: "white",
+                      }}
+                    >
+                      <Box>
+                        <Button
+                          leftIcon={<FaPlus />}
+                          onClick={handleAddRow}
+                          colorScheme="gray"
+                          bg="none"
+                          fontWeight="normal"
+                          borderRadius={0}
+                          borderColor="gray.200"
+                          justifyContent="left"
+                          textColor="gray.400"
+                          textAlign="left"
+                        >
+                          Add Row
+                        </Button>
+                      </Box>
+                    </div>
+                  </Tr>
+                  <Tr>
+                    <Td borderBottom="0px" borderTop="0px"></Td>
+
+                    {columns.map((colm, colmIndex) => (
+                      <Td
+                        key={colmIndex}
+                        borderBottom="0px"
+                        borderTop="1px"
+                        borderColor="gray.200"
+                      >
+                        <Box
+                          fontWeight="normal"
+                          textAlign="right"
+                          textColor="gray.400"
+                          display="flex"
+                          justifyContent="end"
+                          alignContent="center"
+                        >
+                          <p
+                            style={{
+                              marginRight: "5px",
+                              fontSize: "10px",
+                              alignItems: "center",
+                            }}
+                          >
+                            COUNT{" "}
+                          </p>{" "}
+                          {rows.length}
+                        </Box>
+                      </Td>
+                    ))}
+                    <Td
+                      borderBottom="0px"
+                      borderTop="1px"
+                      borderColor="gray.200"
+                    ></Td>
+                  </Tr>
+                </Tbody>
+              </Table>
+            </div>
+          </Box>
+        </div>
+      </div>
+    </>
   );
 };
 

@@ -5,6 +5,42 @@
 }
 
 
+thead th {
+  position: sticky;
+  top: 0;
+  background-color: white; /* Ensure the background matches the table */
+  z-index: 2;
+  
+}
+.notion-row {
+  transition: background-color 0.3s ease;
+}
+
+.notion-row:hover {
+  background-color: #ffffff; /* Change the background color on hover */
+}
+
+
+
+
+
+.TaskNameHeading {
+  cursor: pointer;
+  font-size: 40px;
+  font-weight: bold;
+  border: none;
+  outline: none;
+  color: #37352F ;
+}
+
+.inner-headings{
+margin-left: auto;
+margin-right: auto;
+  max-width: 708px;
+  text-align: start;
+
+}
+
 .notion-table {
     table-layout: auto; /* Allow the table to adjust column widths automatically */
     width: 100%; /* Optional: ensure the table takes the full width of the container */
@@ -14,6 +50,11 @@
   .notion-table td {
     white-space: nowrap; /* Prevent wrapping of text */
     padding: 0px; /* Add padding for better spacing */
+
+  }
+  .notion-table td{
+
+    padding-left: 10px;
   }
   .main{
 
