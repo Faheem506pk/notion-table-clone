@@ -18,9 +18,7 @@ import {
   PopoverFooter,
   useDisclosure,
   PopoverArrow,
-  PopoverCloseButton,
-  Heading,
-  PopoverHeader,
+  Heading
 } from "@chakra-ui/react";
 import { FaPlus } from "react-icons/fa";
 import { VscListFlat } from "react-icons/vsc";
