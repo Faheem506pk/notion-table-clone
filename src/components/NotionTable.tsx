@@ -549,7 +549,7 @@ const NotionTable: React.FC = () => {
 
   return (
     <>
-      <div className="headings">
+      <div className="headings" style={{marginTop:"80px"}}>
         <div className="inner-headings">
           {isEditingTask ? (
             <input
