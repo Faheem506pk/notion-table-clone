@@ -7,7 +7,7 @@ import {
   useDisclosure,
   Drawer,
 } from "@chakra-ui/react";
-import React from "react";
+
 import { FaBars } from "react-icons/fa";
 
 function DrawerNav() {
