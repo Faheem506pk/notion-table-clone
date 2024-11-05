@@ -57,7 +57,7 @@ const NotionTable: React.FC = () => {
     return savedOptions ? JSON.parse(savedOptions) : [""];
   });
 
-  const [newOption, setNewOption] = useState(null);
+  const [newOption, setNewOption] = useState<string>("");
   const [editingOption, setEditingOption] = useState<{
     oldValue: string;
     newValue: string;
