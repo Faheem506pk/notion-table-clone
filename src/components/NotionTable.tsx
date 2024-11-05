@@ -612,278 +612,278 @@ const NotionTable: React.FC = () => {
           )}
         </div>
       </div>
-      <div className="main">
-        <div>
+      <div className="main" >
+        <div style={{marginLeft:"auto", marginRight:"auto"}}>
           <Box p={5}>
-            <div className="table-container">
-              <Table className="notion-table">
-                <Thead>
-                  <Tr>
-                    <Th borderBottom="0px"></Th>
-                    {columns.map((col, index) => (
-                      <Th
-                        key={index}
-                        borderColor="gray.200"
-                        width={col.width}
-                        textColor="gray.400"
-                      >
-                        <Flex align="left">
-                          <Popover placement="bottom">
-                            <PopoverTrigger>
-                              <Button
-                                leftIcon={<VscListFlat />}
-                                bg="none"
-                                textColor="gray.400"
-                              >
-                                {col.name}
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent>
-                              <PopoverArrow />
-                              <PopoverCloseButton />
-                              <PopoverBody>
-                                <Input
-                                  defaultValue={col.name}
-                                  onBlur={(e) =>
-                                    handleChangeColumnName(
-                                      index,
-                                      e.target.value
-                                    )
-                                  }
-                                  onKeyDown={(e) => {
-                                    if (e.key === "Enter") {
+              <div className="table-container "  >
+                <Table className="notion-table"  >
+                  <Thead >
+                    <Tr>
+                      <Th borderBottom="0px"></Th>
+                      {columns.map((col, index) => (
+                        <Th
+                          key={index}
+                          borderColor="gray.200"
+                          width={col.width}
+                          textColor="gray.400"
+                        >
+                          <Flex align="left">
+                            <Popover placement="bottom">
+                              <PopoverTrigger>
+                                <Button
+                                  leftIcon={<VscListFlat />}
+                                  bg="none"
+                                  textColor="gray.400"
+                                >
+                                  {col.name}
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent>
+                                <PopoverArrow />
+                                <PopoverCloseButton />
+                                <PopoverBody>
+                                  <Input
+                                    defaultValue={col.name}
+                                    onBlur={(e) =>
                                       handleChangeColumnName(
                                         index,
-                                        e.currentTarget.value
-                                      );
+                                        e.target.value
+                                      )
                                     }
-                                  }}
-                                  size="sm"
-                                  variant="flushed"
-                                  autoFocus
-                                />
-                              </PopoverBody>
-                              <PopoverFooter
-                                display="flex"
-                                justifyContent="flex-start"
-                              >
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Enter") {
+                                        handleChangeColumnName(
+                                          index,
+                                          e.currentTarget.value
+                                        );
+                                      }
+                                    }}
+                                    size="sm"
+                                    variant="flushed"
+                                    autoFocus
+                                  />
+                                </PopoverBody>
+                                <PopoverFooter
+                                  display="flex"
+                                  justifyContent="flex-start"
+                                >
+                                  <Button
+                                    onClick={() => handleDeleteColumn(col.name)}
+                                    bg="none"
+                                    color="gray.400"
+                                  >
+                                    Delete
+                                  </Button>
+                                </PopoverFooter>
+                              </PopoverContent>
+                            </Popover>
+                            <Box
+                              onMouseDown={handleMouseDown(index)}
+                              cursor="ew-resize"
+                              width="10px"
+                              height="100%"
+                              position="absolute"
+                              right="0"
+                              top="0"
+                              zIndex="1"
+                            />
+                          </Flex>
+                        </Th>
+                      ))}
+                      <Th>
+                        <Popover
+                          placement="bottom"
+                          isOpen={isOpen}
+                          onClose={onClose}
+                        >
+                          <PopoverTrigger>
+                            <Button
+                              onClick={() => onOpen()}
+                              leftIcon={<FaPlus />}
+                              textColor="gray.400"
+                              bg="none"
+                              
+                            />
+                          </PopoverTrigger>
+                          <PopoverContent>
+                            <PopoverArrow />
+                            <PopoverCloseButton />
+                            <PopoverBody>
+                              <div>
+                                <Tr>
+                                  <Button
+                                    onClick={() => {
+                                      setNewColumnType("string");
+                                      setNewColumnName("Text");
+                                      handleAddColumn("string", "Text"); // Add the column when button is clicked
+                                    }}
+                                    bg="none"
+                                    color="gray.500"
+                                  >
+                                    String
+                                  </Button>
+                                </Tr>
+                                <Tr>
+                                  <Button
+                                    onClick={() => {
+                                      setNewColumnType("number");
+                                      setNewColumnName("Number");
+                                      handleAddColumn("number", "Number"); // Add the column when button is clicked
+                                    }}
+                                    bg="none"
+                                    color="gray.500"
+                                  >
+                                    Number
+                                  </Button>
+                                </Tr>
+                                <Tr>
+                                  <Button
+                                    onClick={() => {
+                                      setNewColumnType("date");
+                                      setNewColumnName("Date");
+                                      handleAddColumn("date", "Date"); // Add the column when button is clicked
+                                    }}
+                                    bg="none"
+                                    color="gray.500"
+                                  >
+                                    Date
+                                  </Button>
+                                </Tr>
+                                <Tr>
+                                  <Button
+                                    onClick={() => {
+                                      setNewColumnType("select");
+                                      setNewColumnName("Select");
+                                      handleAddColumn("select", "Select"); // Add the column when button is clicked
+                                    }}
+                                    bg="none"
+                                    color="gray.500"
+                                  >
+                                    Select
+                                  </Button>
+                                </Tr>
+                              </div>
+                            </PopoverBody>
+                          </PopoverContent>
+                        </Popover>
+                      </Th>
+                    </Tr>
+                  </Thead>
+                  <Tbody >
+                    {rows.map((row, rowIndex) => (
+                      <Tr
+                        key={rowIndex}
+                        onMouseEnter={() => setHoveredRowIndex(rowIndex)}
+                        onMouseLeave={() => setHoveredRowIndex(null)}
+                      >
+                        <Td borderBottom="0px" width="125px" height="32px"  >
+                          <Flex justifyContent="flex-end" alignItems="right" width="125px"  height="32px">
+                            {hoveredRowIndex === rowIndex && (
+                              <>
                                 <Button
-                                  onClick={() => handleDeleteColumn(col.name)}
+                                  onClick={() => handleAddRowUnder(rowIndex)}
                                   bg="none"
                                   color="gray.400"
+                                  height="32px"
                                 >
-                                  Delete
+                                  <FaPlus />
                                 </Button>
-                              </PopoverFooter>
-                            </PopoverContent>
-                          </Popover>
-                          <Box
-                            onMouseDown={handleMouseDown(index)}
-                            cursor="ew-resize"
-                            width="10px"
-                            height="100%"
-                            position="absolute"
-                            right="0"
-                            top="0"
-                            zIndex="1"
-                          />
-                        </Flex>
-                      </Th>
-                    ))}
-                    <Th>
-                      <Popover
-                        placement="bottom"
-                        isOpen={isOpen}
-                        onClose={onClose}
-                      >
-                        <PopoverTrigger>
-                          <Button
-                            onClick={() => onOpen()}
-                            leftIcon={<FaPlus />}
-                            textColor="gray.400"
-                            bg="none"
-                          />
-                        </PopoverTrigger>
-                        <PopoverContent>
-                          <PopoverArrow />
-                          <PopoverCloseButton />
-                          <PopoverBody>
-                            <div>
-                              <Tr>
                                 <Button
-                                  onClick={() => {
-                                    setNewColumnType("string");
-                                    setNewColumnName("Text");
-                                    handleAddColumn("string", "Text"); // Add the column when button is clicked
-                                  }}
+                                  onClick={() => handleDeleteRow(rowIndex)}
                                   bg="none"
-                                  color="gray.500"
+                                  color="gray.400"
+                                  height="32px"
                                 >
-                                  String
+                                  <MdDeleteOutline />
                                 </Button>
-                              </Tr>
-                              <Tr>
-                                <Button
-                                  onClick={() => {
-                                    setNewColumnType("number");
-                                    setNewColumnName("Number");
-                                    handleAddColumn("number", "Number"); // Add the column when button is clicked
-                                  }}
-                                  bg="none"
-                                  color="gray.500"
-                                >
-                                  Number
-                                </Button>
-                              </Tr>
-                              <Tr>
-                                <Button
-                                  onClick={() => {
-                                    setNewColumnType("date");
-                                    setNewColumnName("Date");
-                                    handleAddColumn("date", "Date"); // Add the column when button is clicked
-                                  }}
-                                  bg="none"
-                                  color="gray.500"
-                                >
-                                  Date
-                                </Button>
-                              </Tr>
-                              <Tr>
-                                <Button
-                                  onClick={() => {
-                                    setNewColumnType("select");
-                                    setNewColumnName("Select");
-                                    handleAddColumn("select", "Select"); // Add the column when button is clicked
-                                  }}
-                                  bg="none"
-                                  color="gray.500"
-                                >
-                                  Select
-                                </Button>
-                              </Tr>
-                            </div>
-                          </PopoverBody>
-                        </PopoverContent>
-                      </Popover>
-                    </Th>
-                  </Tr>
-                </Thead>
-                <Tbody>
-                  {rows.map((row, rowIndex) => (
-                    <Tr
-                      key={rowIndex}
-                      onMouseEnter={() => setHoveredRowIndex(rowIndex)}
-                      onMouseLeave={() => setHoveredRowIndex(null)}
-                    >
-                      <Td borderBottom="0px" width="130px" height="32px">
-                        <Flex justifyContent="flex-end" alignItems="right">
-                          {hoveredRowIndex === rowIndex && (
-                            <>
-                              <Button
-                                onClick={() => handleAddRowUnder(rowIndex)}
-                                bg="none"
-                                color="gray.400"
-                                height="32px"
-                              >
-                                <FaPlus />
-                              </Button>
-                              <Button
-                                onClick={() => handleDeleteRow(rowIndex)}
-                                bg="none"
-                                color="gray.400"
-                                height="32px"
-                              >
-                                <MdDeleteOutline />
-                              </Button>
-                            </>
-                          )}
-                        </Flex>
-                      </Td>
-                      {columns.map((col, colIndex) => (
-                        <Td
-                          key={colIndex}
-                          borderRight="1px"
-                          borderColor="gray.200"
-                          width="199px"
-                          height="32px"
-                          textColor="gray.600"
-                          fontWeight="medium"
-                        >
-                          {renderInputField(row, col, rowIndex, colIndex)}
+                              </>
+                            )}
+                          </Flex>
                         </Td>
-                      ))}
-                      <Td></Td>
+                        {columns.map((col, colIndex) => (
+                          <Td
+                            key={colIndex}
+                            borderRight="1px"
+                            borderColor="gray.200"
+                            width="199px"
+                            height="32px"
+                            textColor="gray.600"
+                            fontWeight="medium"
+                          >
+                            {renderInputField(row, col, rowIndex, colIndex)}
+                          </Td>
+                        ))}
+                        <Td></Td>
+                      </Tr>
+                    ))}
+                    <Tr>
+                      <Td borderBottom="0px" borderTop="0px"></Td>
+                      <div
+                        style={{
+                          position: "sticky",
+                          left: 0,
+                          zIndex: 2,
+                          backgroundColor: "white",
+                        }}
+                      >
+                        <Box>
+                          <Button
+                            leftIcon={<FaPlus />}
+                            onClick={handleAddRow}
+                            colorScheme="gray"
+                            bg="none"
+                            fontWeight="normal"
+                            borderRadius={0}
+                            borderColor="gray.200"
+                            justifyContent="left"
+                            textColor="gray.400"
+                            textAlign="left"
+                          >
+                            Add Row
+                          </Button>
+                        </Box>
+                      </div>
                     </Tr>
-                  ))}
-                  <Tr>
-                    <Td borderBottom="0px" borderTop="0px"></Td>
-                    <div
+                    <Tr>
+                      <Td borderBottom="0px" borderTop="0px"></Td>
+                      {columns.map((_, colmIndex) => (
+                <Td
+                  key={colmIndex}
+                  borderBottom="0px"
+                  borderTop="1px"
+                  borderColor="gray.200"
+                >
+                  <Box
+                    fontWeight="normal"
+                    textAlign="right"
+                    textColor="gray.400"
+                    display="flex"
+                    justifyContent="end"
+                    alignContent="center"
+                  >
+                    <p
                       style={{
-                        position: "sticky",
-                        left: 0,
-                        zIndex: 2,
-                        backgroundColor: "white",
+                        marginRight: "5px",
+                        fontSize: "10px",
+                        alignItems: "center",
                       }}
                     >
-                      <Box>
-                        <Button
-                          leftIcon={<FaPlus />}
-                          onClick={handleAddRow}
-                          colorScheme="gray"
-                          bg="none"
-                          fontWeight="normal"
-                          borderRadius={0}
-                          borderColor="gray.200"
-                          justifyContent="left"
-                          textColor="gray.400"
-                          textAlign="left"
-                        >
-                          Add Row
-                        </Button>
-                      </Box>
-                    </div>
-                  </Tr>
-                  <Tr>
-                    <Td borderBottom="0px" borderTop="0px"></Td>
-
-                    {columns.map((_, colmIndex) => (
-  <Td
-    key={colmIndex}
-    borderBottom="0px"
-    borderTop="1px"
-    borderColor="gray.200"
-  >
-    <Box
-      fontWeight="normal"
-      textAlign="right"
-      textColor="gray.400"
-      display="flex"
-      justifyContent="end"
-      alignContent="center"
-    >
-      <p
-        style={{
-          marginRight: "5px",
-          fontSize: "10px",
-          alignItems: "center",
-        }}
-      >
-        COUNT{" "}
-      </p>{" "}
-      {rows.length}
-    </Box>
-  </Td>
-))}
-
-                    <Td
-                      borderBottom="0px"
-                      borderTop="1px"
-                      borderColor="gray.200"
-                    ></Td>
-                  </Tr>
-                </Tbody>
-              </Table>
-            </div>
+                      COUNT{" "}
+                    </p>{" "}
+                    {rows.length}
+                  </Box>
+                </Td>
+              ))}
+                      <Td
+                        borderBottom="0px"
+                        borderTop="1px"
+                        borderColor="gray.200"
+                      ></Td>
+                    </Tr>
+                  </Tbody>
+                </Table>
+              </div>
+            
           </Box>
         </div>
       </div>
