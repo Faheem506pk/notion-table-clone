@@ -62,6 +62,11 @@ const NotionTable: React.FC = () => {
     localStorage.setItem('selectOptions', JSON.stringify(selectOptions));
   }, [selectOptions]);
 
+  useEffect(() => {
+    if (newColumnName || newColumnType ) {
+      console.log(`New column name: ${newColumnName}, type: ${newColumnType}`);
+    }
+  }, [newColumnName, newColumnType]);
   
 
 
@@ -841,34 +846,35 @@ const NotionTable: React.FC = () => {
                   <Tr>
                     <Td borderBottom="0px" borderTop="0px"></Td>
 
-                    {columns.map((colm, colmIndex) => (
-                      <Td
-                        key={colmIndex}
-                        borderBottom="0px"
-                        borderTop="1px"
-                        borderColor="gray.200"
-                      >
-                        <Box
-                          fontWeight="normal"
-                          textAlign="right"
-                          textColor="gray.400"
-                          display="flex"
-                          justifyContent="end"
-                          alignContent="center"
-                        >
-                          <p
-                            style={{
-                              marginRight: "5px",
-                              fontSize: "10px",
-                              alignItems: "center",
-                            }}
-                          >
-                            COUNT{" "}
-                          </p>{" "}
-                          {rows.length}
-                        </Box>
-                      </Td>
-                    ))}
+                    {columns.map((_, colmIndex) => (
+  <Td
+    key={colmIndex}
+    borderBottom="0px"
+    borderTop="1px"
+    borderColor="gray.200"
+  >
+    <Box
+      fontWeight="normal"
+      textAlign="right"
+      textColor="gray.400"
+      display="flex"
+      justifyContent="end"
+      alignContent="center"
+    >
+      <p
+        style={{
+          marginRight: "5px",
+          fontSize: "10px",
+          alignItems: "center",
+        }}
+      >
+        COUNT{" "}
+      </p>{" "}
+      {rows.length}
+    </Box>
+  </Td>
+))}
+
                     <Td
                       borderBottom="0px"
                       borderTop="1px"
