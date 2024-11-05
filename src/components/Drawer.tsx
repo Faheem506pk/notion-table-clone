@@ -12,7 +12,7 @@ import { FaBars } from "react-icons/fa";
 
 function DrawerNav() {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [placement, setPlacement] = React.useState("right");
+
 
   return (
     <>
