@@ -662,7 +662,7 @@ const NotionTable: React.FC = () => {
         </div>
       </div>
       <div className="main">
-        <div style={{ marginLeft: "auto", marginRight: "auto" }}>
+        <div style={{ overflowX:"auto" , marginLeft: "auto", marginRight: "auto" }}>
           <Box p={5}>
             <div className="table-container ">
               <Table className="notion-table">
