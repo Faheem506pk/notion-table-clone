@@ -130,8 +130,10 @@ const NotionTable: React.FC = () => {
       ? JSON.parse(storedColumns)
       : [
           { name: "Name", dataType: "string", width: 150 },
+          { name: "Father Name", dataType: "string", width: 150 },
           { name: "Age", dataType: "number", width: 100 },
           { name: "Date of Birth", dataType: "date", width: 150 },
+          
         ];
   });
 
@@ -145,11 +147,11 @@ const NotionTable: React.FC = () => {
     return storedRows
       ? JSON.parse(storedRows)
       : [
-          { Name: "", Age: null, "Date of Birth": null },
-          { Name: "", Age: null, "Date of Birth": null },
-          { Name: "", Age: null, "Date of Birth": null },
-          { Name: "", Age: null, "Date of Birth": null },
-          { Name: "", Age: null, "Date of Birth": null },
+          { Name: "", "Father Name": "", Age: null, "Date of Birth": null },
+          { Name: "", "Father Name": "", Age: null, "Date of Birth": null },
+          { Name: "", "Father Name": "", Age: null, "Date of Birth": null },
+          { Name: "", "Father Name": "", Age: null, "Date of Birth": null },
+          { Name: "", "Father Name": "", Age: null, "Date of Birth": null },
         ];
   });
 
