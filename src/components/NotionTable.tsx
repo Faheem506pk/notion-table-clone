@@ -27,6 +27,7 @@ import { MdNumbers } from "react-icons/md";
 import { GrTextAlignFull } from "react-icons/gr";
 import { GoSingleSelect } from "react-icons/go";
 import { BsCalendarDate } from "react-icons/bs";
+import { MdDragIndicator } from "react-icons/md";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
 interface Column {
@@ -900,14 +901,15 @@ const NotionTable: React.FC = () => {
                               key={rowIndex}
                               onMouseEnter={() => setHoveredRowIndex(rowIndex)}
                               onMouseLeave={() => setHoveredRowIndex(null)}
-                              ref={provided.innerRef}
-                      {...provided.draggableProps}
-                      {...provided.dragHandleProps}
+                              
                             >
                               <Td
                                 borderBottom="0px"
                                 width="125px"
                                 height="32px"
+                                ref={provided.innerRef}
+                      {...provided.draggableProps}
+                      {...provided.dragHandleProps}
                               >
                                 <Flex
                                   justifyContent="flex-end"
@@ -917,6 +919,7 @@ const NotionTable: React.FC = () => {
                                 >
                                   {hoveredRowIndex === rowIndex && (
                                     <>
+                                    <div style={{display:"flex", alignItems:"center", paddingRight:"10px" }}>
                                       <Button
                                         onClick={() =>
                                           handleAddRowUnder(rowIndex)
@@ -937,6 +940,9 @@ const NotionTable: React.FC = () => {
                                       >
                                         <MdDeleteOutline />
                                       </Button>
+
+                                      <MdDragIndicator />
+                                      </div>
                                     </>
                                   )}
                                 </Flex>
