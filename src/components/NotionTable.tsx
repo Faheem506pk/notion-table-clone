@@ -793,6 +793,7 @@ const NotionTable: React.FC = () => {
                       </Draggable>
 
                     ))}
+                    {provided.placeholder}
                     <Th>
                       <Popover
                         placement="bottom"
@@ -964,6 +965,7 @@ const NotionTable: React.FC = () => {
                           }}
                         </Draggable>
                       ))}
+                      {provided.placeholder}
                       <Tr>
                         <Td borderBottom="0px" borderTop="0px"></Td>
                         <div
