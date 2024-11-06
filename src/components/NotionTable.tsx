@@ -24,12 +24,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogContent,
-  AlertDialogOverlay,
-  Tag,
-  TagCloseButton,
-  TagLabel,
-  Wrap,
-  WrapItem,
+  AlertDialogOverlay
 } from "@chakra-ui/react";
 import { FaPlus } from "react-icons/fa";
 import { VscListFlat } from "react-icons/vsc";
@@ -41,8 +36,7 @@ import { BsCalendarDate } from "react-icons/bs";
 import { MdDragIndicator } from "react-icons/md";
 import { MdEditSquare } from "react-icons/md";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-import TagsInput from "react-tagsinput";
-import "react-tagsinput/react-tagsinput.css";
+
 interface Column {
   name: string;
   dataType: string;
@@ -71,7 +65,7 @@ const NotionTable: React.FC = () => {
     const savedOptions = localStorage.getItem("selectOptions");
     return savedOptions ? JSON.parse(savedOptions) : [""];
   });
-  const [newTag, setNewTag] = useState("");
+  
   const [newOption, setNewOption] = useState<string>("");
   const [editingOption, setEditingOption] = useState<{
     oldValue: string;
@@ -1006,23 +1000,7 @@ const NotionTable: React.FC = () => {
                                       Select
                                     </Button>
                                   </Tr>
-                                  {/* <Tr>
-                                <Button
-                                  onClick={() => {
-                                    setNewColumnType("tags");
-                                    setNewColumnName("Tags");
-                                    handleAddColumn("tags", "Tags"); // Add the column when button is clicked
-                                  }}
-                                  bg="none"
-                                  color="gray.500"
-                                  paddingLeft={0}
-                                >
-                                  <GoSingleSelect
-                                    style={{ marginRight: "5px" }}
-                                  />{" "}
-                                  Tags
-                                </Button>
-                              </Tr> */}
+                                  
                                 </div>
                               </PopoverBody>
                             </PopoverContent>
