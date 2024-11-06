@@ -18,7 +18,7 @@ import {
   PopoverFooter,
   useDisclosure,
   PopoverArrow,
-  Heading
+  Heading,
 } from "@chakra-ui/react";
 import { FaPlus } from "react-icons/fa";
 import { VscListFlat } from "react-icons/vsc";
@@ -27,6 +27,7 @@ import { MdNumbers } from "react-icons/md";
 import { GrTextAlignFull } from "react-icons/gr";
 import { GoSingleSelect } from "react-icons/go";
 import { BsCalendarDate } from "react-icons/bs";
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
 interface Column {
   name: string;
@@ -594,6 +595,39 @@ const NotionTable: React.FC = () => {
     }
   };
 
+  // Save to local storage function
+  const saveToLocalStorage = (key: string, data: Column[] | Row[]): void => {
+    localStorage.setItem(key, JSON.stringify(data));
+  };
+
+  const handleDragEnd = (result: {
+    source: any;
+    destination: any;
+    type: any;
+  }) => {
+    const { source, destination, type } = result;
+
+    if (!destination) return;
+
+    if (type === "COLUMN") {
+      // Dragging columns
+      const reorderedColumns = Array.from(columns);
+      const [movedColumn] = reorderedColumns.splice(source.index, 1);
+      reorderedColumns.splice(destination.index, 0, movedColumn);
+      setColumns(reorderedColumns);
+      saveToLocalStorage("columns", reorderedColumns);
+    } else {
+      // Dragging rows
+      const reorderedRows = Array.from(rows);
+      const [movedRow] = reorderedRows.splice(source.index, 1);
+      reorderedRows.splice(destination.index, 0, movedRow);
+      setRows(reorderedRows);
+      saveToLocalStorage("rows", reorderedRows);
+    }
+  };
+
+  
+
   return (
     <>
       <div className="headings" style={{ marginTop: "80px" }}>
@@ -662,14 +696,23 @@ const NotionTable: React.FC = () => {
         </div>
       </div>
       <div className="main">
-        <div style={{ overflowX:"auto" , marginLeft: "auto", marginRight: "auto" }} className="table-container">
+        <div
+          style={{ overflowX: "auto", marginLeft: "auto", marginRight: "auto" }}
+          className="table-container"
+        >
           <Box p={5}>
-            <div >
+            <DragDropContext onDragEnd={handleDragEnd}>
               <Table className="notion-table">
-                <Thead  >
-                  <Tr >
+              <Droppable droppableId="columns" direction="horizontal" type="COLUMN">
+              {(provided) => (
+                <Thead ref={provided.innerRef} {...provided.droppableProps}>
+                  <Tr>
                     <Th borderBottom="0px"></Th>
                     {columns.map((col, index) => (
+
+                      <Draggable key={col.name} draggableId={col.name} index={index}>
+                              {(provided) => (
+
                       <Th
                         key={index}
                         borderColor="gray.200"
@@ -679,6 +722,9 @@ const NotionTable: React.FC = () => {
                         top="0"
                         zIndex="2"
                         backgroundColor="white"
+                        ref={provided.innerRef}
+                                  {...provided.draggableProps}
+                                  {...provided.dragHandleProps}
                       >
                         <Flex align="left">
                           <Popover placement="bottom">
@@ -742,6 +788,10 @@ const NotionTable: React.FC = () => {
                           />
                         </Flex>
                       </Th>
+
+                              )}
+                      </Draggable>
+
                     ))}
                     <Th>
                       <Popover
@@ -835,125 +885,154 @@ const NotionTable: React.FC = () => {
                     </Th>
                   </Tr>
                 </Thead>
-                <Tbody>
-                  {rows.map((row, rowIndex) => (
-                    <Tr
-                      key={rowIndex}
-                      onMouseEnter={() => setHoveredRowIndex(rowIndex)}
-                      onMouseLeave={() => setHoveredRowIndex(null)}
-                    >
-                      <Td borderBottom="0px" width="125px" height="32px">
-                        <Flex
-                          justifyContent="flex-end"
-                          alignItems="right"
-                          width="125px"
-                          height="32px"
-                        >
-                          {hoveredRowIndex === rowIndex && (
-                            <>
-                              <Button
-                                onClick={() => handleAddRowUnder(rowIndex)}
-                                bg="none"
-                                color="gray.400"
+              )}
+                </Droppable>
+                <Droppable droppableId="rows" type="ROW">
+                  {(provided) => (
+                    <Tbody ref={provided.innerRef} {...provided.droppableProps}>
+                      {rows.map((row, rowIndex) => (
+                        <Draggable key={row.id} draggableId={rowIndex.toString()} index={rowIndex} >
+                          {(provided) => {
+                            
+                            return (
+                            <Tr
+                              key={rowIndex}
+                              onMouseEnter={() => setHoveredRowIndex(rowIndex)}
+                              onMouseLeave={() => setHoveredRowIndex(null)}
+                              ref={provided.innerRef}
+                      {...provided.draggableProps}
+                      {...provided.dragHandleProps}
+                            >
+                              <Td
+                                borderBottom="0px"
+                                width="125px"
                                 height="32px"
                               >
-                                <FaPlus />
-                              </Button>
-                              <Button
-                                onClick={() => handleDeleteRow(rowIndex)}
-                                bg="none"
-                                color="gray.400"
-                                height="32px"
-                              >
-                                <MdDeleteOutline />
-                              </Button>
-                            </>
-                          )}
-                        </Flex>
-                      </Td>
-                      {columns.map((col, colIndex) => (
-                        <Td
-                          key={colIndex}
-                          borderRight="1px"
-                          borderColor="gray.200"
-                          width="199px"
-                          height="32px"
-                          textColor="gray.600"
-                          fontWeight="medium"
-                        >
-                          {renderInputField(row, col, rowIndex, colIndex)}
-                        </Td>
+                                <Flex
+                                  justifyContent="flex-end"
+                                  alignItems="right"
+                                  width="125px"
+                                  height="32px"
+                                >
+                                  {hoveredRowIndex === rowIndex && (
+                                    <>
+                                      <Button
+                                        onClick={() =>
+                                          handleAddRowUnder(rowIndex)
+                                        }
+                                        bg="none"
+                                        color="gray.400"
+                                        height="32px"
+                                      >
+                                        <FaPlus />
+                                      </Button>
+                                      <Button
+                                        onClick={() =>
+                                          handleDeleteRow(rowIndex)
+                                        }
+                                        bg="none"
+                                        color="gray.400"
+                                        height="32px"
+                                      >
+                                        <MdDeleteOutline />
+                                      </Button>
+                                    </>
+                                  )}
+                                </Flex>
+                              </Td>
+                              {columns.map((col, colIndex) => (
+                                <Td
+                                  key={colIndex}
+                                  borderRight="1px"
+                                  borderColor="gray.200"
+                                  width="199px"
+                                  height="32px"
+                                  textColor="gray.600"
+                                  fontWeight="medium"
+                                >
+                                  {renderInputField(
+                                    row,
+                                    col,
+                                    rowIndex,
+                                    colIndex
+                                  )}
+                                </Td>
+                              ))}
+                              <Td></Td>
+                            </Tr>
+                            );
+                          }}
+                        </Draggable>
                       ))}
-                      <Td></Td>
-                    </Tr>
-                  ))}
-                  <Tr>
-                    <Td borderBottom="0px" borderTop="0px"></Td>
-                    <div
-                      style={{
-                        position: "sticky",
-                        left: 0,
-                        zIndex: 2,
-                        backgroundColor: "white",
-                      }}
-                    >
-                      <Box>
-                        <Button
-                          leftIcon={<FaPlus />}
-                          onClick={handleAddRow}
-                          colorScheme="gray"
-                          bg="none"
-                          fontWeight="normal"
-                          borderRadius={0}
-                          borderColor="gray.200"
-                          justifyContent="left"
-                          textColor="gray.400"
-                          textAlign="left"
+                      <Tr>
+                        <Td borderBottom="0px" borderTop="0px"></Td>
+                        <div
+                          style={{
+                            position: "sticky",
+                            left: 0,
+                            zIndex: 2,
+                            backgroundColor: "white",
+                          }}
                         >
-                          Add Row
-                        </Button>
-                      </Box>
-                    </div>
-                  </Tr>
-                  <Tr>
-                    <Td borderBottom="0px" borderTop="0px"></Td>
-                    {columns.map((_, colmIndex) => (
-                      <Td
-                        key={colmIndex}
-                        borderBottom="0px"
-                        borderTop="1px"
-                        borderColor="gray.200"
-                      >
-                        <Box
-                          fontWeight="normal"
-                          textAlign="right"
-                          textColor="gray.400"
-                          display="flex"
-                          justifyContent="end"
-                          alignContent="center"
-                        >
-                          <p
-                            style={{
-                              marginRight: "5px",
-                              fontSize: "10px",
-                              alignItems: "center",
-                            }}
+                          <Box>
+                            <Button
+                              leftIcon={<FaPlus />}
+                              onClick={handleAddRow}
+                              colorScheme="gray"
+                              bg="none"
+                              fontWeight="normal"
+                              borderRadius={0}
+                              borderColor="gray.200"
+                              justifyContent="left"
+                              textColor="gray.400"
+                              textAlign="left"
+                            >
+                              Add Row
+                            </Button>
+                          </Box>
+                        </div>
+                      </Tr>
+                      <Tr>
+                        <Td borderBottom="0px" borderTop="0px"></Td>
+                        {columns.map((_, colmIndex) => (
+                          <Td
+                            key={colmIndex}
+                            borderBottom="0px"
+                            borderTop="1px"
+                            borderColor="gray.200"
                           >
-                            COUNT{" "}
-                          </p>{" "}
-                          {rows.length}
-                        </Box>
-                      </Td>
-                    ))}
-                    <Td
-                      borderBottom="0px"
-                      borderTop="1px"
-                      borderColor="gray.200"
-                    ></Td>
-                  </Tr>
-                </Tbody>
+                            <Box
+                              fontWeight="normal"
+                              textAlign="right"
+                              textColor="gray.400"
+                              display="flex"
+                              justifyContent="end"
+                              alignContent="center"
+                            >
+                              <p
+                                style={{
+                                  marginRight: "5px",
+                                  fontSize: "10px",
+                                  alignItems: "center",
+                                }}
+                              >
+                                COUNT{" "}
+                              </p>{" "}
+                              {rows.length}
+                            </Box>
+                          </Td>
+                        ))}
+                        <Td
+                          borderBottom="0px"
+                          borderTop="1px"
+                          borderColor="gray.200"
+                        ></Td>
+                      </Tr>
+                    </Tbody>
+                  )}
+                </Droppable>
               </Table>
-            </div>
+            </DragDropContext>
           </Box>
         </div>
       </div>
