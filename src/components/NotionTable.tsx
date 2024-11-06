@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   Box,
   Button,
@@ -19,6 +19,17 @@ import {
   useDisclosure,
   PopoverArrow,
   Heading,
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogContent,
+  AlertDialogOverlay,
+  Tag,
+  TagCloseButton,
+  TagLabel,
+  Wrap,
+  WrapItem,
 } from "@chakra-ui/react";
 import { FaPlus } from "react-icons/fa";
 import { VscListFlat } from "react-icons/vsc";
@@ -29,7 +40,8 @@ import { GoSingleSelect } from "react-icons/go";
 import { BsCalendarDate } from "react-icons/bs";
 import { MdDragIndicator } from "react-icons/md";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-
+import TagsInput from "react-tagsinput";
+import "react-tagsinput/react-tagsinput.css";
 interface Column {
   name: string;
   dataType: string;
@@ -58,7 +70,7 @@ const NotionTable: React.FC = () => {
     const savedOptions = localStorage.getItem("selectOptions");
     return savedOptions ? JSON.parse(savedOptions) : [""];
   });
-
+  const [newTag, setNewTag] = useState("");
   const [newOption, setNewOption] = useState<string>("");
   const [editingOption, setEditingOption] = useState<{
     oldValue: string;
@@ -163,6 +175,13 @@ const NotionTable: React.FC = () => {
     setRows(updatedRows);
   };
 
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
+  const cancelRef = useRef<HTMLButtonElement | null>(null);
+
+
+  const openAlertDialog = () => setIsAlertOpen(true);
+  const closeAlertDialog = () => setIsAlertOpen(false);
+
   const [rows, setRows] = useState<Row[]>(() => {
     const storedRows = localStorage.getItem("rows");
     return storedRows
@@ -207,29 +226,45 @@ const NotionTable: React.FC = () => {
   const handleAddColumn = (type: string, name: string) => {
     // Check if a new column name is provided
     if (name) {
-      // Create a new column object
+      // Check if the column name already exists
+      let newName = name;
+      let counter = 1;
+      while (columns.some((column) => column.name === newName)) {
+        newName = `${name}${counter}`; // Append a number to make the name unique
+        counter++;
+      }
+  
+      // Create a new column object with the unique name
       const newColumn: Column = {
-        name: name,
+        name: newName,
         dataType: type,
         width: 150, // Default width for the new column
       };
-
+  
       // Update the columns state by adding the new column
       setColumns((prevColumns) => [...prevColumns, newColumn]);
-
+  
       // Update each row to include the new column with a default value
       setRows((prevRows) =>
         prevRows.map((row) => ({
           ...row,
-          [name]: type === "select" ? "" : "", // Set default value for new column
+          [newName]: type === "select" ? "" : "", // Set default value for new column
         }))
       );
-
+  
       // Reset the column name and type for future additions
       setNewColumnName(""); // No need to reset since we're passing new names directly
       setNewColumnType("string"); // Reset to default type if needed
       onClose(); // Close the popover
     }
+    console.log(`Added column of type: ${type} with name: ${name}`);
+  };
+  
+
+  const handleChangeColumnType = (index: number, newDataType: string) => {
+    const updatedColumns = [...columns];
+    updatedColumns[index].dataType = newDataType;
+    setColumns(updatedColumns);
   };
 
   const renderInputField = (
@@ -377,6 +412,9 @@ const NotionTable: React.FC = () => {
         e.preventDefault(); // Prevent default behavior for all keys when not editing
       }
     };
+
+
+    
 
     // Render input based on column data type
     if (isEditing) {
@@ -627,7 +665,10 @@ const NotionTable: React.FC = () => {
     }
   };
 
-  
+  const confirmDelete = (columnName: string) => {
+    handleDeleteColumn(columnName);
+    closeAlertDialog();
+  };
 
   return (
     <>
@@ -704,171 +745,265 @@ const NotionTable: React.FC = () => {
           <Box p={5}>
             <DragDropContext onDragEnd={handleDragEnd}>
               <Table className="notion-table">
-              <Droppable droppableId="columns" direction="horizontal" type="COLUMN">
-              {(provided) => (
-                <Thead ref={provided.innerRef} {...provided.droppableProps}>
-                  <Tr>
-                    <Th borderBottom="0px"></Th>
-                    {columns.map((col, index) => (
+                <Droppable
+                  droppableId="columns"
+                  direction="horizontal"
+                  type="COLUMN"
+                >
+                  {(provided) => (
+                    <Thead ref={provided.innerRef} {...provided.droppableProps}>
+                      <Tr>
+                        <Th borderBottom="0px"></Th>
+                        {columns.map((col, index) => (
+                          <Draggable
+                            key={col.name}
+                            draggableId={col.name}
+                            index={index}
+                          >
+                            {(provided) => (
+                              <Th
+                                key={index}
+                                borderColor="gray.200"
+                                width={col.width}
+                                textColor="gray.400"
+                                position="sticky"
+                                top="0"
+                                zIndex="2"
+                                backgroundColor="white"
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                {...provided.dragHandleProps}
+                              >
+                                <Flex align="left">
+                                  <Popover placement="bottom">
+                                    <PopoverTrigger>
+                                      <Button
+                                        leftIcon={getIconByType(col.dataType)}
+                                        bg="none"
+                                        textColor="gray.400"
+                                      >
+                                        {col.name}
+                                      </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent style={{ width: "200px" }}>
+                                      <PopoverArrow />
+                                      <PopoverBody>
+                                        {/* Column Name Input */}
+                                        <Input
+                                          defaultValue={col.name}
+                                          onBlur={(e) =>
+                                            handleChangeColumnName(
+                                              index,
+                                              e.target.value
+                                            )
+                                          }
+                                          onKeyDown={(e) => {
+                                            if (e.key === "Enter") {
+                                              handleChangeColumnName(
+                                                index,
+                                                e.currentTarget.value
+                                              );
+                                            }
+                                          }}
+                                          size="sm"
+                                          variant="flushed"
+                                          autoFocus
+                                        />
 
-                      <Draggable key={col.name} draggableId={col.name} index={index}>
-                              {(provided) => (
+                                        {/* Dropdown for Data Type Selection */}
+                                        <Box mt={4}>
+                                          <label htmlFor="data-type" style={{fontSize:"12px"}}>data type</label>
+                                          <Select
+                                            defaultValue={col.dataType}
+                                            onChange={(e) =>
+                                              handleChangeColumnType(
+                                                index,
+                                                e.target.value
+                                              )
+                                            }
+                                            size="sm"
+                                            variant="flushed"
+                                          >
+                                            <option value="string">Text</option>
+                                            <option value="number">
+                                              Number
+                                            </option>
+                                            <option value="date">Date</option>
+                                            <option value="select">
+                                              Select
+                                            </option>
+                                            <option value="tags">Tags</option>
+                                          </Select>
+                                        </Box>
+                                      </PopoverBody>
+                                      <PopoverFooter
+                                        display="flex"
+                                        justifyContent="flex-start"
+                                      >
+                                        <Button
+                                          onClick={openAlertDialog}
+                                          bg="none"
+                                          color="gray.500"
+                                          paddingLeft={0}
+                                        >
+                                          Delete
+                                        </Button>
+                                      </PopoverFooter>
+                                    </PopoverContent>
 
-                      <Th
-                        key={index}
-                        borderColor="gray.200"
-                        width={col.width}
-                        textColor="gray.400"
-                        position="sticky"
-                        top="0"
-                        zIndex="2"
-                        backgroundColor="white"
-                        ref={provided.innerRef}
-                                  {...provided.draggableProps}
-                                  {...provided.dragHandleProps}
-                      >
-                        <Flex align="left">
-                          <Popover placement="bottom">
+                                    {/* Confirmation Alert Dialog */}
+
+                                    <AlertDialog
+                                      isOpen={isAlertOpen}
+                                      leastDestructiveRef={cancelRef}
+                                      onClose={closeAlertDialog}
+                                    >
+                                      <AlertDialogOverlay>
+                                        <AlertDialogContent>
+                                          <AlertDialogHeader
+                                            fontSize="lg"
+                                            fontWeight="bold"
+                                          >
+                                            Confirm Deletion
+                                          </AlertDialogHeader>
+
+                                          <AlertDialogBody>
+                                            Are you sure you want to delete this
+                                            column? This action cannot be
+                                            undone.
+                                          </AlertDialogBody>
+
+                                          <AlertDialogFooter>
+                                            <Button
+                                              ref={cancelRef}
+                                              onClick={closeAlertDialog}
+                                            >
+                                              Cancel
+                                            </Button>
+                                            <Button
+                                              colorScheme="red"
+                                              onClick={() =>
+                                                confirmDelete(col.name)
+                                              }
+                                              ml={3}
+                                            >
+                                              Delete
+                                            </Button>
+                                          </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                      </AlertDialogOverlay>
+                                    </AlertDialog>
+                                  </Popover>
+
+                                  <Box
+                                    onMouseDown={handleMouseDown(index)}
+                                    cursor="ew-resize"
+                                    width="10px"
+                                    height="100%"
+                                    position="absolute"
+                                    right="0"
+                                    top="0"
+                                    zIndex="1"
+                                  />
+                                </Flex>
+                              </Th>
+                            )}
+                          </Draggable>
+                        ))}
+                        {provided.placeholder}
+                        <Th>
+                          <Popover
+                            placement="bottom"
+                            isOpen={isOpen}
+                            onClose={onClose}
+                          >
                             <PopoverTrigger>
                               <Button
-                                leftIcon={getIconByType(col.dataType)}
-                                bg="none"
+                                onClick={() => onOpen()}
+                                leftIcon={<FaPlus />}
                                 textColor="gray.400"
-                              >
-                                {col.name}
-                              </Button>
+                                bg="none"
+                              />
                             </PopoverTrigger>
                             <PopoverContent style={{ width: "150px" }}>
                               <PopoverArrow />
+
                               <PopoverBody>
-                                <Input
-                                  defaultValue={col.name}
-                                  onBlur={(e) =>
-                                    handleChangeColumnName(
-                                      index,
-                                      e.target.value
-                                    )
-                                  }
-                                  onKeyDown={(e) => {
-                                    if (e.key === "Enter") {
-                                      handleChangeColumnName(
-                                        index,
-                                        e.currentTarget.value
-                                      );
-                                    }
-                                  }}
-                                  size="sm"
-                                  variant="flushed"
-                                  autoFocus
-                                />
-                              </PopoverBody>
-                              <PopoverFooter
-                                display="flex"
-                                justifyContent="flex-start"
-                              >
-                                <Button
-                                  onClick={() => handleDeleteColumn(col.name)}
-                                  bg="none"
-                                  color="gray.500"
-                                  paddingLeft={0}
-                                >
-                                  Delete
-                                </Button>
-                              </PopoverFooter>
-                            </PopoverContent>
-                          </Popover>
-                          <Box
-                            onMouseDown={handleMouseDown(index)}
-                            cursor="ew-resize"
-                            width="10px"
-                            height="100%"
-                            position="absolute"
-                            right="0"
-                            top="0"
-                            zIndex="1"
-                          />
-                        </Flex>
-                      </Th>
-
-                              )}
-                      </Draggable>
-
-                    ))}
-                    {provided.placeholder}
-                    <Th>
-                      <Popover
-                        placement="bottom"
-                        isOpen={isOpen}
-                        onClose={onClose}
-                      >
-                        <PopoverTrigger>
-                          <Button
-                            onClick={() => onOpen()}
-                            leftIcon={<FaPlus />}
-                            textColor="gray.400"
-                            bg="none"
-                          />
-                        </PopoverTrigger>
-                        <PopoverContent style={{ width: "150px" }}>
-                          <PopoverArrow />
-
-                          <PopoverBody>
-                            <div>
-                              <Tr>
+                                <div>
+                                  <Tr>
+                                    <Button
+                                      onClick={() => {
+                                        setNewColumnType("string");
+                                        setNewColumnName("Text");
+                                        handleAddColumn("string", "Text"); // Add the column when button is clicked
+                                      }}
+                                      bg="none"
+                                      color="gray.500"
+                                      paddingLeft={0}
+                                    >
+                                      <GrTextAlignFull
+                                        style={{ marginRight: "5px" }}
+                                      />{" "}
+                                      Text
+                                    </Button>
+                                  </Tr>
+                                  <Tr>
+                                    <Button
+                                      onClick={() => {
+                                        setNewColumnType("number");
+                                        setNewColumnName("Number");
+                                        handleAddColumn("number", "Number"); // Add the column when button is clicked
+                                      }}
+                                      bg="none"
+                                      color="gray.500"
+                                      paddingLeft={0}
+                                    >
+                                      <MdNumbers
+                                        style={{ marginRight: "5px" }}
+                                      />{" "}
+                                      Number
+                                    </Button>
+                                  </Tr>
+                                  <Tr>
+                                    <Button
+                                      onClick={() => {
+                                        setNewColumnType("date");
+                                        setNewColumnName("Date");
+                                        handleAddColumn("date", "Date"); // Add the column when button is clicked
+                                      }}
+                                      bg="none"
+                                      color="gray.500"
+                                      paddingLeft={0}
+                                    >
+                                      <BsCalendarDate
+                                        style={{ marginRight: "5px" }}
+                                      />{" "}
+                                      Date
+                                    </Button>
+                                  </Tr>
+                                  <Tr>
+                                    <Button
+                                      onClick={() => {
+                                        setNewColumnType("select");
+                                        setNewColumnName("Select");
+                                        handleAddColumn("select", "Select"); // Add the column when button is clicked
+                                      }}
+                                      bg="none"
+                                      color="gray.500"
+                                      paddingLeft={0}
+                                    >
+                                      <GoSingleSelect
+                                        style={{ marginRight: "5px" }}
+                                      />{" "}
+                                      Select
+                                    </Button>
+                                  </Tr>
+                                  {/* <Tr>
                                 <Button
                                   onClick={() => {
-                                    setNewColumnType("string");
-                                    setNewColumnName("Text");
-                                    handleAddColumn("string", "Text"); // Add the column when button is clicked
-                                  }}
-                                  bg="none"
-                                  color="gray.500"
-                                  paddingLeft={0}
-                                >
-                                  <GrTextAlignFull
-                                    style={{ marginRight: "5px" }}
-                                  />{" "}
-                                  Text
-                                </Button>
-                              </Tr>
-                              <Tr>
-                                <Button
-                                  onClick={() => {
-                                    setNewColumnType("number");
-                                    setNewColumnName("Number");
-                                    handleAddColumn("number", "Number"); // Add the column when button is clicked
-                                  }}
-                                  bg="none"
-                                  color="gray.500"
-                                  paddingLeft={0}
-                                >
-                                  <MdNumbers style={{ marginRight: "5px" }} />{" "}
-                                  Number
-                                </Button>
-                              </Tr>
-                              <Tr>
-                                <Button
-                                  onClick={() => {
-                                    setNewColumnType("date");
-                                    setNewColumnName("Date");
-                                    handleAddColumn("date", "Date"); // Add the column when button is clicked
-                                  }}
-                                  bg="none"
-                                  color="gray.500"
-                                  paddingLeft={0}
-                                >
-                                  <BsCalendarDate
-                                    style={{ marginRight: "5px" }}
-                                  />{" "}
-                                  Date
-                                </Button>
-                              </Tr>
-                              <Tr>
-                                <Button
-                                  onClick={() => {
-                                    setNewColumnType("select");
-                                    setNewColumnName("Select");
-                                    handleAddColumn("select", "Select"); // Add the column when button is clicked
+                                    setNewColumnType("tags");
+                                    setNewColumnName("Tags");
+                                    handleAddColumn("tags", "Tags"); // Add the column when button is clicked
                                   }}
                                   bg="none"
                                   color="gray.500"
@@ -877,96 +1012,106 @@ const NotionTable: React.FC = () => {
                                   <GoSingleSelect
                                     style={{ marginRight: "5px" }}
                                   />{" "}
-                                  Select
+                                  Tags
                                 </Button>
-                              </Tr>
-                            </div>
-                          </PopoverBody>
-                        </PopoverContent>
-                      </Popover>
-                    </Th>
-                  </Tr>
-                </Thead>
-              )}
+                              </Tr> */}
+                                </div>
+                              </PopoverBody>
+                            </PopoverContent>
+                          </Popover>
+                        </Th>
+                      </Tr>
+                    </Thead>
+                  )}
                 </Droppable>
                 <Droppable droppableId="rows" type="ROW">
                   {(provided) => (
                     <Tbody ref={provided.innerRef} {...provided.droppableProps}>
                       {rows.map((row, rowIndex) => (
-                        <Draggable key={row.id} draggableId={rowIndex.toString()} index={rowIndex} >
+                        <Draggable
+                          key={row.id}
+                          draggableId={rowIndex.toString()}
+                          index={rowIndex}
+                        >
                           {(provided) => {
-                            
                             return (
-                            <Tr
-                              key={rowIndex}
-                              onMouseEnter={() => setHoveredRowIndex(rowIndex)}
-                              onMouseLeave={() => setHoveredRowIndex(null)}
-                              
-                            >
-                              <Td
-                                borderBottom="0px"
-                                width="125px"
-                                height="32px"
-                                ref={provided.innerRef}
-                      {...provided.draggableProps}
-                      {...provided.dragHandleProps}
+                              <Tr
+                                key={rowIndex}
+                                onMouseEnter={() =>
+                                  setHoveredRowIndex(rowIndex)
+                                }
+                                onMouseLeave={() => setHoveredRowIndex(null)}
                               >
-                                <Flex
-                                  justifyContent="flex-end"
-                                  alignItems="right"
+                                <Td
+                                  borderBottom="0px"
                                   width="125px"
                                   height="32px"
+                                  ref={provided.innerRef}
+                                  {...provided.draggableProps}
+                                  {...provided.dragHandleProps}
                                 >
-                                  {hoveredRowIndex === rowIndex && (
-                                    <>
-                                    <div style={{display:"flex", alignItems:"center", paddingRight:"10px" }}>
-                                      <Button
-                                        onClick={() =>
-                                          handleAddRowUnder(rowIndex)
-                                        }
-                                        bg="none"
-                                        color="gray.400"
-                                        height="32px"
-                                      >
-                                        <FaPlus />
-                                      </Button>
-                                      <Button
-                                        onClick={() =>
-                                          handleDeleteRow(rowIndex)
-                                        }
-                                        bg="none"
-                                        color="gray.400"
-                                        height="32px"
-                                      >
-                                        <MdDeleteOutline />
-                                      </Button>
+                                  <Flex
+                                    justifyContent="flex-end"
+                                    alignItems="right"
+                                    width="125px"
+                                    height="32px"
+                                  >
+                                    {hoveredRowIndex === rowIndex && (
+                                      <>
+                                        <div
+                                          style={{
+                                            display: "flex",
+                                            alignItems: "center",
+                                            paddingRight: "10px",
+                                          }}
+                                        >
+                                          <Button
+                                            onClick={() =>
+                                              handleAddRowUnder(rowIndex)
+                                            }
+                                            bg="none"
+                                            color="gray.400"
+                                            height="32px"
+                                          >
+                                            <FaPlus />
+                                          </Button>
+                                          <Button
+                                            onClick={() =>
+                                              handleDeleteRow(rowIndex)
+                                            }
+                                            bg="none"
+                                            color="gray.400"
+                                            height="32px"
+                                          >
+                                            <MdDeleteOutline />
+                                          </Button>
 
-                                      <MdDragIndicator />
-                                      </div>
-                                    </>
-                                  )}
-                                </Flex>
-                              </Td>
-                              {columns.map((col, colIndex) => (
-                                <Td
-                                  key={colIndex}
-                                  borderRight="1px"
-                                  borderColor="gray.200"
-                                  width="199px"
-                                  height="32px"
-                                  textColor="gray.600"
-                                  fontWeight="medium"
-                                >
-                                  {renderInputField(
-                                    row,
-                                    col,
-                                    rowIndex,
-                                    colIndex
-                                  )}
+                                          <MdDragIndicator />
+                                        </div>
+                                      </>
+                                    )}
+                                  </Flex>
                                 </Td>
-                              ))}
-                              <Td></Td>
-                            </Tr>
+                                {columns.map((col, colIndex) => (
+                                  <Td
+                                    key={colIndex}
+                                    borderRight="1px"
+                                    borderColor="gray.200"
+                                    width="199px"
+                                    height="32px"
+                                    textColor="gray.600"
+                                    fontWeight="medium"
+                                  >
+                                    {renderInputField(
+                                      row,
+                                      col,
+                                      rowIndex,
+                                      colIndex
+                                    )}
+                                  </Td>
+                                ))}
+                                <Td></Td>
+                              </Tr>
                             );
                           }}
                         </Draggable>
