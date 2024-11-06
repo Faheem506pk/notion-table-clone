@@ -39,6 +39,7 @@ import { GrTextAlignFull } from "react-icons/gr";
 import { GoSingleSelect } from "react-icons/go";
 import { BsCalendarDate } from "react-icons/bs";
 import { MdDragIndicator } from "react-icons/md";
+import { MdEditSquare } from "react-icons/md";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import TagsInput from "react-tagsinput";
 import "react-tagsinput/react-tagsinput.css";
@@ -789,26 +790,29 @@ const NotionTable: React.FC = () => {
                                       <PopoverArrow />
                                       <PopoverBody>
                                         {/* Column Name Input */}
-                                        <Input
-                                          defaultValue={col.name}
-                                          onBlur={(e) =>
-                                            handleChangeColumnName(
-                                              index,
-                                              e.target.value
-                                            )
-                                          }
-                                          onKeyDown={(e) => {
-                                            if (e.key === "Enter") {
+                                        <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                                          <MdEditSquare />
+                                          <Input
+                                            defaultValue={col.name}
+                                            onBlur={(e) =>
                                               handleChangeColumnName(
                                                 index,
-                                                e.currentTarget.value
-                                              );
+                                                e.target.value
+                                              )
                                             }
-                                          }}
-                                          size="sm"
-                                          variant="flushed"
-                                          autoFocus
-                                        />
+                                            onKeyDown={(e) => {
+                                              if (e.key === "Enter") {
+                                                handleChangeColumnName(
+                                                  index,
+                                                  e.currentTarget.value
+                                                );
+                                              }
+                                            }}
+                                            size="sm"
+                                            variant="flushed"
+                                            autoFocus
+                                          />
+                                        </div>
 
                                         {/* Dropdown for Data Type Selection */}
                                         <Box mt={4}>
@@ -832,7 +836,7 @@ const NotionTable: React.FC = () => {
                                             <option value="select">
                                               Select
                                             </option>
-                                            <option value="tags">Tags</option>
+                                           
                                           </Select>
                                         </Box>
                                       </PopoverBody>
@@ -846,8 +850,12 @@ const NotionTable: React.FC = () => {
                                           color="gray.500"
                                           paddingLeft={0}
                                         >
-                                          Delete
+                                         
+                                         <MdDeleteOutline
+                                        style={{ marginRight: "5px" }}
+                                      />{" "}  Delete
                                         </Button>
+                                       
                                       </PopoverFooter>
                                     </PopoverContent>
 
