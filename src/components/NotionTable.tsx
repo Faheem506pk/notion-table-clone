@@ -733,7 +733,57 @@ const NotionTable: React.FC  = () => {
             }}
           />
         );
+      } else if (col.dataType === "status") {
+        return (
+          <Select
+            value={row[col.name] || "Inactive"}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
+            variant="flushed"
+            autoFocus
+            style={{
+              fontSize: "14px",
+              fontWeight: "600",
+              border: "none",
+              outline: "none",
+              textDecoration: "underline",
+              boxShadow: "-1px 0px 10px 0px gray",
+              borderRadius: "5px",
+              padding: "10px",
+              width: "250px",
+              height: "38px",
+              position: "absolute",
+              backgroundColor: "white",
+              marginTop: "-16px",
+            }}
+          >
+            <option value="Active">
+              <Badge
+                colorScheme="green"
+                variant="solid"
+                borderRadius="full"
+                paddingX="12px"
+                paddingY="4px"
+              >
+                Active
+              </Badge>
+            </option>
+            <option value="Inactive">
+              <Badge
+                colorScheme="red"
+                variant="solid"
+                borderRadius="full"
+                paddingX="12px"
+                paddingY="4px"
+              >
+                Inactive
+              </Badge>
+            </option>
+          </Select>
+        );
       }
+      
 
       return (
         <Input
@@ -1332,6 +1382,21 @@ const NotionTable: React.FC  = () => {
                                     >
                                       <GoTag style={{ marginRight: "5px" }} />{" "}
                                       Multi-Select
+                                    </Button>
+                                  </Tr>
+                                  <Tr>
+                                    <Button
+                                      onClick={() => {
+                                        setNewColumnType("status");
+                                        setNewColumnName("Status");
+                                        handleAddColumn("status", "Status"); // Add the column when button is clicked
+                                      }}
+                                      bg="none"
+                                      color="gray.500"
+                                      paddingLeft={0}
+                                    >
+                                      <GoTag style={{ marginRight: "5px" }} />{" "}
+                                      Status
                                     </Button>
                                   </Tr>
                                 </div>
