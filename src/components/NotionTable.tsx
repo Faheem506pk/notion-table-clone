@@ -78,17 +78,17 @@ const NotionTable: React.FC = () => {
     return storedColors ? JSON.parse(storedColors) : {};
   });
 
-  const handleSelectAllRows = () => {
-    const newSelectedRows = new Set(selectedRows);
-    if (newSelectedRows.size === rows.length) {
-      // Deselect all
-      newSelectedRows.clear();
-    } else {
-      // Select all
-      rows.forEach((_, index) => newSelectedRows.add(index));
-    }
-    setSelectedRows(newSelectedRows);
-  };
+  // const handleSelectAllRows = () => {
+  //   const newSelectedRows = new Set(selectedRows);
+  //   if (newSelectedRows.size === rows.length) {
+  //     // Deselect all
+  //     newSelectedRows.clear();
+  //   } else {
+  //     // Select all
+  //     rows.forEach((_, index) => newSelectedRows.add(index));
+  //   }
+  //   setSelectedRows(newSelectedRows);
+  // };
   const handleDeleteSelectedRows = () => {
     const remainingRows = rows.filter((_, index) => !selectedRows.has(index));
     setRows(remainingRows); // Update rows state
