@@ -1168,7 +1168,7 @@ const NotionTable: React.FC = () => {
                                       color="gray.500"
                                       paddingLeft={0}
                                     >
-                                      <GoSingleSelect
+                                      <GoTag
                                         style={{ marginRight: "5px" }}
                                       />{" "}
                                       Tags
