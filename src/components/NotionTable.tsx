@@ -41,9 +41,11 @@ import { BsCalendarDate } from "react-icons/bs";
 import { MdDragIndicator } from "react-icons/md";
 import { MdDelete } from "react-icons/md";
 import TagsInput from "react-tagsinput";
+import { GrStatusGood } from "react-icons/gr";
 import { FaArrowDown, FaArrowUp,FaSearch } from "react-icons/fa";
 import "react-tagsinput/react-tagsinput.css";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import { TfiShine } from "react-icons/tfi";
 
 interface Column {
   name: string;
@@ -208,6 +210,8 @@ const NotionTable: React.FC  = () => {
         return <GoSingleSelect style={{ marginRight: "5px" }} />;
       case "tags":
         return <GoTag style={{ marginRight: "5px" }} />;
+      case "status":
+        return <TfiShine style={{ marginRight: "5px" }} />;
       default:
         return <VscListFlat style={{ marginRight: "5px" }} />;
     }
@@ -733,56 +737,9 @@ const NotionTable: React.FC  = () => {
             }}
           />
         );
-      } else if (col.dataType === "status") {
-        return (
-          <Select
-            value={row[col.name] || "Inactive"}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            onKeyDown={handleKeyDown}
-            variant="flushed"
-            autoFocus
-            style={{
-              fontSize: "14px",
-              fontWeight: "600",
-              border: "none",
-              outline: "none",
-              textDecoration: "underline",
-              boxShadow: "-1px 0px 10px 0px gray",
-              borderRadius: "5px",
-              padding: "10px",
-              width: "250px",
-              height: "38px",
-              position: "absolute",
-              backgroundColor: "white",
-              marginTop: "-16px",
-            }}
-          >
-            <option value="Active">
-              <Badge
-                colorScheme="green"
-                variant="solid"
-                borderRadius="full"
-                paddingX="12px"
-                paddingY="4px"
-              >
-                Active
-              </Badge>
-            </option>
-            <option value="Inactive">
-              <Badge
-                colorScheme="red"
-                variant="solid"
-                borderRadius="full"
-                paddingX="12px"
-                paddingY="4px"
-              >
-                Inactive
-              </Badge>
-            </option>
-          </Select>
-        );
-      }
+      } 
+
+      
       
 
       return (
@@ -809,6 +766,83 @@ const NotionTable: React.FC  = () => {
             marginTop: "-16px",
           }}
         />
+      );
+    }
+
+    if (col.dataType === "status") {
+      const handleStatusChange = (newStatus: string) => {
+        // Update status here, assuming you have a function to handle the change
+        // Example: setRow({ ...row, [col.name]: newStatus })
+        row[col.name] = newStatus; // Update the status directly or use your update logic
+      };
+    
+      return (
+        <Popover
+          isOpen={tagPopoverRow?.rowIndex === rowIndex && tagPopoverRow?.colName === col.name}
+          onClose={() => setTagPopoverRow(null)}
+          placement="bottom-start"
+        >
+          <PopoverTrigger>
+            <Box
+              onClick={() => setTagPopoverRow({ rowIndex, colName: col.name })}
+              cursor="pointer"
+              minHeight="20px"
+              width="100%"
+              display="flex"
+              alignItems="center"
+              justifyContent="space-between"
+              borderRadius="8px"
+              padding="8px"
+              backgroundColor="white"
+            >
+              <span style={{ display: "flex", alignItems: "center" }}>
+                {row[col.name] === "Active" ? (
+                  <GrStatusGood style={{ marginRight: "8px", color: "green" }} />
+                ) : (
+                  <GrStatusGood style={{ marginRight: "8px", color: "red" }} />
+                )}
+                {row[col.name] || "Inactive"}
+              </span>
+            </Box>
+          </PopoverTrigger>
+    
+          <PopoverContent
+            width={"150px"}
+            color="white"
+            borderRadius="10px"
+            boxShadow="lg"
+            minWidth="100px"
+            border="1px solid"
+            borderColor="gray.400"
+            marginTop="-8px"
+            
+          >
+             <PopoverArrow />
+            <PopoverBody padding="5px">
+              <Flex direction="column" gap="4px">
+                {/* Button or Toggle to change status */}
+                <Button
+                  onClick={() => handleStatusChange("Active")}
+                  colorScheme="green"
+                  variant="outline"
+                  size="sm"
+                >
+                  <GrStatusGood style={{ marginRight: "8px", color: "green" }} />
+                  Set Active
+                </Button>
+                <Button
+                  onClick={() => handleStatusChange("Inactive")}
+                  colorScheme="red"
+                  variant="outline"
+                  size="sm"
+                >
+                  <GrStatusGood style={{ marginRight: "8px", color: "red" }} />
+                  Set Inactive
+                </Button>
+              </Flex>
+            </PopoverBody>
+          </PopoverContent>
+        </Popover>
       );
     }
 
@@ -1138,17 +1172,12 @@ const NotionTable: React.FC  = () => {
                                               size="sm"
                                               variant="flushed"
                                             >
-                                              <option value="string">
-                                                Text
-                                              </option>
-                                              <option value="number">
-                                                Number
-                                              </option>
+                                              <option value="string">Text</option>
+                                              <option value="number">Number</option>
                                               <option value="date">Date</option>
-                                              <option value="select">
-                                                Select
-                                              </option>
+                                              <option value="select"> Select</option>
                                               <option value="tags">Tag</option>
+                                              <option value="status">Status</option>
                                             </Select>
                                           </Box>
 
@@ -1395,7 +1424,7 @@ const NotionTable: React.FC  = () => {
                                       color="gray.500"
                                       paddingLeft={0}
                                     >
-                                      <GoTag style={{ marginRight: "5px" }} />{" "}
+                                      <TfiShine style={{ marginRight: "5px" }} />{" "}
                                       Status
                                     </Button>
                                   </Tr>
