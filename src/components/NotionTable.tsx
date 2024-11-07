@@ -771,10 +771,16 @@ const NotionTable: React.FC  = () => {
 
     if (col.dataType === "status") {
       const handleStatusChange = (newStatus: string) => {
-        // Update status here, assuming you have a function to handle the change
-        // Example: setRow({ ...row, [col.name]: newStatus })
-        row[col.name] = newStatus; // Update the status directly or use your update logic
+        // Save the new status to localStorage
+        localStorage.setItem(`${rowIndex}_${col.name}`, newStatus); // Save the status in localStorage
+    
+        // Optionally, you can update the row directly if you want the status to be reflected in the UI immediately
+        row[col.name] = newStatus; // Update the row status directly
       };
+    
+      // Check if status is already in localStorage, else fallback to row[col.name]
+      const savedStatus = localStorage.getItem(`${rowIndex}_${col.name}`);
+      const currentStatus = savedStatus || row[col.name] || "Inactive"; // Default to "Inactive" if no value exists
     
       return (
         <Popover
@@ -796,12 +802,12 @@ const NotionTable: React.FC  = () => {
               backgroundColor="white"
             >
               <span style={{ display: "flex", alignItems: "center" }}>
-                {row[col.name] === "Active" ? (
+                {currentStatus === "Active" ? (
                   <GrStatusGood style={{ marginRight: "8px", color: "green" }} />
                 ) : (
                   <GrStatusGood style={{ marginRight: "8px", color: "red" }} />
                 )}
-                {row[col.name] || "Inactive"}
+                {currentStatus}
               </span>
             </Box>
           </PopoverTrigger>
@@ -815,12 +821,11 @@ const NotionTable: React.FC  = () => {
             border="1px solid"
             borderColor="gray.400"
             marginTop="-8px"
-            
           >
-             <PopoverArrow />
+            <PopoverArrow />
             <PopoverBody padding="5px">
               <Flex direction="column" gap="4px">
-                {/* Button or Toggle to change status */}
+                {/* Buttons to change status */}
                 <Button
                   onClick={() => handleStatusChange("Active")}
                   colorScheme="green"
