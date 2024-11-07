@@ -847,10 +847,15 @@ const NotionTable: React.FC  = () => {
       const valA = a[columns[colIndex].name];
       const valB = b[columns[colIndex].name];
   
-      // Ignore empty values (null or undefined) during comparison
-      if (valA == null) return 1; // Push empty cells to the end
-      if (valB == null) return -1;
+      // Function to check if a value is empty, null, or only whitespace
+      const isEmpty = (value: any) => value == null || (typeof value === 'string' && value.trim() === '');
   
+      // Handle empty values by pushing them to the end
+      if (isEmpty(valA) && isEmpty(valB)) return 0;
+      if (isEmpty(valA)) return 1; // valA is empty, push it to the end
+      if (isEmpty(valB)) return -1; // valB is empty, push it to the end
+  
+      // Compare non-empty values
       if (typeof valA === "number" && typeof valB === "number") {
         return order === "asc" ? valA - valB : valB - valA;
       } else if (typeof valA === "string" && typeof valB === "string") {
@@ -858,10 +863,14 @@ const NotionTable: React.FC  = () => {
       } else if (valA instanceof Date && valB instanceof Date) {
         return order === "asc" ? valA.getTime() - valB.getTime() : valB.getTime() - valA.getTime();
       }
+  
       return 0;
     });
     setRows(sortedRows);
   };
+  
+  
+  
   
 
   return (
