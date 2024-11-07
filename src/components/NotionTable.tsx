@@ -41,7 +41,7 @@ import { BsCalendarDate } from "react-icons/bs";
 import { MdDragIndicator } from "react-icons/md";
 import { MdDelete } from "react-icons/md";
 import TagsInput from "react-tagsinput";
-import { FaArrowDown, FaArrowUp, FaSearch } from "react-icons/fa";
+import { FaSearch } from "react-icons/fa";
 import "react-tagsinput/react-tagsinput.css";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
