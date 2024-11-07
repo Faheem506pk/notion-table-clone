@@ -30,7 +30,7 @@ import {
   HStack,
   Text,
   VStack,
-  Switch
+  Switch,
 } from "@chakra-ui/react";
 import { FaPlus } from "react-icons/fa";
 import { VscListFlat } from "react-icons/vsc";
@@ -62,28 +62,58 @@ const NotionTable: React.FC = () => {
   const [tableName, setTableName] = useState(
     localStorage.getItem("tableName") || "Table Name"
   );
+  const { isOpen, onOpen, onClose } = useDisclosure();
   const [isEditingTask, setIsEditingTask] = useState(false);
   const [isEditingTable, setIsEditingTable] = useState(false);
-  const [hoveredRowIndex, setHoveredRowIndex] = useState<number | null>(null);
   const [newColumnName, setNewColumnName] = useState<string>("");
   const [newColumnType, setNewColumnType] = useState<string>("");
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
+  const [hoveredRowIndex, setHoveredRowIndex] = useState<number | null>(null);
   const [selectOptions, setSelectOptions] = useState<string[]>(() => {
-    // Retrieve options from localStorage on initial render
     const savedOptions = localStorage.getItem("selectOptions");
     return savedOptions ? JSON.parse(savedOptions) : [""];
   });
-
   const [badgeColors, setBadgeColors] = useState<Record<string, string>>(() => {
     const storedColors = localStorage.getItem("badgeColors");
     return storedColors ? JSON.parse(storedColors) : {};
   });
+
+  const handleSelectAllRows = () => {
+    const newSelectedRows = new Set(selectedRows);
+    if (newSelectedRows.size === rows.length) {
+      // Deselect all
+      newSelectedRows.clear();
+    } else {
+      // Select all
+      rows.forEach((_, index) => newSelectedRows.add(index));
+    }
+    setSelectedRows(newSelectedRows);
+  };
+  const handleDeleteSelectedRows = () => {
+    const remainingRows = rows.filter((_, index) => !selectedRows.has(index));
+    setRows(remainingRows); // Update rows state
+    setSelectedRows(new Set()); // Clear selection
+  };
+
+  const handleSelectRow = (rowIndex: number) => {
+    const newSelectedRows = new Set(selectedRows);
+
+    if (newSelectedRows.has(rowIndex)) {
+      newSelectedRows.delete(rowIndex);
+    } else {
+      newSelectedRows.add(rowIndex);
+    }
+    setSelectedRows(newSelectedRows);
+  };
 
   const [rows, setRows] = useState<Row[]>(() => {
     const storedRows = localStorage.getItem("rows");
     return storedRows
       ? JSON.parse(storedRows)
       : [
+          { Name: "", "Father Name": "", Age: null, "Date of Birth": null },
+          { Name: "", "Father Name": "", Age: null, "Date of Birth": null },
+          { Name: "", "Father Name": "", Age: null, "Date of Birth": null },
           { Name: "", "Father Name": "", Age: null, "Date of Birth": null },
           { Name: "", "Father Name": "", Age: null, "Date of Birth": null },
           { Name: "", "Father Name": "", Age: null, "Date of Birth": null },
@@ -96,20 +126,20 @@ const NotionTable: React.FC = () => {
     // Retrieve badge colors and rows data from localStorage when the component mounts
     const storedBadgeColors = localStorage.getItem("badgeColors");
     const storedRows = localStorage.getItem("rows");
-  
+
     if (storedBadgeColors) {
       setBadgeColors(JSON.parse(storedBadgeColors));
     }
-  
+
     if (storedRows) {
       setRows(JSON.parse(storedRows));
     }
   }, []);
 
- 
-
-  const [tagPopoverRow, setTagPopoverRow] = useState<{ rowIndex: number; colName: string } | null>(null);
-
+  const [tagPopoverRow, setTagPopoverRow] = useState<{
+    rowIndex: number;
+    colName: string;
+  } | null>(null);
 
   const tagColorSchemes = [
     "red",
@@ -135,28 +165,29 @@ const NotionTable: React.FC = () => {
     }
     return badgeColors[tag];
   };
- 
 
-
-  const handleTagsInputChange = (rowIndex: number, colName: string, tags: string[]) => {
+  const handleTagsInputChange = (
+    rowIndex: number,
+    colName: string,
+    tags: string[]
+  ) => {
     // Create a deep copy of rows to ensure immutability
     const updatedRows = [...rows]; // Shallow copy of the array
     const updatedRow = { ...updatedRows[rowIndex] }; // Shallow copy of the specific row
-    
+
     // Update the specific column with the new tags
     updatedRow[colName] = tags.join(","); // Convert the tags array to a comma-separated string
-    
+
     // Put the updated row back in the array
     updatedRows[rowIndex] = updatedRow;
-    
+
     // Update the rows state
     setRows(updatedRows);
-    
+
     // Optionally, update localStorage if needed
     localStorage.setItem("rows", JSON.stringify(updatedRows));
   };
-  
-  
+
   const [newOption, setNewOption] = useState<string>("");
   const [editingOption, setEditingOption] = useState<{
     oldValue: string;
@@ -266,11 +297,8 @@ const NotionTable: React.FC = () => {
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const cancelRef = useRef<HTMLButtonElement | null>(null);
 
-
   const openAlertDialog = () => setIsAlertOpen(true);
   const closeAlertDialog = () => setIsAlertOpen(false);
-
- 
 
   const [editingCell, setEditingCell] = useState<{
     rowIndex: number;
@@ -310,17 +338,17 @@ const NotionTable: React.FC = () => {
         newName = `${name}${counter}`; // Append a number to make the name unique
         counter++;
       }
-  
+
       // Create a new column object with the unique name
       const newColumn: Column = {
         name: newName,
         dataType: type,
         width: 150, // Default width for the new column
       };
-  
+
       // Update the columns state by adding the new column
       setColumns((prevColumns) => [...prevColumns, newColumn]);
-  
+
       // Update each row to include the new column with a default value
       setRows((prevRows) =>
         prevRows.map((row) => ({
@@ -328,7 +356,7 @@ const NotionTable: React.FC = () => {
           [newName]: type === "select" ? "" : "", // Set default value for new column
         }))
       );
-  
+
       // Reset the column name and type for future additions
       setNewColumnName(""); // No need to reset since we're passing new names directly
       setNewColumnType("string"); // Reset to default type if needed
@@ -336,15 +364,12 @@ const NotionTable: React.FC = () => {
     }
     console.log(`Added column of type: ${type} with name: ${name}`);
   };
-  
 
   const handleChangeColumnType = (index: number, newDataType: string) => {
     const updatedColumns = [...columns];
     updatedColumns[index].dataType = newDataType;
     setColumns(updatedColumns);
   };
-
-  
 
   const handleDeleteColumn = (columnName: string) => {
     const updatedColumns = columns.filter((col) => col.name !== columnName);
@@ -561,9 +586,6 @@ const NotionTable: React.FC = () => {
       }
     };
 
-
-    
-
     // Render input based on column data type
     if (isEditing) {
       if (col.dataType === "select") {
@@ -709,7 +731,7 @@ const NotionTable: React.FC = () => {
             }}
           />
         );
-      } 
+      }
 
       return (
         <Input
@@ -742,7 +764,10 @@ const NotionTable: React.FC = () => {
       // New tag handling logic
       return (
         <Popover
-          isOpen={tagPopoverRow?.rowIndex === rowIndex && tagPopoverRow?.colName === col.name}
+          isOpen={
+            tagPopoverRow?.rowIndex === rowIndex &&
+            tagPopoverRow?.colName === col.name
+          }
           onClose={() => setTagPopoverRow(null)}
           placement="bottom-start"
         >
@@ -763,7 +788,9 @@ const NotionTable: React.FC = () => {
                       padding={1}
                       borderRadius={4}
                       key={i}
-                      colorScheme={badgeColors[tag] || getRandomColorScheme(tag)}
+                      colorScheme={
+                        badgeColors[tag] || getRandomColorScheme(tag)
+                      }
                       variant="solid"
                     >
                       {tag.trim()}
@@ -784,8 +811,12 @@ const NotionTable: React.FC = () => {
           >
             <PopoverBody>
               <TagsInput
-                value={row[col.name]?.toString().split(",").filter(Boolean) || []}
-                onChange={(tags) => handleTagsInputChange(rowIndex, col.name, tags)}
+                value={
+                  row[col.name]?.toString().split(",").filter(Boolean) || []
+                }
+                onChange={(tags) =>
+                  handleTagsInputChange(rowIndex, col.name, tags)
+                }
                 inputProps={{
                   placeholder: "Add tags",
                   autoFocus: true,
@@ -797,7 +828,7 @@ const NotionTable: React.FC = () => {
         </Popover>
       );
     }
-    
+
     // Render the cell's current value when not editing
     return (
       <div
@@ -892,7 +923,43 @@ const NotionTable: React.FC = () => {
                   {(provided) => (
                     <Thead ref={provided.innerRef} {...provided.droppableProps}>
                       <Tr>
-                        <Th borderBottom="0px"></Th>
+                        <Th
+                          borderBottom="0px"
+                          justifyContent="flex-end"
+                          alignItems="right"
+                        >
+                          <Flex
+                            justifyContent="flex-end"
+                            alignItems="center"
+                            width="125px"
+                            height="32px"
+                            paddingRight={"10.5px"}
+                          >
+                             <div
+                                        style={{
+                                          display: "flex",
+                                          alignItems: "center",
+                                          
+                                          gap: "15px",
+                                          
+                                        }}
+                                      >
+                            {selectedRows.size > 0 && (
+                             
+                               <Text
+                               bg="none"
+                               color="gray.300"
+                               cursor="pointer"
+                               width={"15px"}
+                               onClick={handleDeleteSelectedRows}
+                             >
+                               <MdDelete color="gray.300" style={{width:"20px" , height:"20px"}}/>
+                             </Text>
+                            )}
+                            {selectedRows.size > 0 && <input style={{width:"15px" , height:"15px"}} type="checkbox" />}
+                            </div>
+                          </Flex>
+                        </Th>
                         {columns.map((col, index) => (
                           <Draggable
                             key={col.name}
@@ -925,94 +992,129 @@ const NotionTable: React.FC = () => {
                                       </Button>
                                     </PopoverTrigger>
                                     <PopoverContent
-                          
-                          color="gray.400"
-                          borderRadius="lg"
-                          boxShadow="lg"
-                          px={0}
-                          width={"250px"}
-                          minWidth="200px"
-                        >
-                          <PopoverBody>
-                            <VStack align={"flex-start"} spacing={2}>
-                              <HStack marginTop={2} fontWeight={"normal"} py={0}>
-                              <Button height={"28px"}>Aa</Button>
-                                          <Input
-                                            defaultValue={col.name}
-                                            onBlur={(e) =>
-                                              handleChangeColumnName(
-                                                index,
-                                                e.target.value
-                                              )
-                                            }
-                                            onKeyDown={(e) => {
-                                              if (e.key === "Enter") {
+                                      color="gray.400"
+                                      borderRadius="lg"
+                                      boxShadow="lg"
+                                      px={0}
+                                      width={"250px"}
+                                      minWidth="200px"
+                                    >
+                                      <PopoverBody>
+                                        <VStack
+                                          align={"flex-start"}
+                                          spacing={2}
+                                        >
+                                          <HStack
+                                            marginTop={2}
+                                            fontWeight={"normal"}
+                                            py={0}
+                                          >
+                                            <Button
+                                              padding={"0"}
+                                              paddingLeft={"5px"}
+                                              height={"28px"}
+                                            >
+                                              {getIconByType(col.dataType)}
+                                            </Button>
+                                            <Input
+                                              defaultValue={col.name}
+                                              onBlur={(e) =>
                                                 handleChangeColumnName(
                                                   index,
-                                                  e.currentTarget.value
-                                                );
+                                                  e.target.value
+                                                )
                                               }
-                                            }}
-                                            size="sm"
-                                            variant="flushed"
-                                            autoFocus
-                                          />
-                              </HStack>
-                              <Box mt={4}>
-                                          <label htmlFor="data-type" style={{fontSize:"12px"}}>data type</label>
-                                          <Select 
-                                            defaultValue={col.dataType}
-                                            onChange={(e) =>
-                                              handleChangeColumnType(
-                                                index,
-                                                e.target.value
-                                              )
-                                            }
-                                            size="sm"
-                                            variant="flushed"
-                                          >
-                                            <option value="string">Text</option>
-                                            <option value="number">
-                                              Number
-                                            </option>
-                                            <option value="date">Date</option>
-                                            <option value="select">
-                                              Select
-                                            </option>
-                                            <option value="tags">
-                                              Tag
-                                            </option>
-                                           
-                                          </Select>
-                                        </Box>
+                                              onKeyDown={(e) => {
+                                                if (e.key === "Enter") {
+                                                  handleChangeColumnName(
+                                                    index,
+                                                    e.currentTarget.value
+                                                  );
+                                                }
+                                              }}
+                                              size="sm"
+                                              variant="flushed"
+                                              autoFocus
+                                            />
+                                          </HStack>
+                                          <Box mt={4}>
+                                            <label
+                                              htmlFor="data-type"
+                                              style={{ fontSize: "12px" }}
+                                            >
+                                              data type
+                                            </label>
+                                            <Select
+                                              defaultValue={col.dataType}
+                                              onChange={(e) =>
+                                                handleChangeColumnType(
+                                                  index,
+                                                  e.target.value
+                                                )
+                                              }
+                                              size="sm"
+                                              variant="flushed"
+                                            >
+                                              <option value="string">
+                                                Text
+                                              </option>
+                                              <option value="number">
+                                                Number
+                                              </option>
+                                              <option value="date">Date</option>
+                                              <option value="select">
+                                                Select
+                                              </option>
+                                              <option value="tags">Tag</option>
+                                            </Select>
+                                          </Box>
 
-                              <InputGroup mb={2}>
-                                <InputLeftElement pointerEvents="none" fontSize={"12px"} height={"28px"}>
-                                <FaSearch color="gray.300" />
-                                </InputLeftElement>
-                                <Input
-                                  fontSize={"14px"}
-                                  px={2}
-                                  height={"28px"}
-                                  type="tel"
-                                  placeholder="Search"
-                                />
-                              </InputGroup>
-                              <HStack
-                                justifyContent={"space-between"}
-                                fontSize={"14px"}
-                                fontWeight={"normal"}
-                                ml={4}
-                              >
-                                <Text textTransform={"capitalize"}>Wrap Column</Text>
-                                <Switch colorScheme="teal" />
-                              </HStack>
-                                        <Button leftIcon={<MdDelete />} color="red.400" fontSize={"15px"}fontWeight={"normal"} marginTop={0}size="sm" variant="ghost" justifyContent="start" _hover={{ color: "red.500" }} onClick={openAlertDialog} > <Text>Delete Property</Text> </Button>
-                              
-                            </VStack>
-                          </PopoverBody>
-                        </PopoverContent>
-                         <AlertDialog
+                                          <InputGroup mb={2}>
+                                            <InputLeftElement
+                                              pointerEvents="none"
+                                              fontSize={"12px"}
+                                              height={"28px"}
+                                            >
+                                              <FaSearch color="gray.300" />
+                                            </InputLeftElement>
+                                            <Input
+                                              fontSize={"14px"}
+                                              px={2}
+                                              height={"28px"}
+                                              type="tel"
+                                              placeholder="Search"
+                                            />
+                                          </InputGroup>
+                                          <HStack
+                                            justifyContent={"space-between"}
+                                            fontSize={"14px"}
+                                            fontWeight={"normal"}
+                                            ml={4}
+                                          >
+                                            <Text textTransform={"capitalize"}>
+                                              Wrap Column
+                                            </Text>
+                                            <Switch colorScheme="teal" />
+                                          </HStack>
+                                          <Button
+                                            leftIcon={<MdDelete />}
+                                            color="red.400"
+                                            fontSize={"15px"}
+                                            fontWeight={"normal"}
+                                            marginTop={0}
+                                            size="sm"
+                                            variant="ghost"
+                                            justifyContent="start"
+                                            _hover={{ color: "red.500" }}
+                                            onClick={openAlertDialog}
+                                          >
+                                            {" "}
+                                            <Text>Delete Property</Text>{" "}
+                                          </Button>
+                                        </VStack>
+                                      </PopoverBody>
+                                    </PopoverContent>
+                                    <AlertDialog
                                       isOpen={isAlertOpen}
                                       leastDestructiveRef={cancelRef}
                                       onClose={closeAlertDialog}
@@ -1161,20 +1263,17 @@ const NotionTable: React.FC = () => {
                                     <Button
                                       onClick={() => {
                                         setNewColumnType("tags");
-                                        setNewColumnName("Tags");
-                                        handleAddColumn("tags", "Tags"); // Add the column when button is clicked
+                                        setNewColumnName("Multi-Select");
+                                        handleAddColumn("tags", "Multi-Select"); // Add the column when button is clicked
                                       }}
                                       bg="none"
                                       color="gray.500"
                                       paddingLeft={0}
                                     >
-                                      <GoTag
-                                        style={{ marginRight: "5px" }}
-                                      />{" "}
-                                      Tags
+                                      <GoTag style={{ marginRight: "5px" }} />{" "}
+                                      Multi-Select
                                     </Button>
                                   </Tr>
-                                  
                                 </div>
                               </PopoverBody>
                             </PopoverContent>
@@ -1193,90 +1292,123 @@ const NotionTable: React.FC = () => {
                           draggableId={rowIndex.toString()}
                           index={rowIndex}
                         >
-                          {(provided) => {
-                            return (
-                              <Tr
-                                key={rowIndex}
-                                onMouseEnter={() =>
-                                  setHoveredRowIndex(rowIndex)
-                                }
-                                onMouseLeave={() => setHoveredRowIndex(null)}
+                          {(provided) => (
+                            <Tr
+                              key={rowIndex}
+                              onMouseEnter={() => setHoveredRowIndex(rowIndex)}
+                              onMouseLeave={() => setHoveredRowIndex(null)}
+                            >
+                              <Td
+                                borderBottom="0px"
+                                width="125px"
+                                height="32px"
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                {...provided.dragHandleProps}
                               >
-                                <Td
-                                  borderBottom="0px"
+                                <Flex
+                                  justifyContent="flex-end"
+                                  alignItems="center"
                                   width="125px"
                                   height="32px"
-                                  ref={provided.innerRef}
-                                  {...provided.draggableProps}
-                                  {...provided.dragHandleProps}
+                                  paddingRight={"10.5px"}
                                 >
-                                  <Flex
-                                    justifyContent="flex-end"
-                                    alignItems="right"
-                                    width="125px"
-                                    height="32px"
-                                  >
-                                    {hoveredRowIndex === rowIndex && (
-                                      <>
-                                        <div
-                                          style={{
-                                            display: "flex",
-                                            alignItems: "center",
-                                            paddingRight: "10px",
-                                          }}
-                                        >
-                                          <Button
-                                            onClick={() =>
-                                              handleAddRowUnder(rowIndex)
-                                            }
+                                  {hoveredRowIndex === rowIndex && (
+                                    <>
+                                      <div
+                                        style={{
+                                          display: "flex",
+                                          alignItems: "center",
+                                          paddingRight: "10px",
+                                          gap: "8px",
+                                          
+                                        }}
+                                      >
+                                        
+
+                                        {selectedRows.size <= 0 && (
+                                          <Text
                                             bg="none"
-                                            color="gray.400"
-                                            height="32px"
-                                          >
-                                            <FaPlus />
-                                          </Button>
-                                          <Button
+                                            color="gray.300"
+                                            cursor="pointer"
+                                            width={"15px"}
                                             onClick={() =>
                                               handleDeleteRow(rowIndex)
                                             }
-                                            bg="none"
-                                            color="gray.400"
-                                            height="32px"
                                           >
-                                            <MdDelete/>
-                                          </Button>
+                                            <MdDelete color="gray.300" style={{width:"20px" , height:"20px"}}/>
+                                          </Text>
+                                        )}
+                                        <Text
+                                          bg="none"
+                                          color="gray.300"
+                                          cursor="pointer"
+                                          
+                                          onClick={() =>
+                                            handleAddRowUnder(rowIndex)
+                                          }
+                                        >
+                                          {" "}
+                                          <FaPlus style={{width:"20px" , height:"20px"}}/>{" "}
+                                        </Text>
 
-                                          <MdDragIndicator />
-                                        </div>
-                                      </>
-                                    )}
-                                  </Flex>
+                                        <MdDragIndicator style={{width:"20px" , height:"20px"}} />
+
+                                        {selectedRows.size <= 0 && (
+                                          <input
+                                          style={{width:"15px" , height:"15px"}}
+                                            type="checkbox"
+                                            checked={selectedRows.has(rowIndex)}
+                                            onChange={() => {
+                                              handleSelectRow(rowIndex);
+                                            }}
+                                          />
+                                        )}
+                                      </div>
+                                    </>
+                                  )}
+                                  {selectedRows.size > 0 && (
+                                    <input
+                                    style={{width:"15px" , height:"15px"}}
+                                      type="checkbox"
+                                      checked={selectedRows.has(rowIndex)}
+                                      onChange={() => {
+                                        handleSelectRow(rowIndex);
+                                        setHoveredRowIndex(null); // Clear hover state when checkbox is clicked
+                                      }}
+                                      onMouseEnter={() =>
+                                        setHoveredRowIndex(null)
+                                      }
+                                    />
+                                  )}
+                                </Flex>
+                              </Td>
+
+                              {columns.map((col, colIndex) => (
+                                <Td
+                                  key={colIndex}
+                                  borderRight="1px"
+                                  borderColor="gray.200"
+                                  width="199px"
+                                  height="32px"
+                                  textColor="gray.600"
+                                  fontWeight="medium"
+                                >
+                                  {renderInputField(
+                                    row,
+                                    col,
+                                    rowIndex,
+                                    colIndex
+                                  )}
                                 </Td>
-                                {columns.map((col, colIndex) => (
-                                  <Td
-                                    key={colIndex}
-                                    borderRight="1px"
-                                    borderColor="gray.200"
-                                    width="199px"
-                                    height="32px"
-                                    textColor="gray.600"
-                                    fontWeight="medium"
-                                  >
-                                    {renderInputField(
-                                      row,
-                                      col,
-                                      rowIndex,
-                                      colIndex
-                                    )}
-                                  </Td>
-                                ))}
-                                <Td></Td>
-                              </Tr>
-                            );
-                          }}
+                              ))}
+                              <Td></Td>
+                            </Tr>
+                          )}
                         </Draggable>
                       ))}
                       {provided.placeholder}
+                      {/* Add Row Button */}
                       <Tr>
                         <Td borderBottom="0px" borderTop="0px"></Td>
                         <div
@@ -1305,6 +1437,7 @@ const NotionTable: React.FC = () => {
                           </Box>
                         </div>
                       </Tr>
+                      {/* Row Count */}
                       <Tr>
                         <Td borderBottom="0px" borderTop="0px"></Td>
                         {columns.map((_, colmIndex) => (
@@ -1329,8 +1462,8 @@ const NotionTable: React.FC = () => {
                                   alignItems: "center",
                                 }}
                               >
-                                COUNT{" "}
-                              </p>{" "}
+                                COUNT
+                              </p>
                               {rows.length}
                             </Box>
                           </Td>
