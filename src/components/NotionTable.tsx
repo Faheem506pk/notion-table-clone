@@ -41,7 +41,7 @@ import { BsCalendarDate } from "react-icons/bs";
 import { MdDragIndicator } from "react-icons/md";
 import { MdDelete } from "react-icons/md";
 import TagsInput from "react-tagsinput";
-import { FaSearch } from "react-icons/fa";
+import { FaArrowDown, FaArrowUp,FaSearch } from "react-icons/fa";
 import "react-tagsinput/react-tagsinput.css";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
@@ -49,13 +49,14 @@ interface Column {
   name: string;
   dataType: string;
   width: number;
+  
 }
 
 interface Row {
   [key: string]: any;
 }
 
-const NotionTable: React.FC = () => {
+const NotionTable: React.FC  = () => {
   const [taskName, setTaskName] = useState(
     localStorage.getItem("taskName") || "Task Name"
   );
@@ -344,6 +345,7 @@ const NotionTable: React.FC = () => {
         name: newName,
         dataType: type,
         width: 150, // Default width for the new column
+        
       };
 
       // Update the columns state by adding the new column
@@ -840,6 +842,28 @@ const NotionTable: React.FC = () => {
     );
   };
 
+  const sortColumn = (colIndex: number, order: "asc" | "desc") => {
+    const sortedRows = [...rows].sort((a, b) => {
+      const valA = a[columns[colIndex].name];
+      const valB = b[columns[colIndex].name];
+  
+      // Ignore empty values (null or undefined) during comparison
+      if (valA == null) return 1; // Push empty cells to the end
+      if (valB == null) return -1;
+  
+      if (typeof valA === "number" && typeof valB === "number") {
+        return order === "asc" ? valA - valB : valB - valA;
+      } else if (typeof valA === "string" && typeof valB === "string") {
+        return order === "asc" ? valA.localeCompare(valB) : valB.localeCompare(valA);
+      } else if (valA instanceof Date && valB instanceof Date) {
+        return order === "asc" ? valA.getTime() - valB.getTime() : valB.getTime() - valA.getTime();
+      }
+      return 0;
+    });
+    setRows(sortedRows);
+  };
+  
+
   return (
     <>
       <div className="headings" style={{ marginTop: "80px" }}>
@@ -1068,6 +1092,33 @@ const NotionTable: React.FC = () => {
                                               <option value="tags">Tag</option>
                                             </Select>
                                           </Box>
+
+                                          <Button
+                                py={0}
+                                my={0}
+                                leftIcon={<FaArrowUp />}
+                                onClick={() => sortColumn(index, "asc")}
+                                size="sm"
+                                variant="ghost"
+                                color="gray.400"
+                                justifyContent="start"
+                                _hover={{ bg: "gray.600" }}
+                              >
+                                <Text fontWeight={"normal"}>Sort Ascending</Text>
+                              </Button>
+                              <Button
+                                py={0}
+                                my={0}
+                                leftIcon={<FaArrowDown />}
+                                onClick={() => sortColumn(index, "desc")}
+                                size="sm"
+                                variant="ghost"
+                                color="gray.400"
+                                justifyContent="start"
+                                _hover={{ bg: "gray.600" }}
+                              >
+                                <Text fontWeight={"normal"}>Sort Descending</Text>
+                              </Button>
 
                                           <InputGroup mb={2}>
                                             <InputLeftElement
