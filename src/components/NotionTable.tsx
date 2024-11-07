@@ -3,6 +3,8 @@ import {
   Box,
   Button,
   Input,
+  InputGroup,
+  InputLeftElement,
   Select,
   Table,
   Thead,
@@ -15,7 +17,6 @@ import {
   PopoverTrigger,
   PopoverContent,
   PopoverBody,
-  PopoverFooter,
   useDisclosure,
   PopoverArrow,
   Heading,
@@ -24,17 +25,24 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogContent,
-  AlertDialogOverlay
+  AlertDialogOverlay,
+  Badge,
+  HStack,
+  Text,
+  VStack,
+  Switch
 } from "@chakra-ui/react";
 import { FaPlus } from "react-icons/fa";
 import { VscListFlat } from "react-icons/vsc";
-import { MdDeleteOutline } from "react-icons/md";
 import { MdNumbers } from "react-icons/md";
 import { GrTextAlignFull } from "react-icons/gr";
-import { GoSingleSelect } from "react-icons/go";
+import { GoSingleSelect, GoTag } from "react-icons/go";
 import { BsCalendarDate } from "react-icons/bs";
 import { MdDragIndicator } from "react-icons/md";
-import { MdEditSquare } from "react-icons/md";
+import { MdDelete } from "react-icons/md";
+import TagsInput from "react-tagsinput";
+import { FaArrowDown, FaArrowUp, FaSearch } from "react-icons/fa";
+import "react-tagsinput/react-tagsinput.css";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
 interface Column {
@@ -65,6 +73,89 @@ const NotionTable: React.FC = () => {
     const savedOptions = localStorage.getItem("selectOptions");
     return savedOptions ? JSON.parse(savedOptions) : [""];
   });
+
+  const [badgeColors, setBadgeColors] = useState<Record<string, string>>(() => {
+    const storedColors = localStorage.getItem("badgeColors");
+    return storedColors ? JSON.parse(storedColors) : {};
+  });
+
+  const [rows, setRows] = useState<Row[]>(() => {
+    const storedRows = localStorage.getItem("rows");
+    return storedRows
+      ? JSON.parse(storedRows)
+      : [
+          { Name: "", "Father Name": "", Age: null, "Date of Birth": null },
+          { Name: "", "Father Name": "", Age: null, "Date of Birth": null },
+          { Name: "", "Father Name": "", Age: null, "Date of Birth": null },
+          { Name: "", "Father Name": "", Age: null, "Date of Birth": null },
+          { Name: "", "Father Name": "", Age: null, "Date of Birth": null },
+        ];
+  });
+
+  useEffect(() => {
+    // Retrieve badge colors and rows data from localStorage when the component mounts
+    const storedBadgeColors = localStorage.getItem("badgeColors");
+    const storedRows = localStorage.getItem("rows");
+  
+    if (storedBadgeColors) {
+      setBadgeColors(JSON.parse(storedBadgeColors));
+    }
+  
+    if (storedRows) {
+      setRows(JSON.parse(storedRows));
+    }
+  }, []);
+
+ 
+
+  const [tagPopoverRow, setTagPopoverRow] = useState<{ rowIndex: number; colName: string } | null>(null);
+
+
+  const tagColorSchemes = [
+    "red",
+    "green",
+    "blue",
+    "purple",
+    "yellow",
+    "orange",
+    "teal",
+    "pink",
+  ];
+
+  const getRandomColorScheme = (tag: string) => {
+    if (!badgeColors[tag]) {
+      const newColor =
+        tagColorSchemes[Math.floor(Math.random() * tagColorSchemes.length)];
+      setBadgeColors((prevColors) => {
+        const updatedColors = { ...prevColors, [tag]: newColor };
+        localStorage.setItem("badgeColors", JSON.stringify(updatedColors));
+        return updatedColors;
+      });
+      return newColor;
+    }
+    return badgeColors[tag];
+  };
+ 
+
+
+  const handleTagsInputChange = (rowIndex: number, colName: string, tags: string[]) => {
+    // Create a deep copy of rows to ensure immutability
+    const updatedRows = [...rows]; // Shallow copy of the array
+    const updatedRow = { ...updatedRows[rowIndex] }; // Shallow copy of the specific row
+    
+    // Update the specific column with the new tags
+    updatedRow[colName] = tags.join(","); // Convert the tags array to a comma-separated string
+    
+    // Put the updated row back in the array
+    updatedRows[rowIndex] = updatedRow;
+    
+    // Update the rows state
+    setRows(updatedRows);
+    
+    // Optionally, update localStorage if needed
+    localStorage.setItem("rows", JSON.stringify(updatedRows));
+  };
+  
   
   const [newOption, setNewOption] = useState<string>("");
   const [editingOption, setEditingOption] = useState<{
@@ -83,6 +174,8 @@ const NotionTable: React.FC = () => {
         return <BsCalendarDate style={{ marginRight: "5px" }} />;
       case "select":
         return <GoSingleSelect style={{ marginRight: "5px" }} />;
+      case "tags":
+        return <GoTag style={{ marginRight: "5px" }} />;
       default:
         return <VscListFlat style={{ marginRight: "5px" }} />;
     }
@@ -177,18 +270,7 @@ const NotionTable: React.FC = () => {
   const openAlertDialog = () => setIsAlertOpen(true);
   const closeAlertDialog = () => setIsAlertOpen(false);
 
-  const [rows, setRows] = useState<Row[]>(() => {
-    const storedRows = localStorage.getItem("rows");
-    return storedRows
-      ? JSON.parse(storedRows)
-      : [
-          { Name: "", "Father Name": "", Age: null, "Date of Birth": null },
-          { Name: "", "Father Name": "", Age: null, "Date of Birth": null },
-          { Name: "", "Father Name": "", Age: null, "Date of Birth": null },
-          { Name: "", "Father Name": "", Age: null, "Date of Birth": null },
-          { Name: "", "Father Name": "", Age: null, "Date of Birth": null },
-        ];
-  });
+ 
 
   const [editingCell, setEditingCell] = useState<{
     rowIndex: number;
@@ -260,6 +342,77 @@ const NotionTable: React.FC = () => {
     const updatedColumns = [...columns];
     updatedColumns[index].dataType = newDataType;
     setColumns(updatedColumns);
+  };
+
+  
+
+  const handleDeleteColumn = (columnName: string) => {
+    const updatedColumns = columns.filter((col) => col.name !== columnName);
+    const updatedRows = rows.map((row) => {
+      const newRow = { ...row };
+      delete newRow[columnName];
+      return newRow;
+    });
+    setColumns(updatedColumns);
+    setRows(updatedRows);
+  };
+
+  const handleChangeColumnName = (index: number, newName: string) => {
+    if (newName) {
+      // Transfer existing row data to the new column name
+      const updatedRows = rows.map((row) => {
+        const newRow = { ...row };
+        if (columns[index].name !== newName) {
+          newRow[newName] = newRow[columns[index].name];
+          delete newRow[columns[index].name];
+        }
+        return newRow;
+      });
+
+      setRows(updatedRows);
+
+      setColumns((prevColumns) => {
+        const newColumns = [...prevColumns];
+        newColumns[index].name = newName;
+        return newColumns;
+      });
+    }
+  };
+
+  // Save to local storage function
+  const saveToLocalStorage = (key: string, data: Column[] | Row[]): void => {
+    localStorage.setItem(key, JSON.stringify(data));
+  };
+
+  const handleDragEnd = (result: {
+    source: any;
+    destination: any;
+    type: any;
+  }) => {
+    const { source, destination, type } = result;
+
+    if (!destination) return;
+
+    if (type === "COLUMN") {
+      // Dragging columns
+      const reorderedColumns = Array.from(columns);
+      const [movedColumn] = reorderedColumns.splice(source.index, 1);
+      reorderedColumns.splice(destination.index, 0, movedColumn);
+      setColumns(reorderedColumns);
+      saveToLocalStorage("columns", reorderedColumns);
+    } else {
+      // Dragging rows
+      const reorderedRows = Array.from(rows);
+      const [movedRow] = reorderedRows.splice(source.index, 1);
+      reorderedRows.splice(destination.index, 0, movedRow);
+      setRows(reorderedRows);
+      saveToLocalStorage("rows", reorderedRows);
+    }
+  };
+
+  const confirmDelete = (columnName: string) => {
+    handleDeleteColumn(columnName);
+    closeAlertDialog();
   };
 
   const renderInputField = (
@@ -556,7 +709,7 @@ const NotionTable: React.FC = () => {
             }}
           />
         );
-      }
+      } 
 
       return (
         <Input
@@ -585,6 +738,66 @@ const NotionTable: React.FC = () => {
       );
     }
 
+    if (col.dataType === "tags") {
+      // New tag handling logic
+      return (
+        <Popover
+          isOpen={tagPopoverRow?.rowIndex === rowIndex && tagPopoverRow?.colName === col.name}
+          onClose={() => setTagPopoverRow(null)}
+          placement="bottom-start"
+        >
+          <PopoverTrigger>
+            <Box
+              onClick={() => setTagPopoverRow({ rowIndex, colName: col.name })}
+              cursor="pointer"
+              minHeight="20px"
+              width="100%"
+            >
+              <Flex wrap="wrap" gap="4px">
+                {row[col.name]
+                  ?.toString()
+                  .split(",")
+                  .filter((tag: any) => tag)
+                  .map((tag: string, i: React.Key | null | undefined) => (
+                    <Badge
+                      padding={1}
+                      borderRadius={4}
+                      key={i}
+                      colorScheme={badgeColors[tag] || getRandomColorScheme(tag)}
+                      variant="solid"
+                    >
+                      {tag.trim()}
+                    </Badge>
+                  ))}
+              </Flex>
+            </Box>
+          </PopoverTrigger>
+          <PopoverContent
+            width={"200px"}
+            bg="gray.800"
+            color="white"
+            borderRadius="lg"
+            boxShadow="lg"
+            minWidth="100px"
+            border="1px solid"
+            borderColor="gray.600"
+          >
+            <PopoverBody>
+              <TagsInput
+                value={row[col.name]?.toString().split(",").filter(Boolean) || []}
+                onChange={(tags) => handleTagsInputChange(rowIndex, col.name, tags)}
+                inputProps={{
+                  placeholder: "Add tags",
+                  autoFocus: true,
+                  style: { backgroundColor: "gray.200" },
+                }}
+              />
+            </PopoverBody>
+          </PopoverContent>
+        </Popover>
+      );
+    }
+    
     // Render the cell's current value when not editing
     return (
       <div
@@ -594,75 +807,6 @@ const NotionTable: React.FC = () => {
         {row[col.name] || ""}
       </div>
     );
-  };
-
-  const handleDeleteColumn = (columnName: string) => {
-    const updatedColumns = columns.filter((col) => col.name !== columnName);
-    const updatedRows = rows.map((row) => {
-      const newRow = { ...row };
-      delete newRow[columnName];
-      return newRow;
-    });
-    setColumns(updatedColumns);
-    setRows(updatedRows);
-  };
-
-  const handleChangeColumnName = (index: number, newName: string) => {
-    if (newName) {
-      // Transfer existing row data to the new column name
-      const updatedRows = rows.map((row) => {
-        const newRow = { ...row };
-        if (columns[index].name !== newName) {
-          newRow[newName] = newRow[columns[index].name];
-          delete newRow[columns[index].name];
-        }
-        return newRow;
-      });
-
-      setRows(updatedRows);
-
-      setColumns((prevColumns) => {
-        const newColumns = [...prevColumns];
-        newColumns[index].name = newName;
-        return newColumns;
-      });
-    }
-  };
-
-  // Save to local storage function
-  const saveToLocalStorage = (key: string, data: Column[] | Row[]): void => {
-    localStorage.setItem(key, JSON.stringify(data));
-  };
-
-  const handleDragEnd = (result: {
-    source: any;
-    destination: any;
-    type: any;
-  }) => {
-    const { source, destination, type } = result;
-
-    if (!destination) return;
-
-    if (type === "COLUMN") {
-      // Dragging columns
-      const reorderedColumns = Array.from(columns);
-      const [movedColumn] = reorderedColumns.splice(source.index, 1);
-      reorderedColumns.splice(destination.index, 0, movedColumn);
-      setColumns(reorderedColumns);
-      saveToLocalStorage("columns", reorderedColumns);
-    } else {
-      // Dragging rows
-      const reorderedRows = Array.from(rows);
-      const [movedRow] = reorderedRows.splice(source.index, 1);
-      reorderedRows.splice(destination.index, 0, movedRow);
-      setRows(reorderedRows);
-      saveToLocalStorage("rows", reorderedRows);
-    }
-  };
-
-  const confirmDelete = (columnName: string) => {
-    handleDeleteColumn(columnName);
-    closeAlertDialog();
   };
 
   return (
@@ -780,12 +924,19 @@ const NotionTable: React.FC = () => {
                                         {col.name}
                                       </Button>
                                     </PopoverTrigger>
-                                    <PopoverContent style={{ width: "200px" }}>
-                                      <PopoverArrow />
-                                      <PopoverBody>
-                                        {/* Column Name Input */}
-                                        <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                                          <MdEditSquare />
+                                    <PopoverContent
+                          
+                          color="gray.400"
+                          borderRadius="lg"
+                          boxShadow="lg"
+                          px={0}
+                          width={"250px"}
+                          minWidth="200px"
+                        >
+                          <PopoverBody>
+                            <VStack align={"flex-start"} spacing={2}>
+                              <HStack marginTop={2} fontWeight={"normal"} py={0}>
+                              <Button height={"28px"}>Aa</Button>
                                           <Input
                                             defaultValue={col.name}
                                             onBlur={(e) =>
@@ -806,12 +957,10 @@ const NotionTable: React.FC = () => {
                                             variant="flushed"
                                             autoFocus
                                           />
-                                        </div>
-
-                                        {/* Dropdown for Data Type Selection */}
-                                        <Box mt={4}>
+                              </HStack>
+                              <Box mt={4}>
                                           <label htmlFor="data-type" style={{fontSize:"12px"}}>data type</label>
-                                          <Select
+                                          <Select 
                                             defaultValue={col.dataType}
                                             onChange={(e) =>
                                               handleChangeColumnType(
@@ -830,32 +979,40 @@ const NotionTable: React.FC = () => {
                                             <option value="select">
                                               Select
                                             </option>
+                                            <option value="tags">
+                                              Tag
+                                            </option>
                                            
                                           </Select>
                                         </Box>
-                                      </PopoverBody>
-                                      <PopoverFooter
-                                        display="flex"
-                                        justifyContent="flex-start"
-                                      >
-                                        <Button
-                                          onClick={openAlertDialog}
-                                          bg="none"
-                                          color="gray.500"
-                                          paddingLeft={0}
-                                        >
-                                         
-                                         <MdDeleteOutline
-                                        style={{ marginRight: "5px" }}
-                                      />{" "}  Delete
-                                        </Button>
-                                       
-                                      </PopoverFooter>
-                                    </PopoverContent>
 
-                                    {/* Confirmation Alert Dialog */}
-
-                                    <AlertDialog
+                              <InputGroup mb={2}>
+                                <InputLeftElement pointerEvents="none" fontSize={"12px"} height={"28px"}>
+                                <FaSearch color="gray.300" />
+                                </InputLeftElement>
+                                <Input
+                                  fontSize={"14px"}
+                                  px={2}
+                                  height={"28px"}
+                                  type="tel"
+                                  placeholder="Search"
+                                />
+                              </InputGroup>
+                              <HStack
+                                justifyContent={"space-between"}
+                                fontSize={"14px"}
+                                fontWeight={"normal"}
+                                ml={4}
+                              >
+                                <Text textTransform={"capitalize"}>Wrap Column</Text>
+                                <Switch colorScheme="teal" />
+                              </HStack>
+                                        <Button leftIcon={<MdDelete />} color="red.400" fontSize={"15px"}fontWeight={"normal"} marginTop={0}size="sm" variant="ghost" justifyContent="start" _hover={{ color: "red.500" }} onClick={openAlertDialog} > <Text>Delete Property</Text> </Button>
+                              
+                            </VStack>
+                          </PopoverBody>
+                        </PopoverContent>
+                         <AlertDialog
                                       isOpen={isAlertOpen}
                                       leastDestructiveRef={cancelRef}
                                       onClose={closeAlertDialog}
@@ -1000,6 +1157,23 @@ const NotionTable: React.FC = () => {
                                       Select
                                     </Button>
                                   </Tr>
+                                  <Tr>
+                                    <Button
+                                      onClick={() => {
+                                        setNewColumnType("tags");
+                                        setNewColumnName("Tags");
+                                        handleAddColumn("tags", "Tags"); // Add the column when button is clicked
+                                      }}
+                                      bg="none"
+                                      color="gray.500"
+                                      paddingLeft={0}
+                                    >
+                                      <GoSingleSelect
+                                        style={{ marginRight: "5px" }}
+                                      />{" "}
+                                      Tags
+                                    </Button>
+                                  </Tr>
                                   
                                 </div>
                               </PopoverBody>
@@ -1069,7 +1243,7 @@ const NotionTable: React.FC = () => {
                                             color="gray.400"
                                             height="32px"
                                           >
-                                            <MdDeleteOutline />
+                                            <MdDelete/>
                                           </Button>
 
                                           <MdDragIndicator />
