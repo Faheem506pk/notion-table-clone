@@ -42,7 +42,7 @@ import { MdDragIndicator } from "react-icons/md";
 import { MdDelete } from "react-icons/md";
 import TagsInput from "react-tagsinput";
 import { GrStatusGood } from "react-icons/gr";
-import { FaArrowDown, FaArrowUp,FaSearch } from "react-icons/fa";
+import { FaArrowDown, FaArrowUp, FaSearch } from "react-icons/fa";
 import "react-tagsinput/react-tagsinput.css";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { TfiShine } from "react-icons/tfi";
@@ -51,14 +51,13 @@ interface Column {
   name: string;
   dataType: string;
   width: number;
-  
 }
 
 interface Row {
   [key: string]: any;
 }
 
-const NotionTable: React.FC  = () => {
+const NotionTable: React.FC = () => {
   const [taskName, setTaskName] = useState(
     localStorage.getItem("taskName") || "Task Name"
   );
@@ -80,6 +79,35 @@ const NotionTable: React.FC  = () => {
     const storedColors = localStorage.getItem("badgeColors");
     return storedColors ? JSON.parse(storedColors) : {};
   });
+
+  const [countryCodes, setCountryCodes] = useState<
+    { code: string; name: string; pattern: string }[]
+  >([]);
+
+
+  // Fetch country codes and patterns
+  useEffect(() => {
+    async function fetchCountryCodes() {
+      const response = await fetch("https://restcountries.com/v3.1/all"); // Replace with a suitable endpoint
+      const data = await response.json();
+      const codes = data.map(
+        (country: {
+          idd: { root: string; suffixes: string[] };
+          name: { common: string };
+        }) => ({
+          code:
+            country.idd?.root +
+            (country.idd?.suffixes ? country.idd.suffixes[0] : ""),
+          name: country.name.common,
+          pattern: "\\d{10}", // You would update this with actual patterns if available
+        })
+      );
+      setCountryCodes(codes);
+    }
+    fetchCountryCodes();
+  }, []);
+
+
 
   const handleSelectAllRows = () => {
     const newSelectedRows = new Set(selectedRows);
@@ -349,7 +377,6 @@ const NotionTable: React.FC  = () => {
         name: newName,
         dataType: type,
         width: 150, // Default width for the new column
-        
       };
 
       // Update the columns state by adding the new column
@@ -592,6 +619,8 @@ const NotionTable: React.FC  = () => {
       }
     };
 
+   
+
     // Render input based on column data type
     if (isEditing) {
       if (col.dataType === "select") {
@@ -737,10 +766,52 @@ const NotionTable: React.FC  = () => {
             }}
           />
         );
-      } 
+      } else if (col.dataType === "cnic") {
+        return (
+          <Input
+            type="text"
+            pattern="\d{5}-\d{7}-\d" // CNIC pattern
+            placeholder="XXXXX-XXXXXXX-X"
+            value={row[col.name] || ""}
+            maxLength={15} // Limits input to 13 digits plus two hyphens
+            onChange={(e) => {
+              const cnic = e.target.value;
 
-      
-      
+              // Automatically add hyphens as user types
+              if (/^\d{5}$/.test(cnic)) {
+                e.target.value = cnic + "-";
+              } else if (/^\d{5}-\d{7}$/.test(cnic)) {
+                e.target.value = cnic + "-";
+              }
+
+              handleChange(e); // Update the input state
+
+              // Save to localStorage if CNIC is complete
+              if (cnic.length === 15) {
+                localStorage.setItem("cnic", cnic);
+              }
+            }}
+            onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
+            variant="flushed"
+            autoFocus
+            style={{
+              fontSize: "14px",
+              fontWeight: "600",
+              border: "none",
+              outline: "none",
+              boxShadow: "-1px 0px 10px 0px gray",
+              borderRadius: "5px",
+              padding: "10px",
+              width: "250px",
+              height: "38px",
+              position: "absolute",
+              backgroundColor: "white",
+              marginTop: "-16px",
+            }}
+          />
+        );
+      }
 
       return (
         <Input
@@ -769,22 +840,205 @@ const NotionTable: React.FC  = () => {
       );
     }
 
+    if (col.dataType === "phone") {
+      const [phoneNumber, setPhoneNumber] = useState("");
+
+
+const handlePhoneChange = (event: { target: { value: any; }; }) => {
+  let newPhoneNumber = event.target.value;
+  
+  // Remove leading 0 if exists
+  // if (newPhoneNumber.startsWith("0")) {
+  //   newPhoneNumber = newPhoneNumber.slice(1);
+  // }
+
+  setPhoneNumber(newPhoneNumber);
+};
+
+const handleRedirectToPhone = () => {
+  // Validate phone number length or pattern if needed
+  const formattedPhoneNumber = phoneNumber.replace(/\s+/g, "");
+  if (formattedPhoneNumber.length < 10) {
+    alert("Please enter a valid phone number");
+    return;
+  }
+  window.location.href = `tel:${formattedPhoneNumber}`;
+  console.log("Redirecting to phone:", formattedPhoneNumber);
+};
+
+return (
+  <Popover>
+    <PopoverTrigger>
+      <Box
+        onClick={() => setTagPopoverRow({ rowIndex, colName: col.name })}
+        cursor="pointer"
+        minHeight="20px"
+        width="100%"
+        display="flex"
+        alignItems="center"
+        justifyContent="space-between"
+        borderRadius="8px"
+        padding="8px"
+        backgroundColor="white"
+      >
+        <span> {phoneNumber}</span>
+      </Box>
+    </PopoverTrigger>
+    <PopoverContent>
+      <PopoverBody>
+        <Input
+          type="tel"
+          placeholder="Phone Number"
+          value={phoneNumber}
+          onChange={handlePhoneChange}
+          style={{
+            marginLeft: "8px",
+            fontSize: "14px",
+            fontWeight: "600",
+            padding: "10px",
+            width: "200px",
+            height: "38px",
+            backgroundColor: "white",
+          }}
+        />
+      </PopoverBody>
+    </PopoverContent>
+    <Button
+      colorScheme="green"
+      variant="outline"
+      size="sm"
+      onClick={handleRedirectToPhone}
+      style={{ marginTop: "10px" , fontSize: "12px" }}
+    >
+      Call Now
+    </Button>
+  </Popover>
+);
+
+    
+  }
+
+    if (col.dataType === "email") {
+      // Initialize state for the email
+      const [email, setEmail] = useState(() => {
+        const savedEmail = localStorage.getItem(`${rowIndex}_${col.name}`);
+        return savedEmail || row[col.name] || ""; // Fallback to the row email if nothing in localStorage
+      });
+
+      const handleEmailChange = (newEmail: string) => {
+        setEmail(newEmail); // Update the state when the email changes
+
+        // Optionally, save the email to localStorage if you want to persist the changes
+        localStorage.setItem(`${rowIndex}_${col.name}`, newEmail);
+      };
+
+      const handleRedirectToEmail = () => {
+        // Validate email format before redirecting
+        const isValidEmail =
+          /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/.test(email);
+
+        if (isValidEmail) {
+          // Redirect to the email client with the "mailto:" link
+          window.location.href = `mailto:${email}`;
+          console.log("Redirecting to email:", email);
+        } else {
+          console.log("Invalid email, can't redirect:", email);
+          alert("Please enter a valid email address.");
+        }
+      };
+
+      return (
+        <Popover
+          isOpen={
+            tagPopoverRow?.rowIndex === rowIndex &&
+            tagPopoverRow?.colName === col.name
+          }
+          onClose={() => setTagPopoverRow(null)}
+          placement="bottom-start"
+        >
+          <PopoverTrigger>
+            <Box
+              onClick={() => setTagPopoverRow({ rowIndex, colName: col.name })}
+              cursor="pointer"
+              minHeight="20px"
+              width="100%"
+              display="flex"
+              alignItems="center"
+              justifyContent="space-between"
+              borderRadius="8px"
+              padding="8px"
+              backgroundColor="white"
+            >
+              <span>{email}</span>
+            </Box>
+          </PopoverTrigger>
+
+          <PopoverContent
+            width={"250px"}
+            color="white"
+            borderRadius="10px"
+            boxShadow="lg"
+            minWidth="100px"
+            border="1px solid"
+            borderColor="gray.400"
+            marginTop="-8px"
+          >
+            <PopoverArrow />
+            <PopoverBody padding="5px">
+              <Input
+                color={"gray.800"}
+                type="email"
+                value={email}
+                onChange={(e) => handleEmailChange(e.target.value)} // Update the email on change
+                placeholder="Enter email"
+                borderRadius="8px"
+                marginBottom="10px"
+                isInvalid={
+                  !/^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/.test(email)
+                } // Email validation regex
+              />
+              <Button
+                onClick={() => handleEmailChange(email)} // Save email when clicked
+                colorScheme="blue"
+                variant="outline"
+                size="sm"
+                marginBottom="10px"
+              >
+                Save Email
+              </Button>
+              <Button
+                onClick={handleRedirectToEmail} // Open email client when clicked
+                colorScheme="green"
+                variant="outline"
+                size="sm"
+              >
+                Send Email
+              </Button>
+            </PopoverBody>
+          </PopoverContent>
+        </Popover>
+      );
+    }
+
     if (col.dataType === "status") {
       const handleStatusChange = (newStatus: string) => {
         // Save the new status to localStorage
         localStorage.setItem(`${rowIndex}_${col.name}`, newStatus); // Save the status in localStorage
-    
+
         // Optionally, you can update the row directly if you want the status to be reflected in the UI immediately
         row[col.name] = newStatus; // Update the row status directly
       };
-    
+
       // Check if status is already in localStorage, else fallback to row[col.name]
       const savedStatus = localStorage.getItem(`${rowIndex}_${col.name}`);
       const currentStatus = savedStatus || row[col.name] || "Inactive"; // Default to "Inactive" if no value exists
-    
+
       return (
         <Popover
-          isOpen={tagPopoverRow?.rowIndex === rowIndex && tagPopoverRow?.colName === col.name}
+          isOpen={
+            tagPopoverRow?.rowIndex === rowIndex &&
+            tagPopoverRow?.colName === col.name
+          }
           onClose={() => setTagPopoverRow(null)}
           placement="bottom-start"
         >
@@ -803,7 +1057,9 @@ const NotionTable: React.FC  = () => {
             >
               <span style={{ display: "flex", alignItems: "center" }}>
                 {currentStatus === "Active" ? (
-                  <GrStatusGood style={{ marginRight: "8px", color: "green" }} />
+                  <GrStatusGood
+                    style={{ marginRight: "8px", color: "green" }}
+                  />
                 ) : (
                   <GrStatusGood style={{ marginRight: "8px", color: "red" }} />
                 )}
@@ -811,7 +1067,7 @@ const NotionTable: React.FC  = () => {
               </span>
             </Box>
           </PopoverTrigger>
-    
+
           <PopoverContent
             width={"150px"}
             color="white"
@@ -832,7 +1088,9 @@ const NotionTable: React.FC  = () => {
                   variant="outline"
                   size="sm"
                 >
-                  <GrStatusGood style={{ marginRight: "8px", color: "green" }} />
+                  <GrStatusGood
+                    style={{ marginRight: "8px", color: "green" }}
+                  />
                   Set Active
                 </Button>
                 <Button
@@ -891,8 +1149,8 @@ const NotionTable: React.FC  = () => {
             </Box>
           </PopoverTrigger>
           <PopoverContent
-            width={"200px"}
-            bg="gray.800"
+            width={"190px"}
+            marginTop="-2px"
             color="white"
             borderRadius="lg"
             boxShadow="lg"
@@ -911,7 +1169,7 @@ const NotionTable: React.FC  = () => {
                 inputProps={{
                   placeholder: "Add tags",
                   autoFocus: true,
-                  style: { backgroundColor: "gray.200" },
+                  style: { backgroundColor: "gray.200", borderradius: "18px" },
                 }}
               />
             </PopoverBody>
@@ -935,32 +1193,33 @@ const NotionTable: React.FC  = () => {
     const sortedRows = [...rows].sort((a, b) => {
       const valA = a[columns[colIndex].name];
       const valB = b[columns[colIndex].name];
-  
+
       // Function to check if a value is empty, null, or only whitespace
-      const isEmpty = (value: any) => value == null || (typeof value === 'string' && value.trim() === '');
-  
+      const isEmpty = (value: any) =>
+        value == null || (typeof value === "string" && value.trim() === "");
+
       // Handle empty values by pushing them to the end
       if (isEmpty(valA) && isEmpty(valB)) return 0;
       if (isEmpty(valA)) return 1; // valA is empty, push it to the end
       if (isEmpty(valB)) return -1; // valB is empty, push it to the end
-  
+
       // Compare non-empty values
       if (typeof valA === "number" && typeof valB === "number") {
         return order === "asc" ? valA - valB : valB - valA;
       } else if (typeof valA === "string" && typeof valB === "string") {
-        return order === "asc" ? valA.localeCompare(valB) : valB.localeCompare(valA);
+        return order === "asc"
+          ? valA.localeCompare(valB)
+          : valB.localeCompare(valA);
       } else if (valA instanceof Date && valB instanceof Date) {
-        return order === "asc" ? valA.getTime() - valB.getTime() : valB.getTime() - valA.getTime();
+        return order === "asc"
+          ? valA.getTime() - valB.getTime()
+          : valB.getTime() - valA.getTime();
       }
-  
+
       return 0;
     });
     setRows(sortedRows);
   };
-  
-  
-  
-  
 
   return (
     <>
@@ -1057,28 +1316,37 @@ const NotionTable: React.FC  = () => {
                             height="32px"
                             paddingRight={"10.5px"}
                           >
-                             <div
-                                        style={{
-                                          display: "flex",
-                                          alignItems: "center",
-                                          
-                                          gap: "15px",
-                                          
-                                        }}
-                                      >
-                            {selectedRows.size > 0 && (
-                             
-                               <Text
-                               bg="none"
-                               color="gray.300"
-                               cursor="pointer"
-                               width={"15px"}
-                               onClick={handleDeleteSelectedRows}
-                             >
-                               <MdDelete color="gray.300" style={{width:"20px" , height:"20px"}}/>
-                             </Text>
-                            )}
-                            {selectedRows.size > 0 && <input style={{width:"15px" , height:"15px"}} type="checkbox"  onChange={() => {handleSelectAllRows();}} />}
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+
+                                gap: "15px",
+                              }}
+                            >
+                              {selectedRows.size > 0 && (
+                                <Text
+                                  bg="none"
+                                  color="gray.300"
+                                  cursor="pointer"
+                                  width={"15px"}
+                                  onClick={handleDeleteSelectedRows}
+                                >
+                                  <MdDelete
+                                    color="gray.300"
+                                    style={{ width: "20px", height: "20px" }}
+                                  />
+                                </Text>
+                              )}
+                              {selectedRows.size > 0 && (
+                                <input
+                                  style={{ width: "15px", height: "15px" }}
+                                  type="checkbox"
+                                  onChange={() => {
+                                    handleSelectAllRows();
+                                  }}
+                                />
+                              )}
                             </div>
                           </Flex>
                         </Th>
@@ -1177,41 +1445,65 @@ const NotionTable: React.FC  = () => {
                                               size="sm"
                                               variant="flushed"
                                             >
-                                              <option value="string">Text</option>
-                                              <option value="number">Number</option>
+                                              <option value="string">
+                                                Text
+                                              </option>
+                                              <option value="number">
+                                                Number
+                                              </option>
                                               <option value="date">Date</option>
-                                              <option value="select"> Select</option>
+                                              <option value="select">
+                                                {" "}
+                                                Select
+                                              </option>
                                               <option value="tags">Tag</option>
-                                              <option value="status">Status</option>
+                                              <option value="status">
+                                                Status
+                                              </option>
+                                              <option value="email">
+                                                Email
+                                              </option>
+                                              <option value="phone">
+                                                Phone
+                                              </option>
+                                              <option value="cnic">CNIC</option>
                                             </Select>
                                           </Box>
 
                                           <Button
-                                py={0}
-                                my={0}
-                                leftIcon={<FaArrowUp />}
-                                onClick={() => sortColumn(index, "asc")}
-                                size="sm"
-                                variant="ghost"
-                                color="gray.400"
-                                justifyContent="start"
-                                _hover={{ bg: "gray.600" }}
-                              >
-                                <Text fontWeight={"normal"}>Sort Ascending</Text>
-                              </Button>
-                              <Button
-                                py={0}
-                                my={0}
-                                leftIcon={<FaArrowDown />}
-                                onClick={() => sortColumn(index, "desc")}
-                                size="sm"
-                                variant="ghost"
-                                color="gray.400"
-                                justifyContent="start"
-                                _hover={{ bg: "gray.600" }}
-                              >
-                                <Text fontWeight={"normal"}>Sort Descending</Text>
-                              </Button>
+                                            py={0}
+                                            my={0}
+                                            leftIcon={<FaArrowUp />}
+                                            onClick={() =>
+                                              sortColumn(index, "asc")
+                                            }
+                                            size="sm"
+                                            variant="ghost"
+                                            color="gray.400"
+                                            justifyContent="start"
+                                            _hover={{ bg: "gray.600" }}
+                                          >
+                                            <Text fontWeight={"normal"}>
+                                              Sort Ascending
+                                            </Text>
+                                          </Button>
+                                          <Button
+                                            py={0}
+                                            my={0}
+                                            leftIcon={<FaArrowDown />}
+                                            onClick={() =>
+                                              sortColumn(index, "desc")
+                                            }
+                                            size="sm"
+                                            variant="ghost"
+                                            color="gray.400"
+                                            justifyContent="start"
+                                            _hover={{ bg: "gray.600" }}
+                                          >
+                                            <Text fontWeight={"normal"}>
+                                              Sort Descending
+                                            </Text>
+                                          </Button>
 
                                           <InputGroup mb={2}>
                                             <InputLeftElement
@@ -1429,7 +1721,9 @@ const NotionTable: React.FC  = () => {
                                       color="gray.500"
                                       paddingLeft={0}
                                     >
-                                      <TfiShine style={{ marginRight: "5px" }} />{" "}
+                                      <TfiShine
+                                        style={{ marginRight: "5px" }}
+                                      />{" "}
                                       Status
                                     </Button>
                                   </Tr>
@@ -1480,11 +1774,8 @@ const NotionTable: React.FC  = () => {
                                           alignItems: "center",
                                           paddingRight: "10px",
                                           gap: "8px",
-                                          
                                         }}
                                       >
-                                        
-
                                         {selectedRows.size <= 0 && (
                                           <Text
                                             bg="none"
@@ -1495,27 +1786,45 @@ const NotionTable: React.FC  = () => {
                                               handleDeleteRow(rowIndex)
                                             }
                                           >
-                                            <MdDelete color="gray.300" style={{width:"20px" , height:"20px"}}/>
+                                            <MdDelete
+                                              color="gray.300"
+                                              style={{
+                                                width: "20px",
+                                                height: "20px",
+                                              }}
+                                            />
                                           </Text>
                                         )}
                                         <Text
                                           bg="none"
                                           color="gray.300"
                                           cursor="pointer"
-                                          
                                           onClick={() =>
                                             handleAddRowUnder(rowIndex)
                                           }
                                         >
                                           {" "}
-                                          <FaPlus style={{width:"20px" , height:"20px"}}/>{" "}
+                                          <FaPlus
+                                            style={{
+                                              width: "20px",
+                                              height: "20px",
+                                            }}
+                                          />{" "}
                                         </Text>
 
-                                        <MdDragIndicator style={{width:"20px" , height:"20px"}} />
+                                        <MdDragIndicator
+                                          style={{
+                                            width: "20px",
+                                            height: "20px",
+                                          }}
+                                        />
 
                                         {selectedRows.size <= 0 && (
                                           <input
-                                          style={{width:"15px" , height:"15px"}}
+                                            style={{
+                                              width: "15px",
+                                              height: "15px",
+                                            }}
                                             type="checkbox"
                                             checked={selectedRows.has(rowIndex)}
                                             onChange={() => {
@@ -1528,7 +1837,7 @@ const NotionTable: React.FC  = () => {
                                   )}
                                   {selectedRows.size > 0 && (
                                     <input
-                                    style={{width:"15px" , height:"15px"}}
+                                      style={{ width: "15px", height: "15px" }}
                                       type="checkbox"
                                       checked={selectedRows.has(rowIndex)}
                                       onChange={() => {
@@ -1637,6 +1946,7 @@ const NotionTable: React.FC  = () => {
                   )}
                 </Droppable>
               </Table>
+              <a href="mailto:faheemiqbalm@gmail.com">faheemiqbalm@gmail.com</a>
             </DragDropContext>
           </Box>
         </div>
