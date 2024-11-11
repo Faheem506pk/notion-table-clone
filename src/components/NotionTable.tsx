@@ -798,11 +798,26 @@ const NotionTable: React.FC = () => {
           marginRight: "10px",
         }}
       />
+      <Button
+  onClick={() => {
+    const email = row[col.name];
+    if (email && /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/.test(email)) {
+      window.location.href = `mailto:${email}`;
+    } else {
+      alert("Invalid email address.");
+    }
+  }}
+  
+  bg="none"
+>
+<MdOutlineEmail style={{width:"17px", height:"17px" , marginRight:"5px"}} />
+</Button>
 
-      {/* Link to send email */}
-      <a href={`mail:${row[col.name]}`}>
+
+      
+      {/* <a href={`mailto:${row[col.name]}`}>
         <MdOutlineEmail style={{width:"17px", height:"17px" , marginRight:"5px"}} />
-      </a>
+      </a> */}
     </div>
   );
 }
