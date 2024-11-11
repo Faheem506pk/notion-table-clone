@@ -922,6 +922,7 @@ const NotionTable: React.FC = () => {
               <Flex direction="column" gap="4px">
                 {/* Email input */}
                 <Input
+                type="email"
                   defaultValue={currentEmail}
                   onBlur={(e) => handleEmailChange(e.target.value)}  // Update when user clicks out (on blur)
                   placeholder="Enter email"
