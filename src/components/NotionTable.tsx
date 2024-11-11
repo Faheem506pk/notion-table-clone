@@ -86,6 +86,8 @@ const NotionTable: React.FC = () => {
     const storedColors = localStorage.getItem("badgeColors");
     return storedColors ? JSON.parse(storedColors) : {};
   });
+ 
+  
 
   const handleSelectAllRows = () => {
     const newSelectedRows = new Set(selectedRows);
@@ -444,6 +446,10 @@ const NotionTable: React.FC = () => {
     handleDeleteColumn(columnName);
     closeAlertDialog();
   };
+  
+
+
+
 
   const renderInputField = (
     row: Row,
@@ -453,6 +459,9 @@ const NotionTable: React.FC = () => {
   ) => {
     const isEditing =
       editingCell?.rowIndex === rowIndex && editingCell?.colIndex === colIndex;
+
+
+    
 
     const handleCellClick = () => {
       if (!isEditing) {
@@ -591,6 +600,9 @@ const NotionTable: React.FC = () => {
       }
     };
 
+    const [phone, setPhone] = useState(row[col.name] || ""); // State to hold the phone number
+
+   
     // Render input based on column data type
     if (isEditing) {
       if (col.dataType === "select") {
@@ -811,115 +823,31 @@ const NotionTable: React.FC = () => {
     }
 
     if (col.dataType === "phone") {
-      const [phoneNumber, setPhoneNumber] = useState("");
+     
 
-      const handlePhoneChange = (event: { target: { value: any } }) => {
-        let newPhoneNumber = event.target.value;
-
-        // Remove leading 0 if exists
-        // if (newPhoneNumber.startsWith("0")) {
-        //   newPhoneNumber = newPhoneNumber.slice(1);
-        // }
-
-        setPhoneNumber(newPhoneNumber);
-      };
-
-      const handleRedirectToPhone = () => {
-        // Validate phone number length or pattern if needed
-        const formattedPhoneNumber = phoneNumber.replace(/\s+/g, "");
-        if (formattedPhoneNumber.length < 10) {
-          alert("Please enter a valid phone number");
-          return;
+      useEffect(() => {
+        // Initialize phone number from localStorage if available
+        const savedPhone = localStorage.getItem(`${rowIndex}_${col.name}`);
+        if (savedPhone) {
+          setPhone(savedPhone);
         }
-        window.location.href = `tel:${formattedPhoneNumber}`;
-        console.log("Redirecting to phone:", formattedPhoneNumber);
+      }, [rowIndex, col.name]);
+    
+      const handlePhoneChange = (newPhone: string) => {
+        // Update the phone number both in the component state and localStorage
+        setPhone(newPhone);
+        localStorage.setItem(`${rowIndex}_${col.name}`, newPhone); // Save phone number to localStorage
+        row[col.name] = newPhone; // Update the row directly, might need to lift state if you're using props
       };
-
-      return (
-        <Popover>
-          <PopoverTrigger>
-            <Box
-              onClick={() => setTagPopoverRow({ rowIndex, colName: col.name })}
-              cursor="pointer"
-              minHeight="20px"
-              width="100%"
-              display="flex"
-              alignItems="center"
-              justifyContent="space-between"
-              borderRadius="8px"
-              padding="8px"
-              backgroundColor="white"
-            >
-              <span> {phoneNumber}</span>
-            </Box>
-          </PopoverTrigger>
-          <PopoverContent>
-            <PopoverBody>
-              <Input
-                type="tel"
-                placeholder="Phone Number"
-                value={phoneNumber}
-                onChange={handlePhoneChange}
-                style={{
-                  marginLeft: "8px",
-                  fontSize: "14px",
-                  fontWeight: "600",
-                  padding: "10px",
-                  width: "200px",
-                  height: "38px",
-                  backgroundColor: "white",
-                }}
-              />
-            </PopoverBody>
-          </PopoverContent>
-          <Button
-            colorScheme="green"
-            variant="outline"
-            size="sm"
-            onClick={handleRedirectToPhone}
-            style={{ marginTop: "10px", fontSize: "12px" }}
-          >
-            Call Now
-          </Button>
-        </Popover>
-      );
-    }
-
-    if (col.dataType === "email") {
-      // Initialize state for the email
-      const [email, setEmail] = useState(() => {
-        const savedEmail = localStorage.getItem(`${rowIndex}_${col.name}`);
-        return savedEmail || row[col.name] || ""; // Fallback to the row email if nothing in localStorage
-      });
-
-      const handleEmailChange = (newEmail: string) => {
-        setEmail(newEmail); // Update the state when the email changes
-
-        // Optionally, save the email to localStorage if you want to persist the changes
-        localStorage.setItem(`${rowIndex}_${col.name}`, newEmail);
+    
+      const handlePhoneRedirect = () => {
+        // Redirect to dial the phone number
+        window.open(`tel:${phone}`, "_blank");
       };
-
-      const handleRedirectToEmail = () => {
-        // Validate email format before redirecting
-        const isValidEmail =
-          /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/.test(email);
-
-        if (isValidEmail) {
-          // Redirect to the email client with the "mailto:" link
-          window.location.href = `mailto:${email}`;
-          console.log("Redirecting to email:", email);
-        } else {
-          console.log("Invalid email, can't redirect:", email);
-          alert("Please enter a valid email address.");
-        }
-      };
-
+    
       return (
         <Popover
-          isOpen={
-            tagPopoverRow?.rowIndex === rowIndex &&
-            tagPopoverRow?.colName === col.name
-          }
+          isOpen={tagPopoverRow?.rowIndex === rowIndex && tagPopoverRow?.colName === col.name}
           onClose={() => setTagPopoverRow(null)}
           placement="bottom-start"
         >
@@ -936,13 +864,21 @@ const NotionTable: React.FC = () => {
               padding="8px"
               backgroundColor="white"
             >
-              <span>{email}</span>
+              <span>{phone || "Enter phone number"}</span>
+              <Button
+                size="xs"
+                onClick={handlePhoneRedirect} // Call button
+                colorScheme="blue"
+                ml={2}
+              >
+                Call
+              </Button>
             </Box>
           </PopoverTrigger>
-
+    
           <PopoverContent
-            width={"250px"}
-            color="white"
+            width={"200px"}
+            color="gray"
             borderRadius="10px"
             boxShadow="lg"
             minWidth="100px"
@@ -953,41 +889,23 @@ const NotionTable: React.FC = () => {
             <PopoverArrow />
             <PopoverBody padding="5px">
               <Input
-                color={"gray.800"}
-                type="email"
-                value={email}
-                onChange={(e) => handleEmailChange(e.target.value)} // Update the email on change
-                placeholder="Enter email"
-                borderRadius="8px"
-                marginBottom="10px"
-                isInvalid={
-                  !/^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/.test(email)
-                } // Email validation regex
+                placeholder="Enter phone number"
+                value={phone}
+                onChange={(e) => handlePhoneChange(e.target.value)} // Update phone number on change
               />
-              <Button
-                onClick={() => handleEmailChange(email)} // Save email when clicked
-                colorScheme="blue"
-                variant="outline"
-                size="sm"
-                marginBottom="10px"
-              >
-                Save Email
-              </Button>
-              <Button
-                onClick={handleRedirectToEmail} // Open email client when clicked
-                colorScheme="green"
-                variant="outline"
-                size="sm"
-              >
-                Send Email
-              </Button>
             </PopoverBody>
           </PopoverContent>
         </Popover>
       );
     }
+    
+    
+    
+    
+ 
+    
 
-    if (col.dataType === "status") {
+   if (col.dataType === "status") {
       const handleStatusChange = (newStatus: string) => {
         // Save the new status to localStorage
         localStorage.setItem(`${rowIndex}_${col.name}`, newStatus); // Save the status in localStorage
@@ -1075,18 +993,12 @@ const NotionTable: React.FC = () => {
         </Popover>
       );
     }
-
+    
     if (col.dataType === "tags") {
       // New tag handling logic
       return (
         <Popover
-          isOpen={
-            tagPopoverRow?.rowIndex === rowIndex &&
-            tagPopoverRow?.colName === col.name
-          }
-          onClose={() => setTagPopoverRow(null)}
-          placement="bottom-start"
-        >
+          isOpen={ tagPopoverRow?.rowIndex === rowIndex && tagPopoverRow?.colName === col.name } onClose={() => setTagPopoverRow(null)} placement="bottom-start">
           <PopoverTrigger>
             <Box
               onClick={() => setTagPopoverRow({ rowIndex, colName: col.name })}
@@ -1678,7 +1590,7 @@ const NotionTable: React.FC = () => {
                                       />{" "}
                                       CNIC
                                     </Button>
-                                  </Tr>
+                                  </Tr> 
                                   <Tr>
                                     <Button
                                       onClick={() => {
