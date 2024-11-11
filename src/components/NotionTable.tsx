@@ -766,7 +766,7 @@ const NotionTable: React.FC = () => {
             }}
           />
         );
-      }else if (col.dataType === "email") {
+      } else if (col.dataType === "email") {
         return (
           <div style={{ display: "flex", alignItems: "center" }}>
             {/* Input for email address */}
@@ -775,7 +775,7 @@ const NotionTable: React.FC = () => {
               value={row[col.name] || ""}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                 handleChange(e); // Update state
-      
+
                 // Save the email in localStorage
                 localStorage.setItem(`email_${rowIndex}`, e.target.value);
               }}
@@ -800,17 +800,14 @@ const NotionTable: React.FC = () => {
             />
             <Button
               padding={"0"}
-              onClick={() => window.open(`mailto:${row[col.name]}`)}
+              onClick={() => window.open(`mailto:${row[col.name]}`, "_self")}
               bg="none"
             >
               <MdOutlineEmail style={{ width: "17px", height: "17px" }} />
             </Button>
           </div>
         );
-      }
-      
-      
- else if (col.dataType === "phone") {
+      } else if (col.dataType === "phone") {
         return (
           <div style={{ display: "flex", alignItems: "center" }}>
             <Input
@@ -844,17 +841,16 @@ const NotionTable: React.FC = () => {
                 marginRight: "5px",
               }}
             />
-            
+
             <Button
-  padding="0"
-  onClick={() => window.location.href = `tel:${row[col.name]}`}
-  bg="none"
->
-  <LuPhone style={{ width: "17px", height: "17px", marginRight: "5px" }} />
-</Button>
-
-
-
+              padding="0"
+              onClick={() => (window.location.href = `tel:${row[col.name]}`)}
+              bg="none"
+            >
+              <LuPhone
+                style={{ width: "17px", height: "17px", marginRight: "5px" }}
+              />
+            </Button>
           </div>
         );
       }
