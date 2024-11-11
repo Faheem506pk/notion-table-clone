@@ -850,7 +850,7 @@ const NotionTable: React.FC = () => {
                 backgroundColor: "white",
                 marginRight: "10px",
               }}
-              inputMode="numeric"
+    
             />
 
             {/* Button to redirect to Phone */}
