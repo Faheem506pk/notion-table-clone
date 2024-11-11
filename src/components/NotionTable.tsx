@@ -800,15 +800,7 @@ const NotionTable: React.FC = () => {
             />
             <Button
               padding={"0"}
-              onClick={() => {
-                const email = row[col.name];
-                if (email && /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/.test(email)) {
-                  // Open mail client with mailto link
-                  window.open(`mailto:${email}`, '_blank');
-                } else {
-                  alert("Invalid email address.");
-                }
-              }}
+              onClick={() => window.location.href = `mailto:${row[col.name]}`}
               bg="none"
             >
               <MdOutlineEmail style={{ width: "17px", height: "17px" }} />
