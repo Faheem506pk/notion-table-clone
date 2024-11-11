@@ -78,6 +78,7 @@ const NotionTable: React.FC = () => {
   const cancelRef = useRef<HTMLButtonElement | null>(null);
   const openAlertDialog = () => setIsAlertOpen(true);
   const closeAlertDialog = () => setIsAlertOpen(false);
+  
   const [selectOptions, setSelectOptions] = useState<string[]>(() => {
     const savedOptions = localStorage.getItem("selectOptions");
     return savedOptions ? JSON.parse(savedOptions) : [""];
@@ -560,23 +561,6 @@ const NotionTable: React.FC = () => {
               }
             }
             break;
-          case "ArrowRight":
-            e.preventDefault(); // Prevent default arrow key behavior
-            if (colIndex + 1 < columns.length) {
-              // Move to the next cell in the same row
-              setEditingCell({ rowIndex, colIndex: colIndex + 1 });
-            } else if (rowIndex + 1 < rows.length) {
-              // Move to the first cell in the next row
-              setEditingCell({ rowIndex: rowIndex + 1, colIndex: 0 });
-            }
-            break;
-          case "ArrowLeft":
-            e.preventDefault();
-            if (colIndex > 0) {
-              // Move to the previous cell in the same row
-              setEditingCell({ rowIndex, colIndex: colIndex - 1 });
-            }
-            break;
           case "ArrowDown":
             e.preventDefault();
             if (rowIndex + 1 < rows.length) {
@@ -600,8 +584,8 @@ const NotionTable: React.FC = () => {
       }
     };
 
-    const [phone, setPhone] = useState(row[col.name] || ""); // State to hold the phone number
-
+    
+   
    
     // Render input based on column data type
     if (isEditing) {
@@ -793,7 +777,98 @@ const NotionTable: React.FC = () => {
             }}
           />
         );
+      } else if (col.dataType === "email") {
+        return (
+          <div style={{ display: "flex", alignItems: "center" }}>
+            {/* Input for email address */}
+            <Input
+              type="email"
+              value={row[col.name] || ""}
+              onChange={(e) => {
+                handleChange(e); // Update state
+                
+                // Save the email in localStorage
+                localStorage.setItem(`email_${rowIndex}`, e.target.value);
+              }}
+              onBlur={handleBlur}
+              onKeyDown={handleKeyDown}
+              variant="flushed"
+              autoFocus
+              placeholder="Enter email"
+              style={{
+                fontSize: "14px",
+                fontWeight: "600",
+                border: "none",
+                outline: "none",
+                textDecoration: "underline",
+                boxShadow: "-1px 0px 10px 0px gray",
+                borderRadius: "5px",
+                padding: "10px",
+                width: "200px",
+                backgroundColor: "white",
+                marginRight: "10px",
+              }}
+            />
+      
+            {/* Button to redirect to email */}
+            <Button
+              onClick={() => window.location.href = `mailto:${row[col.name]}`}
+              size="sm"
+              colorScheme="blue"
+            >
+              Send Email
+            </Button>
+          </div>
+        );
+      } else if (col.dataType === "phone") {
+        return (
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <Input
+              type="text" // Use text type since we concatenate country code with phone number
+              value={row[col.name] || ""} // Combine country code and phone number
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                // Only allow numeric characters
+                const value = e.target.value.replace(/\D/g, ''); // Removes non-numeric characters
+                handleChange(e); // Pass the event to handleChange
+                // Save the phone number with country code in localStorage
+                localStorage.setItem(`phone_${rowIndex}`, value);
+              }}
+              onBlur={handleBlur}
+              onKeyDown={handleKeyDown}
+              variant="flushed"
+              placeholder="Enter phone number"
+              style={{
+                fontSize: "14px",
+                fontWeight: "600",
+                border: "none",
+                outline: "none",
+                textDecoration: "underline",
+                boxShadow: "-1px 0px 10px 0px gray",
+                borderRadius: "5px",
+                padding: "10px",
+                width: "140px",
+                backgroundColor: "white",
+                marginRight: "10px",
+              }}
+              inputMode="numeric" // Mobile-friendly numeric input mode
+            />
+      
+            {/* Button to redirect to Phone */}
+            <Button
+              onClick={() => window.location.href = `tel:${row[col.name]}`}
+              size="sm"
+              colorScheme="blue"
+            >
+              Call
+            </Button>
+          </div>
+        );
       }
+      
+      
+      
+       
+      
 
       return (
         <Input
@@ -821,90 +896,8 @@ const NotionTable: React.FC = () => {
         />
       );
     }
-
-    if (col.dataType === "phone") {
-     
-
-      useEffect(() => {
-        // Initialize phone number from localStorage if available
-        const savedPhone = localStorage.getItem(`${rowIndex}_${col.name}`);
-        if (savedPhone) {
-          setPhone(savedPhone);
-        }
-      }, [rowIndex, col.name]);
-    
-      const handlePhoneChange = (newPhone: string) => {
-        // Update the phone number both in the component state and localStorage
-        setPhone(newPhone);
-        localStorage.setItem(`${rowIndex}_${col.name}`, newPhone); // Save phone number to localStorage
-        row[col.name] = newPhone; // Update the row directly, might need to lift state if you're using props
-      };
-    
-      const handlePhoneRedirect = () => {
-        // Redirect to dial the phone number
-        window.open(`tel:${phone}`, "_blank");
-      };
-    
-      return (
-        <Popover
-          isOpen={tagPopoverRow?.rowIndex === rowIndex && tagPopoverRow?.colName === col.name}
-          onClose={() => setTagPopoverRow(null)}
-          placement="bottom-start"
-        >
-          <PopoverTrigger>
-            <Box
-              onClick={() => setTagPopoverRow({ rowIndex, colName: col.name })}
-              cursor="pointer"
-              minHeight="20px"
-              width="100%"
-              display="flex"
-              alignItems="center"
-              justifyContent="space-between"
-              borderRadius="8px"
-              padding="8px"
-              backgroundColor="white"
-            >
-              <span>{phone || "Enter phone number"}</span>
-              <Button
-                size="xs"
-                onClick={handlePhoneRedirect} // Call button
-                colorScheme="blue"
-                ml={2}
-              >
-                Call
-              </Button>
-            </Box>
-          </PopoverTrigger>
-    
-          <PopoverContent
-            width={"200px"}
-            color="gray"
-            borderRadius="10px"
-            boxShadow="lg"
-            minWidth="100px"
-            border="1px solid"
-            borderColor="gray.400"
-            marginTop="-8px"
-          >
-            <PopoverArrow />
-            <PopoverBody padding="5px">
-              <Input
-                placeholder="Enter phone number"
-                value={phone}
-                onChange={(e) => handlePhoneChange(e.target.value)} // Update phone number on change
-              />
-            </PopoverBody>
-          </PopoverContent>
-        </Popover>
-      );
-    }
     
     
-    
-    
- 
-    
-
    if (col.dataType === "status") {
       const handleStatusChange = (newStatus: string) => {
         // Save the new status to localStorage
