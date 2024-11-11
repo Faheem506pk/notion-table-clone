@@ -795,10 +795,11 @@ const NotionTable: React.FC = () => {
           padding: "10px",
           width: "160px",
           backgroundColor: "white",
-          marginRight: "10px",
+          marginRight: "5px",
         }}
       />
       <Button
+      padding={"0"}
   onClick={() => {
     const email = row[col.name];
     if (email && /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/.test(email)) {
@@ -810,14 +811,12 @@ const NotionTable: React.FC = () => {
   
   bg="none"
 >
-<MdOutlineEmail style={{width:"17px", height:"17px" , marginRight:"5px"}} />
+<MdOutlineEmail style={{width:"17px", height:"17px" }} />
 </Button>
 
 
       
-      {/* <a href={`mailto:${row[col.name]}`}>
-        <MdOutlineEmail style={{width:"17px", height:"17px" , marginRight:"5px"}} />
-      </a> */}
+     
     </div>
   );
 }
@@ -852,13 +851,20 @@ const NotionTable: React.FC = () => {
                 padding: "10px",
                 width: "155px",
                 backgroundColor: "white",
-                marginRight: "10px",
+                marginRight: "5px",
               }}
             />
-            {/* Button to redirect to Phone */}
-            <a href={`tel:${row[col.name]}`}   >
-              <LuPhone style={{width:"17px", height:"17px", marginRight:"5px"}}/>
-            </a>
+            
+            <Button
+  padding="0"
+  onClick={() => window.location.href = `tel:${row[col.name]}`}
+  bg="none"
+>
+  <LuPhone style={{ width: "17px", height: "17px", marginRight: "5px" }} />
+</Button>
+
+
+
           </div>
         );
       }
