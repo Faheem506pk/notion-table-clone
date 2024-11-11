@@ -768,55 +768,80 @@ const NotionTable: React.FC = () => {
         );
       }
        else if (col.dataType === "phone") {
-        return (
-          <div style={{ display: "flex", alignItems: "center" }}>
-            <Input
-              type="number"
-              value={row[col.name] || ""}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                // Allow digits and plus symbol
-                let value = e.target.value.replace(/[^0-9+]/g, ""); // Only digits and + are allowed
-                // Limit to 14 characters (including '+')
-                if (value.length > 14) {
-                  value = value.slice(0, 14);
-                }
-                handleChange(e);
-                localStorage.setItem(`phone_${rowIndex}`, value);
-              }}
-              onBlur={handleBlur}
-              onKeyDown={handleKeyDown}
-              variant="flushed"
-              placeholder="Enter phone number"
-              style={{
-                fontSize: "14px",
-                fontWeight: "600",
-                border: "none",
-                outline: "none",
-                textDecoration: "underline",
-                boxShadow: "-1px 0px 10px 0px gray",
-                borderRadius: "5px",
-                padding: "10px",
-                width: "155px",
-                backgroundColor: "white",
-                marginRight: "5px",
-              }}
-            />
 
-            <Button
-              padding="0"
-              onClick={() => {
-                window.location.href = `tel:${row[col.name]}`
-                console.log(row[col.name])
-              }}
-              
-              bg="none"
+        // Get the saved Phone  from localStorage or fallback to the current row value
+      const savedPhone  = localStorage.getItem(`${rowIndex}_${col.name}`);
+      const currentPhone  = savedPhone || row[col.name] || ""; // Default to empty string if no value exists
+    
+      const handleEmailChange = (newPhone : string) => {
+        // Save the new Phone  to localStorage only after the change
+        localStorage.setItem(`${rowIndex}_${col.name}`, newPhone );
+    
+        // Update the row with the new email value
+        row[col.name] = newPhone ;
+      };
+    
+      return (
+        <Popover
+          isOpen={tagPopoverRow?.rowIndex === rowIndex && tagPopoverRow?.colName === col.name}
+          onClose={() => setTagPopoverRow(null)}
+          placement="bottom-start"
+        >
+          <PopoverTrigger>
+            <Box
+              onClick={() => setTagPopoverRow({ rowIndex, colName: col.name })}
+              cursor="pointer"
+              minHeight="20px"
+              width="100%"
+              display="flex"
+              alignItems="center"
+              justifyContent="space-between"
+              borderRadius="8px"
+              padding="8px"
+              backgroundColor="white"
             >
-              <LuPhone
-                style={{ width: "17px", height: "17px" }}
-              />
-            </Button>
-          </div>
-        );
+              <span>{currentPhone}</span>
+            </Box>
+          </PopoverTrigger>
+    
+          <PopoverContent
+            width={"250px"}
+            color="gray"
+            borderRadius="10px"
+            boxShadow="lg"
+            minWidth="100px"
+            border="1px solid"
+            borderColor="gray.400"
+            marginTop="-8px"
+          >
+            <PopoverArrow />
+            <PopoverBody padding="5px">
+              <Flex direction="column" gap="4px">
+                {/* Email input */}
+                <Input
+                  type="number"
+                  defaultValue={currentPhone }
+                  onBlur={(e) => handleEmailChange(e.target.value)}  // Update when user clicks out (on blur)
+                  placeholder="Enter Phone Number"
+                  size="sm"
+                  mb="4px"
+                />
+                {/* Button to redirect to Phone  */}
+                <Button
+                  onClick={() => window.location.href = `tel:${currentPhone }`}
+                  colorScheme="blue"
+                  variant="outline"
+                  size="sm"
+                >
+                 <LuPhone  style={{ width: "17px", height: "17px" }}/>
+                                      
+                </Button>
+              </Flex>
+            </PopoverBody>
+          </PopoverContent>
+        </Popover>
+      );
+       
       }
 
       return (
@@ -910,7 +935,8 @@ const NotionTable: React.FC = () => {
                   variant="outline"
                   size="sm"
                 >
-                  Open Email Client
+                 <MdOutlineEmail style={{ width: "17px", height: "17px" }}/>
+                                      
                 </Button>
               </Flex>
             </PopoverBody>
