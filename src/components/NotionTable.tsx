@@ -767,59 +767,56 @@ const NotionTable: React.FC = () => {
           />
         );
       }else if (col.dataType === "email") {
-  return (
-    <div style={{ display: "flex", alignItems: "center" }}>
-      {/* Input for email address */}
-      <Input
-        type="email"
-        value={row[col.name] || ""}
-        onChange={(e) => {
-          handleChange(e); // Update state
-
-          // Save the email in localStorage
-          localStorage.setItem(`email_${rowIndex}`, e.target.value);
-        }}
-        onBlur={handleBlur}
-        onKeyDown={handleKeyDown}
-        variant="flushed"
-        autoFocus
-        placeholder="Enter email"
-        style={{
-          fontSize: "14px",
-          fontWeight: "600",
-          border: "none",
-          outline: "none",
-          textDecoration: "underline",
-          boxShadow: "-1px 0px 10px 0px gray",
-          borderRadius: "5px",
-          padding: "10px",
-          width: "160px",
-          backgroundColor: "white",
-          marginRight: "5px",
-        }}
-      />
-      <Button
-      padding={"0"}
-  onClick={() => {
-    const email = row[col.name];
-    if (email && /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/.test(email)) {
-      window.location.href = `mailto:${email}`;
-    } else {
-      alert("Invalid email address.");
-    }
-  }}
-  
-  bg="none"
->
-<MdOutlineEmail style={{width:"17px", height:"17px" }} />
-</Button>
-
-
+        return (
+          <div style={{ display: "flex", alignItems: "center" }}>
+            {/* Input for email address */}
+            <Input
+              type="email"
+              value={row[col.name] || ""}
+              onChange={(e) => {
+                handleChange(e); // Update state
       
-     
-    </div>
-  );
-}
+                // Save the email in localStorage
+                localStorage.setItem(`email_${rowIndex}`, e.target.value);
+              }}
+              onBlur={handleBlur}
+              onKeyDown={handleKeyDown}
+              variant="flushed"
+              autoFocus
+              placeholder="Enter email"
+              style={{
+                fontSize: "14px",
+                fontWeight: "600",
+                border: "none",
+                outline: "none",
+                textDecoration: "underline",
+                boxShadow: "-1px 0px 10px 0px gray",
+                borderRadius: "5px",
+                padding: "10px",
+                width: "160px",
+                backgroundColor: "white",
+                marginRight: "5px",
+              }}
+            />
+            <Button
+              padding={"0"}
+              onClick={() => {
+                const email = row[col.name];
+                if (email && /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/.test(email)) {
+                  // Open mail client with mailto link
+                  window.open(`mailto:${email}`, '_blank');
+                } else {
+                  alert("Invalid email address.");
+                }
+              }}
+              bg="none"
+            >
+              <MdOutlineEmail style={{ width: "17px", height: "17px" }} />
+            </Button>
+          </div>
+        );
+      }
+      
  else if (col.dataType === "phone") {
         return (
           <div style={{ display: "flex", alignItems: "center" }}>
