@@ -43,6 +43,9 @@ import { MdDelete } from "react-icons/md";
 import TagsInput from "react-tagsinput";
 import { GrStatusGood } from "react-icons/gr";
 import { FaArrowDown, FaArrowUp, FaSearch } from "react-icons/fa";
+import { MdOutlineEmail } from "react-icons/md";
+import { LuPhone } from "react-icons/lu";
+import { FaRegIdCard } from "react-icons/fa";
 import "react-tagsinput/react-tagsinput.css";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { TfiShine } from "react-icons/tfi";
@@ -1623,6 +1626,57 @@ const NotionTable: React.FC = () => {
                                         style={{ marginRight: "5px" }}
                                       />{" "}
                                       Number
+                                    </Button>
+                                  </Tr>
+                                  <Tr>
+                                    <Button
+                                      onClick={() => {
+                                        setNewColumnType("phone");
+                                        setNewColumnName("Phone");
+                                        handleAddColumn("phone", "Phone"); // Add the column when button is clicked
+                                      }}
+                                      bg="none"
+                                      color="gray.500"
+                                      paddingLeft={0}
+                                    >
+                                      <LuPhone
+                                        style={{ marginRight: "5px" }}
+                                      />{" "}
+                                      Phone
+                                    </Button>
+                                  </Tr>
+                                  <Tr>
+                                    <Button
+                                      onClick={() => {
+                                        setNewColumnType("email");
+                                        setNewColumnName("Email");
+                                        handleAddColumn("email", "Email"); // Add the column when button is clicked
+                                      }}
+                                      bg="none"
+                                      color="gray.500"
+                                      paddingLeft={0}
+                                    >
+                                      <MdOutlineEmail 
+                                        style={{ marginRight: "5px" }}
+                                      />{" "}
+                                      Email
+                                    </Button>
+                                  </Tr>
+                                  <Tr>
+                                    <Button
+                                      onClick={() => {
+                                        setNewColumnType("cnic");
+                                        setNewColumnName("CNIC");
+                                        handleAddColumn("cnic", "CNIC"); // Add the column when button is clicked
+                                      }}
+                                      bg="none"
+                                      color="gray.500"
+                                      paddingLeft={0}
+                                    >
+                                      <FaRegIdCard
+                                        style={{ marginRight: "5px" }}
+                                      />{" "}
+                                      CNIC
                                     </Button>
                                   </Tr>
                                   <Tr>
