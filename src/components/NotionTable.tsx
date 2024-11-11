@@ -1910,7 +1910,6 @@ const NotionTable: React.FC = () => {
                   )}
                 </Droppable>
               </Table>
-              <a href="mailto:faheemiqbalm@gmail.com">faheemiqbalm@gmail.com</a>
             </DragDropContext>
           </Box>
         </div>
