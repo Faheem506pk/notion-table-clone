@@ -800,7 +800,7 @@ const NotionTable: React.FC = () => {
       />
 
       {/* Link to send email */}
-      <a href={`mailto:${row[col.name]}`}>
+      <a href={`mail:${row[col.name]}`}>
         <MdOutlineEmail style={{width:"17px", height:"17px" , marginRight:"5px"}} />
       </a>
     </div>
@@ -841,7 +841,7 @@ const NotionTable: React.FC = () => {
               }}
             />
             {/* Button to redirect to Phone */}
-            <a href={`telto:${row[col.name]}`}   >
+            <a href={`tel:${row[col.name]}`}   >
               <LuPhone style={{width:"17px", height:"17px", marginRight:"5px"}}/>
             </a>
           </div>
