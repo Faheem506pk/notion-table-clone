@@ -848,7 +848,7 @@ const NotionTable: React.FC = () => {
               bg="none"
             >
               <LuPhone
-                style={{ width: "17px", height: "17px", marginRight: "5px" }}
+                style={{ width: "17px", height: "17px" }}
               />
             </Button>
           </div>
