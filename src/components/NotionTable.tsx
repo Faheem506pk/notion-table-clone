@@ -1494,10 +1494,10 @@ const NotionTable: React.FC = () => {
                                 bg="none"
                               />
                             </PopoverTrigger>
-                            <PopoverContent style={{ width: "150px" }}>
+                            <PopoverContent style={{ width: "150px"}} >
                               <PopoverArrow />
 
-                              <PopoverBody overflowY={"auto"}>
+                              <PopoverBody overflowY={"auto"}  height={"250px"}>
                                 <div>
                                   <Tr>
                                     <Button
