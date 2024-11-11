@@ -773,7 +773,7 @@ const NotionTable: React.FC = () => {
             <Input
               type="email"
               value={row[col.name] || ""}
-              onChange={(e) => {
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                 handleChange(e); // Update state
       
                 // Save the email in localStorage
@@ -800,7 +800,7 @@ const NotionTable: React.FC = () => {
             />
             <Button
               padding={"0"}
-              onClick={() => window.location.href = `mailto:${row[col.name]}`}
+              onClick={() => window.open(`mailto:${row[col.name]}`)}
               bg="none"
             >
               <MdOutlineEmail style={{ width: "17px", height: "17px" }} />
@@ -808,6 +808,7 @@ const NotionTable: React.FC = () => {
           </div>
         );
       }
+      
       
  else if (col.dataType === "phone") {
         return (
