@@ -71,6 +71,10 @@ const NotionTable: React.FC = () => {
   const [newColumnType, setNewColumnType] = useState<string>("");
   const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
   const [hoveredRowIndex, setHoveredRowIndex] = useState<number | null>(null);
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
+  const cancelRef = useRef<HTMLButtonElement | null>(null);
+  const openAlertDialog = () => setIsAlertOpen(true);
+  const closeAlertDialog = () => setIsAlertOpen(false);
   const [selectOptions, setSelectOptions] = useState<string[]>(() => {
     const savedOptions = localStorage.getItem("selectOptions");
     return savedOptions ? JSON.parse(savedOptions) : [""];
@@ -79,11 +83,6 @@ const NotionTable: React.FC = () => {
     const storedColors = localStorage.getItem("badgeColors");
     return storedColors ? JSON.parse(storedColors) : {};
   });
-
-  
-
-
-
 
   const handleSelectAllRows = () => {
     const newSelectedRows = new Set(selectedRows);
@@ -302,12 +301,6 @@ const NotionTable: React.FC = () => {
     const updatedRows = rows.filter((_, i) => i !== index);
     setRows(updatedRows);
   };
-
-  const [isAlertOpen, setIsAlertOpen] = useState(false);
-  const cancelRef = useRef<HTMLButtonElement | null>(null);
-
-  const openAlertDialog = () => setIsAlertOpen(true);
-  const closeAlertDialog = () => setIsAlertOpen(false);
 
   const [editingCell, setEditingCell] = useState<{
     rowIndex: number;
@@ -595,8 +588,6 @@ const NotionTable: React.FC = () => {
       }
     };
 
-   
-
     // Render input based on column data type
     if (isEditing) {
       if (col.dataType === "select") {
@@ -819,80 +810,77 @@ const NotionTable: React.FC = () => {
     if (col.dataType === "phone") {
       const [phoneNumber, setPhoneNumber] = useState("");
 
+      const handlePhoneChange = (event: { target: { value: any } }) => {
+        let newPhoneNumber = event.target.value;
 
-const handlePhoneChange = (event: { target: { value: any; }; }) => {
-  let newPhoneNumber = event.target.value;
-  
-  // Remove leading 0 if exists
-  // if (newPhoneNumber.startsWith("0")) {
-  //   newPhoneNumber = newPhoneNumber.slice(1);
-  // }
+        // Remove leading 0 if exists
+        // if (newPhoneNumber.startsWith("0")) {
+        //   newPhoneNumber = newPhoneNumber.slice(1);
+        // }
 
-  setPhoneNumber(newPhoneNumber);
-};
+        setPhoneNumber(newPhoneNumber);
+      };
 
-const handleRedirectToPhone = () => {
-  // Validate phone number length or pattern if needed
-  const formattedPhoneNumber = phoneNumber.replace(/\s+/g, "");
-  if (formattedPhoneNumber.length < 10) {
-    alert("Please enter a valid phone number");
-    return;
-  }
-  window.location.href = `tel:${formattedPhoneNumber}`;
-  console.log("Redirecting to phone:", formattedPhoneNumber);
-};
+      const handleRedirectToPhone = () => {
+        // Validate phone number length or pattern if needed
+        const formattedPhoneNumber = phoneNumber.replace(/\s+/g, "");
+        if (formattedPhoneNumber.length < 10) {
+          alert("Please enter a valid phone number");
+          return;
+        }
+        window.location.href = `tel:${formattedPhoneNumber}`;
+        console.log("Redirecting to phone:", formattedPhoneNumber);
+      };
 
-return (
-  <Popover>
-    <PopoverTrigger>
-      <Box
-        onClick={() => setTagPopoverRow({ rowIndex, colName: col.name })}
-        cursor="pointer"
-        minHeight="20px"
-        width="100%"
-        display="flex"
-        alignItems="center"
-        justifyContent="space-between"
-        borderRadius="8px"
-        padding="8px"
-        backgroundColor="white"
-      >
-        <span> {phoneNumber}</span>
-      </Box>
-    </PopoverTrigger>
-    <PopoverContent>
-      <PopoverBody>
-        <Input
-          type="tel"
-          placeholder="Phone Number"
-          value={phoneNumber}
-          onChange={handlePhoneChange}
-          style={{
-            marginLeft: "8px",
-            fontSize: "14px",
-            fontWeight: "600",
-            padding: "10px",
-            width: "200px",
-            height: "38px",
-            backgroundColor: "white",
-          }}
-        />
-      </PopoverBody>
-    </PopoverContent>
-    <Button
-      colorScheme="green"
-      variant="outline"
-      size="sm"
-      onClick={handleRedirectToPhone}
-      style={{ marginTop: "10px" , fontSize: "12px" }}
-    >
-      Call Now
-    </Button>
-  </Popover>
-);
-
-    
-  }
+      return (
+        <Popover>
+          <PopoverTrigger>
+            <Box
+              onClick={() => setTagPopoverRow({ rowIndex, colName: col.name })}
+              cursor="pointer"
+              minHeight="20px"
+              width="100%"
+              display="flex"
+              alignItems="center"
+              justifyContent="space-between"
+              borderRadius="8px"
+              padding="8px"
+              backgroundColor="white"
+            >
+              <span> {phoneNumber}</span>
+            </Box>
+          </PopoverTrigger>
+          <PopoverContent>
+            <PopoverBody>
+              <Input
+                type="tel"
+                placeholder="Phone Number"
+                value={phoneNumber}
+                onChange={handlePhoneChange}
+                style={{
+                  marginLeft: "8px",
+                  fontSize: "14px",
+                  fontWeight: "600",
+                  padding: "10px",
+                  width: "200px",
+                  height: "38px",
+                  backgroundColor: "white",
+                }}
+              />
+            </PopoverBody>
+          </PopoverContent>
+          <Button
+            colorScheme="green"
+            variant="outline"
+            size="sm"
+            onClick={handleRedirectToPhone}
+            style={{ marginTop: "10px", fontSize: "12px" }}
+          >
+            Call Now
+          </Button>
+        </Popover>
+      );
+    }
 
     if (col.dataType === "email") {
       // Initialize state for the email
