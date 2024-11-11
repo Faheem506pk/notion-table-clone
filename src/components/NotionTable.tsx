@@ -80,32 +80,8 @@ const NotionTable: React.FC = () => {
     return storedColors ? JSON.parse(storedColors) : {};
   });
 
-  const [countryCodes, setCountryCodes] = useState<
-    { code: string; name: string; pattern: string }[]
-  >([]);
+  
 
-
-  // Fetch country codes and patterns
-  useEffect(() => {
-    async function fetchCountryCodes() {
-      const response = await fetch("https://restcountries.com/v3.1/all"); // Replace with a suitable endpoint
-      const data = await response.json();
-      const codes = data.map(
-        (country: {
-          idd: { root: string; suffixes: string[] };
-          name: { common: string };
-        }) => ({
-          code:
-            country.idd?.root +
-            (country.idd?.suffixes ? country.idd.suffixes[0] : ""),
-          name: country.name.common,
-          pattern: "\\d{10}", // You would update this with actual patterns if available
-        })
-      );
-      setCountryCodes(codes);
-    }
-    fetchCountryCodes();
-  }, []);
 
 
 
