@@ -766,48 +766,8 @@ const NotionTable: React.FC = () => {
             }}
           />
         );
-      } else if (col.dataType === "email") {
-        return (
-          <div style={{ display: "flex", alignItems: "center" }}>
-            {/* Input for email address */}
-            <Input
-              type="email"
-              value={row[col.name] || ""}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                handleChange(e); // Update state
-
-                // Save the email in localStorage
-                localStorage.setItem(`email_${rowIndex}`, e.target.value);
-              }}
-              onBlur={handleBlur}
-              onKeyDown={handleKeyDown}
-              variant="flushed"
-              autoFocus
-              placeholder="Enter email"
-              style={{
-                fontSize: "14px",
-                fontWeight: "600",
-                border: "none",
-                outline: "none",
-                textDecoration: "underline",
-                boxShadow: "-1px 0px 10px 0px gray",
-                borderRadius: "5px",
-                padding: "10px",
-                width: "160px",
-                backgroundColor: "white",
-                marginRight: "5px",
-              }}
-            />
-            <Button
-              padding={"0"}
-              onClick={() => window.open(`mailto:${row[col.name]}`, "_self")}
-              bg="none"
-            >
-              <MdOutlineEmail style={{ width: "17px", height: "17px" }} />
-            </Button>
-          </div>
-        );
-      } else if (col.dataType === "phone") {
+      }
+       else if (col.dataType === "phone") {
         return (
           <div style={{ display: "flex", alignItems: "center" }}>
             <Input
@@ -844,7 +804,11 @@ const NotionTable: React.FC = () => {
 
             <Button
               padding="0"
-              onClick={() => (window.location.href = `tel:${row[col.name]}`)}
+              onClick={() => {
+                window.location.href = `tel:${row[col.name]}`
+                console.log(row[col.name])
+              }}
+              
               bg="none"
             >
               <LuPhone
@@ -881,6 +845,81 @@ const NotionTable: React.FC = () => {
         />
       );
     }
+
+    if (col.dataType === "email") {
+      // Get the saved email from localStorage or fallback to the current row value
+      const savedEmail = localStorage.getItem(`${rowIndex}_${col.name}`);
+      const currentEmail = savedEmail || row[col.name] || ""; // Default to empty string if no value exists
+    
+      const handleEmailChange = (newEmail: string) => {
+        // Save the new email to localStorage only after the change
+        localStorage.setItem(`${rowIndex}_${col.name}`, newEmail);
+    
+        // Update the row with the new email value
+        row[col.name] = newEmail;
+      };
+    
+      return (
+        <Popover
+          isOpen={tagPopoverRow?.rowIndex === rowIndex && tagPopoverRow?.colName === col.name}
+          onClose={() => setTagPopoverRow(null)}
+          placement="bottom-start"
+        >
+          <PopoverTrigger>
+            <Box
+              onClick={() => setTagPopoverRow({ rowIndex, colName: col.name })}
+              cursor="pointer"
+              minHeight="20px"
+              width="100%"
+              display="flex"
+              alignItems="center"
+              justifyContent="space-between"
+              borderRadius="8px"
+              padding="8px"
+              backgroundColor="white"
+            >
+              <span>{currentEmail || "No Email"}</span>
+            </Box>
+          </PopoverTrigger>
+    
+          <PopoverContent
+            width={"250px"}
+            color="gray"
+            borderRadius="10px"
+            boxShadow="lg"
+            minWidth="100px"
+            border="1px solid"
+            borderColor="gray.400"
+            marginTop="-8px"
+          >
+            <PopoverArrow />
+            <PopoverBody padding="5px">
+              <Flex direction="column" gap="4px">
+                {/* Email input */}
+                <Input
+                  defaultValue={currentEmail}
+                  onBlur={(e) => handleEmailChange(e.target.value)}  // Update when user clicks out (on blur)
+                  placeholder="Enter email"
+                  size="sm"
+                  mb="4px"
+                />
+                {/* Button to redirect to email */}
+                <Button
+                  onClick={() => window.location.href = `mailto:${currentEmail}`}
+                  colorScheme="blue"
+                  variant="outline"
+                  size="sm"
+                >
+                  Open Email Client
+                </Button>
+              </Flex>
+            </PopoverBody>
+          </PopoverContent>
+        </Popover>
+      );
+    }
+    
+    
 
     if (col.dataType === "status") {
       const handleStatusChange = (newStatus: string) => {
