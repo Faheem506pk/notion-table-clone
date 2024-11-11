@@ -878,7 +878,7 @@ const NotionTable: React.FC = () => {
               padding="8px"
               backgroundColor="white"
             >
-              <span>{currentEmail || "No Email"}</span>
+              <span>{currentEmail}</span>
             </Box>
           </PopoverTrigger>
     
