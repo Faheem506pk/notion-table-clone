@@ -62,6 +62,33 @@ interface Row {
 }
 
 const NotionTable: React.FC = () => {
+
+  const getIconByType = (dataType: string) => {
+    // Change parameter name to dataType
+    switch (dataType) {
+      case "string":
+        return <GrTextAlignFull style={{ marginRight: "5px" }} />;
+      case "number":
+        return <MdNumbers style={{ marginRight: "5px" }} />;
+      case "date":
+        return <BsCalendarDate style={{ marginRight: "5px" }} />;
+      case "select":
+        return <GoSingleSelect style={{ marginRight: "5px" }} />;
+      case "tags":
+        return <GoTag style={{ marginRight: "5px" }} />;
+      case "status":
+        return <TfiShine style={{ marginRight: "5px" }} />;
+      case "cnic":
+        return <FaRegIdCard style={{ marginRight: "5px" }} />;
+      case "phone":
+        return <LuPhone  style={{ marginRight: "5px" }} />;
+      case "email":
+        return <MdOutlineEmail style={{ marginRight: "5px" }} />;
+      default:
+        return <VscListFlat style={{ marginRight: "5px" }} />;
+    }
+  };
+
   const [taskName, setTaskName] = useState(
     localStorage.getItem("taskName") || "Task Name"
   );
@@ -88,6 +115,8 @@ const NotionTable: React.FC = () => {
     const storedColors = localStorage.getItem("badgeColors");
     return storedColors ? JSON.parse(storedColors) : {};
   });
+
+ 
 
   const handleSelectAllRows = () => {
     const newSelectedRows = new Set(selectedRows);
@@ -205,25 +234,7 @@ const NotionTable: React.FC = () => {
     newValue: string;
   } | null>(null);
 
-  const getIconByType = (dataType: string) => {
-    // Change parameter name to dataType
-    switch (dataType) {
-      case "string":
-        return <GrTextAlignFull style={{ marginRight: "5px" }} />;
-      case "number":
-        return <MdNumbers style={{ marginRight: "5px" }} />;
-      case "date":
-        return <BsCalendarDate style={{ marginRight: "5px" }} />;
-      case "select":
-        return <GoSingleSelect style={{ marginRight: "5px" }} />;
-      case "tags":
-        return <GoTag style={{ marginRight: "5px" }} />;
-      case "status":
-        return <TfiShine style={{ marginRight: "5px" }} />;
-      default:
-        return <VscListFlat style={{ marginRight: "5px" }} />;
-    }
-  };
+ 
 
   // Function to update localStorage whenever selectOptions changes
   useEffect(() => {
