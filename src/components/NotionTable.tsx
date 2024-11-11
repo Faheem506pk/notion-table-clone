@@ -48,6 +48,7 @@ import { LuPhone } from "react-icons/lu";
 import { FaRegIdCard } from "react-icons/fa";
 import "react-tagsinput/react-tagsinput.css";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+
 import { TfiShine } from "react-icons/tfi";
 
 interface Column {
@@ -765,59 +766,47 @@ const NotionTable: React.FC = () => {
             }}
           />
         );
-      } else if (col.dataType === "email") {
-        return (
-          <div style={{ display: "flex", alignItems: "center" }}>
-            {/* Input for email address */}
-            <Input
-              type="email"
-              value={row[col.name] || ""}
-              onChange={(e) => {
-                handleChange(e); // Update state
+      }else if (col.dataType === "email") {
+  return (
+    <div style={{ display: "flex", alignItems: "center" }}>
+      {/* Input for email address */}
+      <Input
+        type="email"
+        value={row[col.name] || ""}
+        onChange={(e) => {
+          handleChange(e); // Update state
 
-                // Save the email in localStorage
-                localStorage.setItem(`email_${rowIndex}`, e.target.value);
-              }}
-              onBlur={handleBlur}
-              onKeyDown={handleKeyDown}
-              variant="flushed"
-              autoFocus
-              placeholder="Enter email"
-              style={{
-                fontSize: "14px",
-                fontWeight: "600",
-                border: "none",
-                outline: "none",
-                textDecoration: "underline",
-                boxShadow: "-1px 0px 10px 0px gray",
-                borderRadius: "5px",
-                padding: "10px",
-                width: "200px",
-                backgroundColor: "white",
-                marginRight: "10px",
-              }}
-            />
+          // Save the email in localStorage
+          localStorage.setItem(`email_${rowIndex}`, e.target.value);
+        }}
+        onBlur={handleBlur}
+        onKeyDown={handleKeyDown}
+        variant="flushed"
+        autoFocus
+        placeholder="Enter email"
+        style={{
+          fontSize: "14px",
+          fontWeight: "600",
+          border: "none",
+          outline: "none",
+          textDecoration: "underline",
+          boxShadow: "-1px 0px 10px 0px gray",
+          borderRadius: "5px",
+          padding: "10px",
+          width: "160px",
+          backgroundColor: "white",
+          marginRight: "10px",
+        }}
+      />
 
-            <Button
-              onClick={() => {
-                const email = row[col.name];
-                if (
-                  email &&
-                  /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/.test(email)
-                ) {
-                  window.location.href = `mailto:${email}`;
-                } else {
-                  alert("Invalid email address.");
-                }
-              }}
-              size="sm"
-              colorScheme="blue"
-            >
-               <MdOutlineEmail/>
-            </Button>
-          </div>
-        );
-      } else if (col.dataType === "phone") {
+      {/* Link to send email */}
+      <a href={`mailto:${row[col.name]}`}>
+        <MdOutlineEmail style={{width:"17px", height:"17px"}} />
+      </a>
+    </div>
+  );
+}
+ else if (col.dataType === "phone") {
         return (
           <div style={{ display: "flex", alignItems: "center" }}>
             <Input
@@ -846,7 +835,7 @@ const NotionTable: React.FC = () => {
                 boxShadow: "-1px 0px 10px 0px gray",
                 borderRadius: "5px",
                 padding: "10px",
-                width: "140px",
+                width: "155px",
                 backgroundColor: "white",
                 marginRight: "10px",
               }}
@@ -854,13 +843,9 @@ const NotionTable: React.FC = () => {
             />
 
             {/* Button to redirect to Phone */}
-            <Button
-              onClick={() => (window.location.href = `tel:${row[col.name]}`)}
-              size="sm"
-              colorScheme="blue"
-            >
-              <LuPhone/>
-            </Button>
+            <a href={`telto:${row[col.name]}`}   >
+              <LuPhone style={{width:"17px", height:"17px"}}/>
+            </a>
           </div>
         );
       }
