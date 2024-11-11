@@ -810,7 +810,7 @@ const NotionTable: React.FC = () => {
         return (
           <div style={{ display: "flex", alignItems: "center" }}>
             <Input
-              type="text"
+              type="number"
               value={row[col.name] || ""}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                 // Allow digits and plus symbol
@@ -839,9 +839,7 @@ const NotionTable: React.FC = () => {
                 backgroundColor: "white",
                 marginRight: "10px",
               }}
-    
             />
-
             {/* Button to redirect to Phone */}
             <a href={`telto:${row[col.name]}`}   >
               <LuPhone style={{width:"17px", height:"17px"}}/>
