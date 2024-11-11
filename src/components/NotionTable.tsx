@@ -78,7 +78,7 @@ const NotionTable: React.FC = () => {
   const cancelRef = useRef<HTMLButtonElement | null>(null);
   const openAlertDialog = () => setIsAlertOpen(true);
   const closeAlertDialog = () => setIsAlertOpen(false);
-  
+
   const [selectOptions, setSelectOptions] = useState<string[]>(() => {
     const savedOptions = localStorage.getItem("selectOptions");
     return savedOptions ? JSON.parse(savedOptions) : [""];
@@ -87,8 +87,6 @@ const NotionTable: React.FC = () => {
     const storedColors = localStorage.getItem("badgeColors");
     return storedColors ? JSON.parse(storedColors) : {};
   });
- 
-  
 
   const handleSelectAllRows = () => {
     const newSelectedRows = new Set(selectedRows);
@@ -447,10 +445,6 @@ const NotionTable: React.FC = () => {
     handleDeleteColumn(columnName);
     closeAlertDialog();
   };
-  
-
-
-
 
   const renderInputField = (
     row: Row,
@@ -460,9 +454,6 @@ const NotionTable: React.FC = () => {
   ) => {
     const isEditing =
       editingCell?.rowIndex === rowIndex && editingCell?.colIndex === colIndex;
-
-
-    
 
     const handleCellClick = () => {
       if (!isEditing) {
@@ -584,9 +575,6 @@ const NotionTable: React.FC = () => {
       }
     };
 
-    
-   
-   
     // Render input based on column data type
     if (isEditing) {
       if (col.dataType === "select") {
@@ -786,7 +774,7 @@ const NotionTable: React.FC = () => {
               value={row[col.name] || ""}
               onChange={(e) => {
                 handleChange(e); // Update state
-                
+
                 // Save the email in localStorage
                 localStorage.setItem(`email_${rowIndex}`, e.target.value);
               }}
@@ -809,14 +797,23 @@ const NotionTable: React.FC = () => {
                 marginRight: "10px",
               }}
             />
-      
-            {/* Button to redirect to email */}
+
             <Button
-              onClick={() => window.location.href = `mailto:${row[col.name]}`}
+              onClick={() => {
+                const email = row[col.name];
+                if (
+                  email &&
+                  /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/.test(email)
+                ) {
+                  window.location.href = `mailto:${email}`;
+                } else {
+                  alert("Invalid email address.");
+                }
+              }}
               size="sm"
               colorScheme="blue"
             >
-              Send Email
+               <MdOutlineEmail/>
             </Button>
           </div>
         );
@@ -824,13 +821,16 @@ const NotionTable: React.FC = () => {
         return (
           <div style={{ display: "flex", alignItems: "center" }}>
             <Input
-              type="text" // Use text type since we concatenate country code with phone number
-              value={row[col.name] || ""} // Combine country code and phone number
+              type="text"
+              value={row[col.name] || ""}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                // Only allow numeric characters
-                const value = e.target.value.replace(/\D/g, ''); // Removes non-numeric characters
-                handleChange(e); // Pass the event to handleChange
-                // Save the phone number with country code in localStorage
+                // Allow digits and plus symbol
+                let value = e.target.value.replace(/[^0-9+]/g, ""); // Only digits and + are allowed
+                // Limit to 14 characters (including '+')
+                if (value.length > 14) {
+                  value = value.slice(0, 14);
+                }
+                handleChange(e);
                 localStorage.setItem(`phone_${rowIndex}`, value);
               }}
               onBlur={handleBlur}
@@ -850,25 +850,20 @@ const NotionTable: React.FC = () => {
                 backgroundColor: "white",
                 marginRight: "10px",
               }}
-              inputMode="numeric" // Mobile-friendly numeric input mode
+              inputMode="numeric"
             />
-      
+
             {/* Button to redirect to Phone */}
             <Button
-              onClick={() => window.location.href = `tel:${row[col.name]}`}
+              onClick={() => (window.location.href = `tel:${row[col.name]}`)}
               size="sm"
               colorScheme="blue"
             >
-              Call
+              <LuPhone/>
             </Button>
           </div>
         );
       }
-      
-      
-      
-       
-      
 
       return (
         <Input
@@ -896,9 +891,8 @@ const NotionTable: React.FC = () => {
         />
       );
     }
-    
-    
-   if (col.dataType === "status") {
+
+    if (col.dataType === "status") {
       const handleStatusChange = (newStatus: string) => {
         // Save the new status to localStorage
         localStorage.setItem(`${rowIndex}_${col.name}`, newStatus); // Save the status in localStorage
@@ -986,12 +980,18 @@ const NotionTable: React.FC = () => {
         </Popover>
       );
     }
-    
+
     if (col.dataType === "tags") {
       // New tag handling logic
       return (
         <Popover
-          isOpen={ tagPopoverRow?.rowIndex === rowIndex && tagPopoverRow?.colName === col.name } onClose={() => setTagPopoverRow(null)} placement="bottom-start">
+          isOpen={
+            tagPopoverRow?.rowIndex === rowIndex &&
+            tagPopoverRow?.colName === col.name
+          }
+          onClose={() => setTagPopoverRow(null)}
+          placement="bottom-start"
+        >
           <PopoverTrigger>
             <Box
               onClick={() => setTagPopoverRow({ rowIndex, colName: col.name })}
@@ -1494,10 +1494,10 @@ const NotionTable: React.FC = () => {
                                 bg="none"
                               />
                             </PopoverTrigger>
-                            <PopoverContent style={{ width: "150px"}} >
+                            <PopoverContent style={{ width: "150px" }}>
                               <PopoverArrow />
 
-                              <PopoverBody overflowY={"auto"}  height={"250px"}>
+                              <PopoverBody overflowY={"auto"} height={"250px"}>
                                 <div>
                                   <Tr>
                                     <Button
@@ -1544,9 +1544,7 @@ const NotionTable: React.FC = () => {
                                       color="gray.500"
                                       paddingLeft={0}
                                     >
-                                      <LuPhone
-                                        style={{ marginRight: "5px" }}
-                                      />{" "}
+                                      <LuPhone style={{ marginRight: "5px" }} />{" "}
                                       Phone
                                     </Button>
                                   </Tr>
@@ -1561,7 +1559,7 @@ const NotionTable: React.FC = () => {
                                       color="gray.500"
                                       paddingLeft={0}
                                     >
-                                      <MdOutlineEmail 
+                                      <MdOutlineEmail
                                         style={{ marginRight: "5px" }}
                                       />{" "}
                                       Email
@@ -1583,7 +1581,7 @@ const NotionTable: React.FC = () => {
                                       />{" "}
                                       CNIC
                                     </Button>
-                                  </Tr> 
+                                  </Tr>
                                   <Tr>
                                     <Button
                                       onClick={() => {
