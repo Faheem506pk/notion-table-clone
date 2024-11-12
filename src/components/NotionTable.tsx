@@ -1,4 +1,4 @@
-import React, { useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -20,15 +20,9 @@ import {
   Badge,
   Text,
 } from "@chakra-ui/react";
-import {
-  FaPlus,
-  FaRegIdCard,
-} from "react-icons/fa";
-import { MdNumbers, MdDelete, MdOutlineEmail } from "react-icons/md";
-import { GrTextAlignFull, GrStatusGood } from "react-icons/gr";
-import { GoSingleSelect, GoTag } from "react-icons/go";
-import { BsCalendarDate } from "react-icons/bs";
-import { TfiShine } from "react-icons/tfi";
+import { FaPlus } from "react-icons/fa";
+import { MdDelete, MdOutlineEmail } from "react-icons/md";
+import { GrStatusGood } from "react-icons/gr";
 import { LuPhone } from "react-icons/lu";
 import TagsInput from "react-tagsinput";
 import "react-tagsinput/react-tagsinput.css";
@@ -36,6 +30,7 @@ import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import Header from "./Header";
 import RowActions from "./RowActions";
 import ColumnPropertyEdit from "./ColumnPropertyEdit";
+import AddNewColumn from "./AddNewColumn";
 
 interface Column {
   name: string;
@@ -48,16 +43,12 @@ interface Row {
 }
 
 const NotionTable: React.FC = () => {
-  
-
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [isOpen, setIsOpen] = useState(false);
+  const { onClose } = useDisclosure();
   const [newColumnName, setNewColumnName] = useState<string>("");
   const [newColumnType, setNewColumnType] = useState<string>("");
   const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
   const [hoveredRowIndex, setHoveredRowIndex] = useState<number | null>(null);
-  
-  
-
   const [selectOptions, setSelectOptions] = useState<string[]>(() => {
     const savedOptions = localStorage.getItem("selectOptions");
     return savedOptions ? JSON.parse(savedOptions) : [""];
@@ -78,6 +69,7 @@ const NotionTable: React.FC = () => {
     }
     setSelectedRows(newSelectedRows);
   };
+
   const handleDeleteSelectedRows = () => {
     const remainingRows = rows.filter((_, index) => !selectedRows.has(index));
     setRows(remainingRows); // Update rows state
@@ -160,20 +152,13 @@ const NotionTable: React.FC = () => {
     colName: string,
     tags: string[]
   ) => {
-    // Create a deep copy of rows to ensure immutability
-    const updatedRows = [...rows]; // Shallow copy of the array
-    const updatedRow = { ...updatedRows[rowIndex] }; // Shallow copy of the specific row
-
-    // Update the specific column with the new tags
-    updatedRow[colName] = tags.join(","); // Convert the tags array to a comma-separated string
-
-    // Put the updated row back in the array
+    const updatedRows = [...rows];
+    const updatedRow = { ...updatedRows[rowIndex] };
+    updatedRow[colName] = tags.join(",");
     updatedRows[rowIndex] = updatedRow;
 
-    // Update the rows state
     setRows(updatedRows);
 
-    // Optionally, update localStorage if needed
     localStorage.setItem("rows", JSON.stringify(updatedRows));
   };
 
@@ -183,7 +168,6 @@ const NotionTable: React.FC = () => {
     newValue: string;
   } | null>(null);
 
-  // Function to update localStorage whenever selectOptions changes
   useEffect(() => {
     localStorage.setItem("selectOptions", JSON.stringify(selectOptions));
   }, [selectOptions]);
@@ -270,38 +254,32 @@ const NotionTable: React.FC = () => {
   };
 
   const handleAddColumn = (type: string, name: string) => {
-    // Check if a new column name is provided
     if (name) {
-      // Check if the column name already exists
       let newName = name;
       let counter = 1;
       while (columns.some((column) => column.name === newName)) {
-        newName = `${name}${counter}`; // Append a number to make the name unique
+        newName = `${name}${counter}`;
         counter++;
       }
 
-      // Create a new column object with the unique name
       const newColumn: Column = {
         name: newName,
         dataType: type,
-        width: 150, // Default width for the new column
+        width: 150,
       };
 
-      // Update the columns state by adding the new column
       setColumns((prevColumns) => [...prevColumns, newColumn]);
 
-      // Update each row to include the new column with a default value
       setRows((prevRows) =>
         prevRows.map((row) => ({
           ...row,
-          [newName]: type === "select" ? "" : "", // Set default value for new column
+          [newName]: type === "select" ? "" : "",
         }))
       );
 
-      // Reset the column name and type for future additions
-      setNewColumnName(""); // No need to reset since we're passing new names directly
-      setNewColumnType("string"); // Reset to default type if needed
-      onClose(); // Close the popover
+      setNewColumnName("");
+      setNewColumnType("string");
+      onClose();
     }
     console.log(`Added column of type: ${type} with name: ${name}`);
   };
@@ -325,7 +303,6 @@ const NotionTable: React.FC = () => {
 
   const handleChangeColumnName = (index: number, newName: string) => {
     if (newName) {
-      // Transfer existing row data to the new column name
       const updatedRows = rows.map((row) => {
         const newRow = { ...row };
         if (columns[index].name !== newName) {
@@ -345,7 +322,6 @@ const NotionTable: React.FC = () => {
     }
   };
 
-  // Save to local storage function
   const saveToLocalStorage = (key: string, data: Column[] | Row[]): void => {
     localStorage.setItem(key, JSON.stringify(data));
   };
@@ -360,14 +336,12 @@ const NotionTable: React.FC = () => {
     if (!destination) return;
 
     if (type === "COLUMN") {
-      // Dragging columns
       const reorderedColumns = Array.from(columns);
       const [movedColumn] = reorderedColumns.splice(source.index, 1);
       reorderedColumns.splice(destination.index, 0, movedColumn);
       setColumns(reorderedColumns);
       saveToLocalStorage("columns", reorderedColumns);
     } else {
-      // Dragging rows
       const reorderedRows = Array.from(rows);
       const [movedRow] = reorderedRows.splice(source.index, 1);
       reorderedRows.splice(destination.index, 0, movedRow);
@@ -375,8 +349,6 @@ const NotionTable: React.FC = () => {
       saveToLocalStorage("rows", reorderedRows);
     }
   };
-
-  
 
   const renderInputField = (
     row: Row,
@@ -804,15 +776,12 @@ const NotionTable: React.FC = () => {
     }
 
     if (col.dataType === "email") {
-      // Get the saved email from localStorage or fallback to the current row value
       const savedEmail = localStorage.getItem(`${rowIndex}_${col.name}`);
-      const currentEmail = savedEmail || row[col.name] || ""; // Default to empty string if no value exists
+      const currentEmail = savedEmail || row[col.name] || "";
 
       const handleEmailChange = (newEmail: string) => {
-        // Save the new email to localStorage only after the change
         localStorage.setItem(`${rowIndex}_${col.name}`, newEmail);
 
-        // Update the row with the new email value
         row[col.name] = newEmail;
       };
 
@@ -854,16 +823,15 @@ const NotionTable: React.FC = () => {
             <PopoverArrow />
             <PopoverBody padding="5px">
               <Flex direction="column" gap="4px">
-                {/* Email input */}
                 <Input
                   type="email"
                   defaultValue={currentEmail}
-                  onBlur={(e) => handleEmailChange(e.target.value)} // Update when user clicks out (on blur)
+                  onBlur={(e) => handleEmailChange(e.target.value)}
                   placeholder="Enter email"
                   size="sm"
                   mb="4px"
                 />
-                {/* Button to redirect to email */}
+
                 <Button
                   onClick={() =>
                     (window.location.href = `mailto:${currentEmail}`)
@@ -883,16 +851,13 @@ const NotionTable: React.FC = () => {
 
     if (col.dataType === "status") {
       const handleStatusChange = (newStatus: string) => {
-        // Save the new status to localStorage
-        localStorage.setItem(`${rowIndex}_${col.name}`, newStatus); // Save the status in localStorage
+        localStorage.setItem(`${rowIndex}_${col.name}`, newStatus);
 
-        // Optionally, you can update the row directly if you want the status to be reflected in the UI immediately
-        row[col.name] = newStatus; // Update the row status directly
+        row[col.name] = newStatus;
       };
 
-      // Check if status is already in localStorage, else fallback to row[col.name]
       const savedStatus = localStorage.getItem(`${rowIndex}_${col.name}`);
-      const currentStatus = savedStatus || row[col.name] || "Inactive"; // Default to "Inactive" if no value exists
+      const currentStatus = savedStatus || row[col.name] || "Inactive";
 
       return (
         <Popover
@@ -942,7 +907,6 @@ const NotionTable: React.FC = () => {
             <PopoverArrow />
             <PopoverBody padding="5px">
               <Flex direction="column" gap="4px">
-                {/* Buttons to change status */}
                 <Button
                   onClick={() => handleStatusChange("Active")}
                   colorScheme="green"
@@ -971,7 +935,6 @@ const NotionTable: React.FC = () => {
     }
 
     if (col.dataType === "tags") {
-      // New tag handling logic
       return (
         <Popover
           isOpen={
@@ -1039,7 +1002,6 @@ const NotionTable: React.FC = () => {
       );
     }
 
-    // Render the cell's current value when not editing
     return (
       <div
         onClick={handleCellClick}
@@ -1055,14 +1017,12 @@ const NotionTable: React.FC = () => {
       const valA = a[columns[colIndex].name];
       const valB = b[columns[colIndex].name];
 
-      // Function to check if a value is empty, null, or only whitespace
       const isEmpty = (value: any) =>
         value == null || (typeof value === "string" && value.trim() === "");
 
-      // Handle empty values by pushing them to the end
       if (isEmpty(valA) && isEmpty(valB)) return 0;
-      if (isEmpty(valA)) return 1; // valA is empty, push it to the end
-      if (isEmpty(valB)) return -1; // valB is empty, push it to the end
+      if (isEmpty(valA)) return 1;
+      if (isEmpty(valB)) return -1;
 
       // Compare non-empty values
       if (typeof valA === "number" && typeof valB === "number") {
@@ -1184,8 +1144,7 @@ const NotionTable: React.FC = () => {
                                     handleChangeColumnType
                                   }
                                   sortColumn={sortColumn}
-                                  
-                                  handleDeleteColumn={ handleDeleteColumn}
+                                  handleDeleteColumn={handleDeleteColumn}
                                   handleMouseDown={handleMouseDown}
                                 />
                               </Th>
@@ -1194,177 +1153,14 @@ const NotionTable: React.FC = () => {
                         ))}
                         {provided.placeholder}
                         <Th bg="none">
-                          <Popover
-                            placement="bottom"
+                          <AddNewColumn
+                            onOpen={() => setIsOpen(true)}
                             isOpen={isOpen}
-                            onClose={onClose}
-                          >
-                            <PopoverTrigger>
-                              <Button
-                                onClick={() => onOpen()}
-                                leftIcon={<FaPlus />}
-                                textColor="gray.400"
-                                bg="none"
-                              />
-                            </PopoverTrigger>
-                            <PopoverContent style={{ width: "150px" }}>
-                              <PopoverArrow />
-
-                              <PopoverBody overflowY={"auto"} height={"250px"}>
-                                <div>
-                                  <Tr>
-                                    <Button
-                                      onClick={() => {
-                                        setNewColumnType("string");
-                                        setNewColumnName("Text");
-                                        handleAddColumn("string", "Text"); // Add the column when button is clicked
-                                      }}
-                                      bg="none"
-                                      color="gray.500"
-                                      paddingLeft={0}
-                                    >
-                                      <GrTextAlignFull
-                                        style={{ marginRight: "5px" }}
-                                      />{" "}
-                                      Text
-                                    </Button>
-                                  </Tr>
-                                  <Tr>
-                                    <Button
-                                      onClick={() => {
-                                        setNewColumnType("number");
-                                        setNewColumnName("Number");
-                                        handleAddColumn("number", "Number"); // Add the column when button is clicked
-                                      }}
-                                      bg="none"
-                                      color="gray.500"
-                                      paddingLeft={0}
-                                    >
-                                      <MdNumbers
-                                        style={{ marginRight: "5px" }}
-                                      />{" "}
-                                      Number
-                                    </Button>
-                                  </Tr>
-                                  <Tr>
-                                    <Button
-                                      onClick={() => {
-                                        setNewColumnType("phone");
-                                        setNewColumnName("Phone");
-                                        handleAddColumn("phone", "Phone"); // Add the column when button is clicked
-                                      }}
-                                      bg="none"
-                                      color="gray.500"
-                                      paddingLeft={0}
-                                    >
-                                      <LuPhone style={{ marginRight: "5px" }} />{" "}
-                                      Phone
-                                    </Button>
-                                  </Tr>
-                                  <Tr>
-                                    <Button
-                                      onClick={() => {
-                                        setNewColumnType("email");
-                                        setNewColumnName("Email");
-                                        handleAddColumn("email", "Email"); // Add the column when button is clicked
-                                      }}
-                                      bg="none"
-                                      color="gray.500"
-                                      paddingLeft={0}
-                                    >
-                                      <MdOutlineEmail
-                                        style={{ marginRight: "5px" }}
-                                      />{" "}
-                                      Email
-                                    </Button>
-                                  </Tr>
-                                  <Tr>
-                                    <Button
-                                      onClick={() => {
-                                        setNewColumnType("cnic");
-                                        setNewColumnName("CNIC");
-                                        handleAddColumn("cnic", "CNIC"); // Add the column when button is clicked
-                                      }}
-                                      bg="none"
-                                      color="gray.500"
-                                      paddingLeft={0}
-                                    >
-                                      <FaRegIdCard
-                                        style={{ marginRight: "5px" }}
-                                      />{" "}
-                                      CNIC
-                                    </Button>
-                                  </Tr>
-                                  <Tr>
-                                    <Button
-                                      onClick={() => {
-                                        setNewColumnType("date");
-                                        setNewColumnName("Date");
-                                        handleAddColumn("date", "Date"); // Add the column when button is clicked
-                                      }}
-                                      bg="none"
-                                      color="gray.500"
-                                      paddingLeft={0}
-                                    >
-                                      <BsCalendarDate
-                                        style={{ marginRight: "5px" }}
-                                      />{" "}
-                                      Date
-                                    </Button>
-                                  </Tr>
-                                  <Tr>
-                                    <Button
-                                      onClick={() => {
-                                        setNewColumnType("select");
-                                        setNewColumnName("Select");
-                                        handleAddColumn("select", "Select"); // Add the column when button is clicked
-                                      }}
-                                      bg="none"
-                                      color="gray.500"
-                                      paddingLeft={0}
-                                    >
-                                      <GoSingleSelect
-                                        style={{ marginRight: "5px" }}
-                                      />{" "}
-                                      Select
-                                    </Button>
-                                  </Tr>
-                                  <Tr>
-                                    <Button
-                                      onClick={() => {
-                                        setNewColumnType("tags");
-                                        setNewColumnName("Multi-Select");
-                                        handleAddColumn("tags", "Multi-Select"); // Add the column when button is clicked
-                                      }}
-                                      bg="none"
-                                      color="gray.500"
-                                      paddingLeft={0}
-                                    >
-                                      <GoTag style={{ marginRight: "5px" }} />{" "}
-                                      Multi-Select
-                                    </Button>
-                                  </Tr>
-                                  <Tr>
-                                    <Button
-                                      onClick={() => {
-                                        setNewColumnType("status");
-                                        setNewColumnName("Status");
-                                        handleAddColumn("status", "Status"); // Add the column when button is clicked
-                                      }}
-                                      bg="none"
-                                      color="gray.500"
-                                      paddingLeft={0}
-                                    >
-                                      <TfiShine
-                                        style={{ marginRight: "5px" }}
-                                      />{" "}
-                                      Status
-                                    </Button>
-                                  </Tr>
-                                </div>
-                              </PopoverBody>
-                            </PopoverContent>
-                          </Popover>
+                            onClose={() => setIsOpen(false)}
+                            setNewColumnType={setNewColumnType}
+                            setNewColumnName={setNewColumnName}
+                            handleAddColumn={handleAddColumn}
+                          />
                         </Th>
                       </Tr>
                     </Thead>
@@ -1428,7 +1224,7 @@ const NotionTable: React.FC = () => {
                         </Draggable>
                       ))}
                       {provided.placeholder}
-                      {/* Add Row Button */}
+
                       <Tr>
                         <Td borderBottom="0px" borderTop="0px"></Td>
                         <div
@@ -1456,7 +1252,6 @@ const NotionTable: React.FC = () => {
                           </Box>
                         </div>
                       </Tr>
-                      {/* Row Count */}
                       <Tr>
                         <Td borderBottom="0px" borderTop="0px"></Td>
                         {columns.map((_, colmIndex) => (
