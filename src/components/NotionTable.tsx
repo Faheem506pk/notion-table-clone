@@ -41,7 +41,6 @@ import {
 import {
   MdNumbers,
   MdDelete,
-  MdDragIndicator,
   MdOutlineEmail,
 } from "react-icons/md";
 import { GrTextAlignFull, GrStatusGood } from "react-icons/gr";
