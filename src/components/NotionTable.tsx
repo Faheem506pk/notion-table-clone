@@ -3,7 +3,6 @@ import {
   Box,
   Button,
   Input,
-  Select,
   Table,
   Thead,
   Tbody,
@@ -28,6 +27,7 @@ import Header from "./Header";
 import RowActions from "./RowActions";
 import ColumnPropertyEdit from "./ColumnPropertyEdit";
 import AddNewColumn from "./AddNewColumn";
+import SelectPopover from "./Datatype/Select";
 import MultiSelect from "./Datatype/MultiSelect";
 import StatusPopover from "./Datatype/Status";
 
@@ -48,10 +48,6 @@ const NotionTable: React.FC = () => {
   const [newColumnType, setNewColumnType] = useState<string>("");
   const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
   const [hoveredRowIndex, setHoveredRowIndex] = useState<number | null>(null);
-  const [selectOptions, setSelectOptions] = useState<string[]>(() => {
-    const savedOptions = localStorage.getItem("selectOptions");
-    return savedOptions ? JSON.parse(savedOptions) : [""];
-  });
 
   const handleSelectAllRows = () => {
     const newSelectedRows = new Set(selectedRows);
@@ -117,16 +113,6 @@ const NotionTable: React.FC = () => {
 
     localStorage.setItem("rows", JSON.stringify(updatedRows));
   };
-
-  const [newOption, setNewOption] = useState<string>("");
-  const [editingOption, setEditingOption] = useState<{
-    oldValue: string;
-    newValue: string;
-  } | null>(null);
-
-  useEffect(() => {
-    localStorage.setItem("selectOptions", JSON.stringify(selectOptions));
-  }, [selectOptions]);
 
   useEffect(() => {
     if (newColumnName || newColumnType) {
@@ -306,6 +292,35 @@ const NotionTable: React.FC = () => {
     }
   };
 
+  const sortColumn = (colIndex: number, order: "asc" | "desc") => {
+    const sortedRows = [...rows].sort((a, b) => {
+      const valA = a[columns[colIndex].name];
+      const valB = b[columns[colIndex].name];
+
+      const isEmpty = (value: any) =>
+        value == null || (typeof value === "string" && value.trim() === "");
+
+      if (isEmpty(valA) && isEmpty(valB)) return 0;
+      if (isEmpty(valA)) return 1;
+      if (isEmpty(valB)) return -1;
+
+      if (typeof valA === "number" && typeof valB === "number") {
+        return order === "asc" ? valA - valB : valB - valA;
+      } else if (typeof valA === "string" && typeof valB === "string") {
+        return order === "asc"
+          ? valA.localeCompare(valB)
+          : valB.localeCompare(valA);
+      } else if (valA instanceof Date && valB instanceof Date) {
+        return order === "asc"
+          ? valA.getTime() - valB.getTime()
+          : valB.getTime() - valA.getTime();
+      }
+
+      return 0;
+    });
+    setRows(sortedRows);
+  };
+
   const renderInputField = (
     row: Row,
     col: Column,
@@ -314,6 +329,63 @@ const NotionTable: React.FC = () => {
   ) => {
     const isEditing =
       editingCell?.rowIndex === rowIndex && editingCell?.colIndex === colIndex;
+
+    const handleKeyDown = (
+      e: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>
+    ) => {
+      if (
+        editingCell &&
+        editingCell.rowIndex === rowIndex &&
+        editingCell.colIndex === colIndex
+      ) {
+        switch (e.key) {
+          case "Enter":
+            handleBlur();
+            break;
+          case "Tab":
+            e.preventDefault();
+            const isShift = e.shiftKey;
+            const nextColIndex = colIndex + (isShift ? -1 : 1);
+            let nextRowIndex = rowIndex;
+
+            if (isShift) {
+              if (colIndex > 0) {
+                setEditingCell({ rowIndex, colIndex: nextColIndex });
+              } else if (rowIndex > 0) {
+                nextRowIndex--;
+                setEditingCell({
+                  rowIndex: nextRowIndex,
+                  colIndex: columns.length - 1,
+                });
+              }
+            } else {
+              if (nextColIndex < columns.length) {
+                setEditingCell({ rowIndex, colIndex: nextColIndex });
+              } else {
+                nextRowIndex++;
+                setEditingCell({ rowIndex: nextRowIndex, colIndex: 0 });
+              }
+            }
+            break;
+          case "ArrowDown":
+            e.preventDefault();
+            if (rowIndex + 1 < rows.length) {
+              setEditingCell({ rowIndex: rowIndex + 1, colIndex });
+            }
+            break;
+          case "ArrowUp":
+            e.preventDefault();
+            if (rowIndex > 0) {
+              setEditingCell({ rowIndex: rowIndex - 1, colIndex });
+            }
+            break;
+          default:
+            break;
+        }
+      } else {
+        e.preventDefault();
+      }
+    };
 
     const handleCellClick = () => {
       if (!isEditing) {
@@ -336,195 +408,17 @@ const NotionTable: React.FC = () => {
       );
     };
 
-    const handleAddOption = () => {
-      if (newOption && !selectOptions.includes(newOption)) {
-        setSelectOptions((prev) => [...prev, newOption]);
-        setNewOption("");
-      }
-    };
-
-    const handleDeleteOption = (option: string) => {
-      setSelectOptions((prev) => prev.filter((opt) => opt !== option));
-    };
-
-    const handleEditOption = (option: string) => {
-      if (editingOption?.oldValue === option) {
-        setEditingOption(null); // Exit edit mode
-      } else {
-        setEditingOption({ oldValue: option, newValue: option }); // Enter edit mode
-      }
-    };
-
-    const handleSaveEdit = () => {
-      if (editingOption) {
-        setSelectOptions((prev) =>
-          prev.map((opt) =>
-            opt === editingOption.oldValue ? editingOption.newValue : opt
-          )
-        );
-        setEditingOption(null);
-      }
-    };
-
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      if (editingOption) {
-        setEditingOption({ ...editingOption, newValue: e.target.value });
-      }
-    };
-
-    const handleKeyDown = (
-      e: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>
-    ) => {
-      // Check if the input is focused to allow typing
-      if (
-        editingCell &&
-        editingCell.rowIndex === rowIndex &&
-        editingCell.colIndex === colIndex
-      ) {
-        switch (e.key) {
-          case "Enter":
-            handleBlur(); // Save data and exit editing mode
-            break;
-          case "Tab":
-            e.preventDefault(); // Prevent default tab behavior
-            const isShift = e.shiftKey;
-            const nextColIndex = colIndex + (isShift ? -1 : 1);
-            let nextRowIndex = rowIndex;
-
-            if (isShift) {
-              // Shift + Tab: Move to previous cell
-              if (colIndex > 0) {
-                setEditingCell({ rowIndex, colIndex: nextColIndex });
-              } else if (rowIndex > 0) {
-                nextRowIndex--; // Move up a row
-                setEditingCell({
-                  rowIndex: nextRowIndex,
-                  colIndex: columns.length - 1,
-                });
-              }
-            } else {
-              // Tab: Move to next cell
-              if (nextColIndex < columns.length) {
-                setEditingCell({ rowIndex, colIndex: nextColIndex });
-              } else {
-                nextRowIndex++; // Move to the next row
-                setEditingCell({ rowIndex: nextRowIndex, colIndex: 0 });
-              }
-            }
-            break;
-          case "ArrowDown":
-            e.preventDefault();
-            if (rowIndex + 1 < rows.length) {
-              // Move to the first cell in the next row
-              setEditingCell({ rowIndex: rowIndex + 1, colIndex });
-            }
-            break;
-          case "ArrowUp":
-            e.preventDefault();
-            if (rowIndex > 0) {
-              // Move to the first cell in the previous row
-              setEditingCell({ rowIndex: rowIndex - 1, colIndex });
-            }
-            break;
-          default:
-            // Allow all other keys to work for input
-            break;
-        }
-      } else {
-        e.preventDefault(); // Prevent default behavior for all keys when not editing
-      }
-    };
-
-    // Render input based on column data type
     if (isEditing) {
       if (col.dataType === "select") {
         return (
-          <div>
-            <Popover>
-              <PopoverTrigger>
-                <Input type="Select" readOnly placeholder="Select..." />
-              </PopoverTrigger>
-              <PopoverContent>
-                <PopoverBody>
-                  <Select
-                    value={row[col.name] || ""}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    onKeyDown={handleKeyDown}
-                  >
-                    <option value="">Select...</option>
-                    {selectOptions.map((option, index) => (
-                      <option key={index} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </Select>
-                  <div style={{ marginTop: "10px" }}>
-                    <input
-                      type="text"
-                      value={newOption}
-                      onChange={(e) => setNewOption(e.target.value)}
-                      placeholder="Add new option"
-                      style={{ marginRight: "5px" }}
-                    />
-                    <button onClick={handleAddOption}>Add</button>
-                  </div>
-                  <div style={{ marginTop: "5px" }}>
-                    <h4>Existing Options:</h4>
-                    <ul>
-                      {selectOptions.map((option) => (
-                        <li
-                          key={option}
-                          style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                          }}
-                        >
-                          {editingOption?.oldValue === option ? (
-                            <div
-                              style={{ display: "flex", alignItems: "center" }}
-                            >
-                              <input
-                                type="text"
-                                value={editingOption.newValue}
-                                onChange={handleInputChange}
-                                placeholder="Edit option"
-                                style={{ marginRight: "5px" }}
-                              />
-                              <button onClick={handleSaveEdit}>Save</button>
-                            </div>
-                          ) : (
-                            <>
-                              <span
-                                onClick={() => handleEditOption(option)}
-                                style={{ cursor: "pointer" }}
-                              >
-                                {option}
-                              </span>
-                              <div>
-                                <button
-                                  onClick={() => handleEditOption(option)}
-                                  style={{ marginLeft: "5px" }}
-                                >
-                                  Edit
-                                </button>
-                                <button
-                                  onClick={() => handleDeleteOption(option)}
-                                  style={{ marginLeft: "5px" }}
-                                >
-                                  Delete
-                                </button>
-                              </div>
-                            </>
-                          )}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </PopoverBody>
-              </PopoverContent>
-            </Popover>
-          </div>
+          <SelectPopover
+            key={rowIndex}
+            row={row}
+            col={{ name: "status" }} // Set column name accordingly
+            handleChange={handleChange}
+            handleBlur={handleBlur}
+            handleKeyDown={handleKeyDown}
+          />
         );
       } else if (col.dataType === "date") {
         return (
@@ -817,26 +711,26 @@ const NotionTable: React.FC = () => {
 
       return (
         <StatusPopover
-        key={rowIndex}
-        rowIndex={rowIndex}
-        currentStatus={currentStatus}
-        handleStatusChange={handleStatusChange}
-        tagPopoverRow={tagPopoverRow}
-        setTagPopoverRow={setTagPopoverRow}
-        colName="status" // Set the column name accordingly
-      />
+          key={rowIndex}
+          rowIndex={rowIndex}
+          currentStatus={currentStatus}
+          handleStatusChange={handleStatusChange}
+          tagPopoverRow={tagPopoverRow}
+          setTagPopoverRow={setTagPopoverRow}
+          colName="status" // Set the column name accordingly
+        />
       );
     }
 
     if (col.dataType === "tags") {
       return (
         <MultiSelect
-        rowIndex={rowIndex}
-        col={{ name: 'tags' }}
-        row={row}
-        setRows={setRows}
-        handleTagsInputChange={handleTagsInputChange}
-      />
+          rowIndex={rowIndex}
+          col={{ name: "tags" }}
+          row={row}
+          setRows={setRows}
+          handleTagsInputChange={handleTagsInputChange}
+        />
       );
     }
 
@@ -848,36 +742,6 @@ const NotionTable: React.FC = () => {
         {row[col.name] || ""}
       </div>
     );
-  };
-
-  const sortColumn = (colIndex: number, order: "asc" | "desc") => {
-    const sortedRows = [...rows].sort((a, b) => {
-      const valA = a[columns[colIndex].name];
-      const valB = b[columns[colIndex].name];
-
-      const isEmpty = (value: any) =>
-        value == null || (typeof value === "string" && value.trim() === "");
-
-      if (isEmpty(valA) && isEmpty(valB)) return 0;
-      if (isEmpty(valA)) return 1;
-      if (isEmpty(valB)) return -1;
-
-      // Compare non-empty values
-      if (typeof valA === "number" && typeof valB === "number") {
-        return order === "asc" ? valA - valB : valB - valA;
-      } else if (typeof valA === "string" && typeof valB === "string") {
-        return order === "asc"
-          ? valA.localeCompare(valB)
-          : valB.localeCompare(valA);
-      } else if (valA instanceof Date && valB instanceof Date) {
-        return order === "asc"
-          ? valA.getTime() - valB.getTime()
-          : valB.getTime() - valA.getTime();
-      }
-
-      return 0;
-    });
-    setRows(sortedRows);
   };
 
   return (
