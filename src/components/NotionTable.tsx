@@ -54,6 +54,7 @@ import TagsInput from "react-tagsinput";
 import "react-tagsinput/react-tagsinput.css";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import Header from "./Header";
+import RowActions from "./RowActions";
 
 interface Column {
   name: string;
@@ -1659,97 +1660,15 @@ const NotionTable: React.FC = () => {
                                 {...provided.draggableProps}
                                 {...provided.dragHandleProps}
                               >
-                                <Flex
-                                  justifyContent="flex-end"
-                                  alignItems="center"
-                                  width="125px"
-                                  height="32px"
-                                  paddingRight={"10.5px"}
-                                >
-                                  {hoveredRowIndex === rowIndex && (
-                                    <>
-                                      <div
-                                        style={{
-                                          display: "flex",
-                                          alignItems: "center",
-                                          paddingRight: "10px",
-                                          gap: "8px",
-                                        }}
-                                      >
-                                        {selectedRows.size <= 0 && (
-                                          <Text
-                                            bg="none"
-                                            color="gray.300"
-                                            cursor="pointer"
-                                            width={"15px"}
-                                            onClick={() =>
-                                              handleDeleteRow(rowIndex)
-                                            }
-                                          >
-                                            <MdDelete
-                                              color="gray.300"
-                                              style={{
-                                                width: "20px",
-                                                height: "20px",
-                                              }}
-                                            />
-                                          </Text>
-                                        )}
-                                        <Text
-                                          bg="none"
-                                          color="gray.300"
-                                          cursor="pointer"
-                                          onClick={() =>
-                                            handleAddRowUnder(rowIndex)
-                                          }
-                                        >
-                                          {" "}
-                                          <FaPlus
-                                            style={{
-                                              width: "20px",
-                                              height: "20px",
-                                            }}
-                                          />{" "}
-                                        </Text>
-
-                                        <MdDragIndicator
-                                          style={{
-                                            width: "20px",
-                                            height: "20px",
-                                          }}
-                                        />
-
-                                        {selectedRows.size <= 0 && (
-                                          <input
-                                            style={{
-                                              width: "15px",
-                                              height: "15px",
-                                            }}
-                                            type="checkbox"
-                                            checked={selectedRows.has(rowIndex)}
-                                            onChange={() => {
-                                              handleSelectRow(rowIndex);
-                                            }}
-                                          />
-                                        )}
-                                      </div>
-                                    </>
-                                  )}
-                                  {selectedRows.size > 0 && (
-                                    <input
-                                      style={{ width: "15px", height: "15px" }}
-                                      type="checkbox"
-                                      checked={selectedRows.has(rowIndex)}
-                                      onChange={() => {
-                                        handleSelectRow(rowIndex);
-                                        setHoveredRowIndex(null); // Clear hover state when checkbox is clicked
-                                      }}
-                                      onMouseEnter={() =>
-                                        setHoveredRowIndex(null)
-                                      }
-                                    />
-                                  )}
-                                </Flex>
+                                <RowActions
+            rowIndex={rowIndex}
+            selectedRows={selectedRows}
+            hoveredRowIndex={hoveredRowIndex}
+            handleDeleteRow={handleDeleteRow}
+            handleAddRowUnder={handleAddRowUnder}
+            handleSelectRow={handleSelectRow}
+            setHoveredRowIndex={setHoveredRowIndex}
+          />
                               </Td>
 
                               {columns.map((col, colIndex) => (
