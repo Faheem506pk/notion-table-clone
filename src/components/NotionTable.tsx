@@ -32,7 +32,8 @@ import {
   VStack,
   Switch,
 } from "@chakra-ui/react";
-import { FaPlus } from "react-icons/fa";
+import Header from "./Header"
+import { FaPlus, FaArrowDown, FaArrowUp, FaSearch, FaRegIdCard  } from "react-icons/fa";
 import { VscListFlat } from "react-icons/vsc";
 import { MdNumbers } from "react-icons/md";
 import { GrTextAlignFull } from "react-icons/gr";
@@ -42,13 +43,10 @@ import { MdDragIndicator } from "react-icons/md";
 import { MdDelete } from "react-icons/md";
 import TagsInput from "react-tagsinput";
 import { GrStatusGood } from "react-icons/gr";
-import { FaArrowDown, FaArrowUp, FaSearch } from "react-icons/fa";
 import { MdOutlineEmail } from "react-icons/md";
 import { LuPhone } from "react-icons/lu";
-import { FaRegIdCard } from "react-icons/fa";
 import "react-tagsinput/react-tagsinput.css";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-
 import { TfiShine } from "react-icons/tfi";
 
 interface Column {
@@ -89,15 +87,8 @@ const NotionTable: React.FC = () => {
     }
   };
 
-  const [taskName, setTaskName] = useState(
-    localStorage.getItem("taskName") || "Task Name"
-  );
-  const [tableName, setTableName] = useState(
-    localStorage.getItem("tableName") || "Table Name"
-  );
+ 
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [isEditingTask, setIsEditingTask] = useState(false);
-  const [isEditingTable, setIsEditingTable] = useState(false);
   const [newColumnName, setNewColumnName] = useState<string>("");
   const [newColumnType, setNewColumnType] = useState<string>("");
   const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
@@ -247,29 +238,7 @@ const NotionTable: React.FC = () => {
     }
   }, [newColumnName, newColumnType]);
 
-  useEffect(() => {
-    localStorage.setItem("taskName", taskName);
-  }, [taskName]);
-
-  useEffect(() => {
-    localStorage.setItem("tableName", tableName);
-  }, [tableName]);
-
-  const handleTaskClick = () => {
-    setIsEditingTask(true);
-  };
-
-  const handleTableClick = () => {
-    setIsEditingTable(true);
-  };
-
-  const handleTaskBlur = () => {
-    setIsEditingTask(false);
-  };
-
-  const handleTableBlur = () => {
-    setIsEditingTable(false);
-  };
+  
 
   const handleMouseDown = (index: number) => (event: React.MouseEvent) => {
     const startX = event.clientX;
@@ -857,7 +826,6 @@ const NotionTable: React.FC = () => {
           </Popover>
         );
       }
-
       return (
         <Input
           value={row[col.name] || ""}
@@ -1167,73 +1135,8 @@ const NotionTable: React.FC = () => {
 
   return (
     <>
-      <div className="headings" style={{ marginTop: "80px" }}>
-        <div className="inner-headings">
-          {isEditingTask ? (
-            <input
-              type="text"
-              value={taskName}
-              onChange={(e) => setTaskName(e.target.value)}
-              onBlur={handleTaskBlur}
-              autoFocus
-              style={{
-                fontSize: "40px",
-                fontWeight: "bold",
-                border: "none",
-                outline: "none",
-                textDecoration: "underline",
-              }}
-            />
-          ) : (
-            <Heading
-              onClick={handleTaskClick}
-              style={{
-                cursor: "pointer",
-                fontSize: "40px",
-                fontWeight: "bold",
-                border: "none",
-                outline: "none",
-                
-              }}
-              color={"gray.500"}
-            >
-              {taskName}
-            </Heading>
-          )}
+     <Header/>
 
-          {isEditingTable ? (
-            <input
-              type="text"
-              value={tableName}
-              onChange={(e) => setTableName(e.target.value)}
-              onBlur={handleTableBlur} // Handle when input loses focus
-              autoFocus // Automatically focus on the input when editing starts
-              style={{
-                fontSize: "16px",
-                fontWeight: "400",
-                border: "none",
-                outline: "none",
-                textDecoration: "underline",
-              }}
-            />
-          ) : (
-            <Heading
-              onClick={handleTableClick}
-              style={{
-                cursor: "pointer",
-                fontSize: "16px",
-                fontWeight: "450",
-                border: "none",
-                outline: "none",
-               
-              }}
-              color={"gray.400"}
-            >
-              {tableName}
-            </Heading>
-          )}
-        </div>
-      </div>
       <div className="main">
         <div
           style={{ overflowX: "auto", marginLeft: "auto", marginRight: "auto" }}
