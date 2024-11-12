@@ -17,20 +17,19 @@ import {
   PopoverBody,
   useDisclosure,
   PopoverArrow,
-  Badge,
   Text,
 } from "@chakra-ui/react";
 import { FaPlus } from "react-icons/fa";
 import { MdDelete, MdOutlineEmail } from "react-icons/md";
 import { GrStatusGood } from "react-icons/gr";
 import { LuPhone } from "react-icons/lu";
-import TagsInput from "react-tagsinput";
 import "react-tagsinput/react-tagsinput.css";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import Header from "./Header";
 import RowActions from "./RowActions";
 import ColumnPropertyEdit from "./ColumnPropertyEdit";
 import AddNewColumn from "./AddNewColumn";
+import MultiSelect from "./Datatype/MultiSelect";
 
 interface Column {
   name: string;
@@ -53,10 +52,7 @@ const NotionTable: React.FC = () => {
     const savedOptions = localStorage.getItem("selectOptions");
     return savedOptions ? JSON.parse(savedOptions) : [""];
   });
-  const [badgeColors, setBadgeColors] = useState<Record<string, string>>(() => {
-    const storedColors = localStorage.getItem("badgeColors");
-    return storedColors ? JSON.parse(storedColors) : {};
-  });
+
 
   const handleSelectAllRows = () => {
     const newSelectedRows = new Set(selectedRows);
@@ -103,49 +99,10 @@ const NotionTable: React.FC = () => {
         ];
   });
 
-  useEffect(() => {
-    // Retrieve badge colors and rows data from localStorage when the component mounts
-    const storedBadgeColors = localStorage.getItem("badgeColors");
-    const storedRows = localStorage.getItem("rows");
-
-    if (storedBadgeColors) {
-      setBadgeColors(JSON.parse(storedBadgeColors));
-    }
-
-    if (storedRows) {
-      setRows(JSON.parse(storedRows));
-    }
-  }, []);
-
   const [tagPopoverRow, setTagPopoverRow] = useState<{
     rowIndex: number;
     colName: string;
   } | null>(null);
-
-  const tagColorSchemes = [
-    "red",
-    "green",
-    "blue",
-    "purple",
-    "yellow",
-    "orange",
-    "teal",
-    "pink",
-  ];
-
-  const getRandomColorScheme = (tag: string) => {
-    if (!badgeColors[tag]) {
-      const newColor =
-        tagColorSchemes[Math.floor(Math.random() * tagColorSchemes.length)];
-      setBadgeColors((prevColors) => {
-        const updatedColors = { ...prevColors, [tag]: newColor };
-        localStorage.setItem("badgeColors", JSON.stringify(updatedColors));
-        return updatedColors;
-      });
-      return newColor;
-    }
-    return badgeColors[tag];
-  };
 
   const handleTagsInputChange = (
     rowIndex: number,
@@ -936,69 +893,13 @@ const NotionTable: React.FC = () => {
 
     if (col.dataType === "tags") {
       return (
-        <Popover
-          isOpen={
-            tagPopoverRow?.rowIndex === rowIndex &&
-            tagPopoverRow?.colName === col.name
-          }
-          onClose={() => setTagPopoverRow(null)}
-          placement="bottom-start"
-        >
-          <PopoverTrigger>
-            <Box
-              onClick={() => setTagPopoverRow({ rowIndex, colName: col.name })}
-              cursor="pointer"
-              minHeight="20px"
-              width="100%"
-            >
-              <Flex wrap="wrap" gap="4px">
-                {row[col.name]
-                  ?.toString()
-                  .split(",")
-                  .filter((tag: any) => tag)
-                  .map((tag: string, i: React.Key | null | undefined) => (
-                    <Badge
-                      padding={1}
-                      borderRadius={4}
-                      key={i}
-                      colorScheme={
-                        badgeColors[tag] || getRandomColorScheme(tag)
-                      }
-                      variant="solid"
-                    >
-                      {tag.trim()}
-                    </Badge>
-                  ))}
-              </Flex>
-            </Box>
-          </PopoverTrigger>
-          <PopoverContent
-            width={"190px"}
-            marginTop="-2px"
-            color="white"
-            borderRadius="lg"
-            boxShadow="lg"
-            minWidth="100px"
-            border="1px solid"
-            borderColor="gray.600"
-          >
-            <PopoverBody>
-              <TagsInput
-                value={
-                  row[col.name]?.toString().split(",").filter(Boolean) || []
-                }
-                onChange={(tags) =>
-                  handleTagsInputChange(rowIndex, col.name, tags)
-                }
-                inputProps={{
-                  placeholder: "Add tags",
-                  autoFocus: true,
-                  style: { backgroundColor: "gray.200", borderradius: "18px" },
-                }}
-              />
-            </PopoverBody>
-          </PopoverContent>
-        </Popover>
+        <MultiSelect
+        rowIndex={rowIndex}
+        col={{ name: 'tags' }}
+        row={row}
+        setRows={setRows}
+        handleTagsInputChange={handleTagsInputChange}
+      />
       );
     }
 
