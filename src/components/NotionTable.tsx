@@ -21,7 +21,6 @@ import {
 } from "@chakra-ui/react";
 import { FaPlus } from "react-icons/fa";
 import { MdDelete, MdOutlineEmail } from "react-icons/md";
-import { GrStatusGood } from "react-icons/gr";
 import { LuPhone } from "react-icons/lu";
 import "react-tagsinput/react-tagsinput.css";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
@@ -30,6 +29,7 @@ import RowActions from "./RowActions";
 import ColumnPropertyEdit from "./ColumnPropertyEdit";
 import AddNewColumn from "./AddNewColumn";
 import MultiSelect from "./Datatype/MultiSelect";
+import StatusPopover from "./Datatype/Status";
 
 interface Column {
   name: string;
@@ -52,7 +52,6 @@ const NotionTable: React.FC = () => {
     const savedOptions = localStorage.getItem("selectOptions");
     return savedOptions ? JSON.parse(savedOptions) : [""];
   });
-
 
   const handleSelectAllRows = () => {
     const newSelectedRows = new Set(selectedRows);
@@ -817,77 +816,15 @@ const NotionTable: React.FC = () => {
       const currentStatus = savedStatus || row[col.name] || "Inactive";
 
       return (
-        <Popover
-          isOpen={
-            tagPopoverRow?.rowIndex === rowIndex &&
-            tagPopoverRow?.colName === col.name
-          }
-          onClose={() => setTagPopoverRow(null)}
-          placement="bottom-start"
-        >
-          <PopoverTrigger>
-            <Box
-              onClick={() => setTagPopoverRow({ rowIndex, colName: col.name })}
-              cursor="pointer"
-              minHeight="20px"
-              width="100%"
-              display="flex"
-              alignItems="center"
-              justifyContent="space-between"
-              borderRadius="8px"
-              padding="8px"
-              backgroundColor="white"
-            >
-              <span style={{ display: "flex", alignItems: "center" }}>
-                {currentStatus === "Active" ? (
-                  <GrStatusGood
-                    style={{ marginRight: "8px", color: "green" }}
-                  />
-                ) : (
-                  <GrStatusGood style={{ marginRight: "8px", color: "red" }} />
-                )}
-                {currentStatus}
-              </span>
-            </Box>
-          </PopoverTrigger>
-
-          <PopoverContent
-            width={"150px"}
-            color="white"
-            borderRadius="10px"
-            boxShadow="lg"
-            minWidth="100px"
-            border="1px solid"
-            borderColor="gray.400"
-            marginTop="-8px"
-          >
-            <PopoverArrow />
-            <PopoverBody padding="5px">
-              <Flex direction="column" gap="4px">
-                <Button
-                  onClick={() => handleStatusChange("Active")}
-                  colorScheme="green"
-                  variant="outline"
-                  size="sm"
-                >
-                  <GrStatusGood
-                    style={{ marginRight: "8px", color: "green" }}
-                  />
-                  Set Active
-                </Button>
-                <Button
-                  onClick={() => handleStatusChange("Inactive")}
-                  colorScheme="red"
-                  variant="outline"
-                  size="sm"
-                >
-                  <GrStatusGood style={{ marginRight: "8px", color: "red" }} />
-                  Set Inactive
-                </Button>
-              </Flex>
-            </PopoverBody>
-          </PopoverContent>
-        </Popover>
+        <StatusPopover
+        key={rowIndex}
+        rowIndex={rowIndex}
+        currentStatus={currentStatus}
+        handleStatusChange={handleStatusChange}
+        tagPopoverRow={tagPopoverRow}
+        setTagPopoverRow={setTagPopoverRow}
+        colName="status" // Set the column name accordingly
+      />
       );
     }
 
