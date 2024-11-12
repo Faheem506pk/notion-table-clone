@@ -19,7 +19,6 @@ import {
   PopoverBody,
   useDisclosure,
   PopoverArrow,
-  Heading,
   AlertDialog,
   AlertDialogBody,
   AlertDialogFooter,
