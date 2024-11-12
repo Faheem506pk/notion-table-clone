@@ -1,19 +1,12 @@
-// theme.ts
-import { extendTheme } from "@chakra-ui/react";
+import { extendTheme, ThemeConfig } from '@chakra-ui/react';
 
-const theme = extendTheme({
-  fonts: {
-    body: 'ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol"',
-  },
-  styles: {
-    global: {
-      body: {
-        fontSize: "14px",
-        fontWeight: "500",
-        fontFamily: 'ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol"',
-      },
-    },
-  },
-});
+// Define the color mode configuration
+const config: ThemeConfig = {
+  initialColorMode: 'light', // Default color mode
+  useSystemColorMode: false, // Use the system's color mode preference
+};
+
+// Extend the theme with custom configurations
+const theme = extendTheme({ config });
 
 export default theme;

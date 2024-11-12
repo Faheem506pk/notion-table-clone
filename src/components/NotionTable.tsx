@@ -812,7 +812,7 @@ const NotionTable: React.FC = () => {
                 justifyContent="space-between"
                 borderRadius="8px"
                 padding="8px"
-                backgroundColor="white"
+                
               >
                 <span>{currentPhone}</span>
               </Box>
@@ -918,7 +918,7 @@ const NotionTable: React.FC = () => {
               justifyContent="space-between"
               borderRadius="8px"
               padding="8px"
-              backgroundColor="white"
+              
             >
               <span>{currentEmail}</span>
             </Box>
@@ -1193,8 +1193,9 @@ const NotionTable: React.FC = () => {
                 fontWeight: "bold",
                 border: "none",
                 outline: "none",
-                color: "#37352F",
+                
               }}
+              color={"gray.500"}
             >
               {taskName}
             </Heading>
@@ -1224,8 +1225,9 @@ const NotionTable: React.FC = () => {
                 fontWeight: "450",
                 border: "none",
                 outline: "none",
-                color: "#37352F",
+               
               }}
+              color={"gray.400"}
             >
               {tableName}
             </Heading>
@@ -1246,12 +1248,13 @@ const NotionTable: React.FC = () => {
                   type="COLUMN"
                 >
                   {(provided) => (
-                    <Thead ref={provided.innerRef} {...provided.droppableProps}>
+                    <Thead ref={provided.innerRef} {...provided.droppableProps} bg="none">
                       <Tr>
                         <Th
                           borderBottom="0px"
                           justifyContent="flex-end"
                           alignItems="right"
+                          bg="none"
                         >
                           <Flex
                             justifyContent="flex-end"
@@ -1313,6 +1316,7 @@ const NotionTable: React.FC = () => {
                                 ref={provided.innerRef}
                                 {...provided.draggableProps}
                                 {...provided.dragHandleProps}
+                                bg="none"
                               >
                                 <Flex align="left">
                                   <Popover placement="bottom">
@@ -1552,7 +1556,7 @@ const NotionTable: React.FC = () => {
                           </Draggable>
                         ))}
                         {provided.placeholder}
-                        <Th>
+                        <Th bg="none">
                           <Popover
                             placement="bottom"
                             isOpen={isOpen}
@@ -1877,7 +1881,7 @@ const NotionTable: React.FC = () => {
                             position: "sticky",
                             left: 0,
                             zIndex: 2,
-                            backgroundColor: "white",
+                           
                           }}
                         >
                           <Box>
