@@ -31,22 +31,29 @@ import {
   VStack,
   Switch,
 } from "@chakra-ui/react";
-import Header from "./Header"
-import { FaPlus, FaArrowDown, FaArrowUp, FaSearch, FaRegIdCard  } from "react-icons/fa";
-import { VscListFlat } from "react-icons/vsc";
-import { MdNumbers } from "react-icons/md";
-import { GrTextAlignFull } from "react-icons/gr";
+import {
+  FaPlus,
+  FaArrowDown,
+  FaArrowUp,
+  FaSearch,
+  FaRegIdCard,
+} from "react-icons/fa";
+import {
+  MdNumbers,
+  MdDelete,
+  MdDragIndicator,
+  MdOutlineEmail,
+} from "react-icons/md";
+import { GrTextAlignFull, GrStatusGood } from "react-icons/gr";
 import { GoSingleSelect, GoTag } from "react-icons/go";
+import { VscListFlat } from "react-icons/vsc";
 import { BsCalendarDate } from "react-icons/bs";
-import { MdDragIndicator } from "react-icons/md";
-import { MdDelete } from "react-icons/md";
-import TagsInput from "react-tagsinput";
-import { GrStatusGood } from "react-icons/gr";
-import { MdOutlineEmail } from "react-icons/md";
+import { TfiShine } from "react-icons/tfi";
 import { LuPhone } from "react-icons/lu";
+import TagsInput from "react-tagsinput";
 import "react-tagsinput/react-tagsinput.css";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-import { TfiShine } from "react-icons/tfi";
+import Header from "./Header";
 
 interface Column {
   name: string;
@@ -59,7 +66,6 @@ interface Row {
 }
 
 const NotionTable: React.FC = () => {
-
   const getIconByType = (dataType: string) => {
     // Change parameter name to dataType
     switch (dataType) {
@@ -78,7 +84,7 @@ const NotionTable: React.FC = () => {
       case "cnic":
         return <FaRegIdCard style={{ marginRight: "5px" }} />;
       case "phone":
-        return <LuPhone  style={{ marginRight: "5px" }} />;
+        return <LuPhone style={{ marginRight: "5px" }} />;
       case "email":
         return <MdOutlineEmail style={{ marginRight: "5px" }} />;
       default:
@@ -86,7 +92,6 @@ const NotionTable: React.FC = () => {
     }
   };
 
- 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [newColumnName, setNewColumnName] = useState<string>("");
   const [newColumnType, setNewColumnType] = useState<string>("");
@@ -105,8 +110,6 @@ const NotionTable: React.FC = () => {
     const storedColors = localStorage.getItem("badgeColors");
     return storedColors ? JSON.parse(storedColors) : {};
   });
-
- 
 
   const handleSelectAllRows = () => {
     const newSelectedRows = new Set(selectedRows);
@@ -224,8 +227,6 @@ const NotionTable: React.FC = () => {
     newValue: string;
   } | null>(null);
 
- 
-
   // Function to update localStorage whenever selectOptions changes
   useEffect(() => {
     localStorage.setItem("selectOptions", JSON.stringify(selectOptions));
@@ -236,8 +237,6 @@ const NotionTable: React.FC = () => {
       console.log(`New column name: ${newColumnName}, type: ${newColumnType}`);
     }
   }, [newColumnName, newColumnType]);
-
-  
 
   const handleMouseDown = (index: number) => (event: React.MouseEvent) => {
     const startX = event.clientX;
@@ -780,7 +779,6 @@ const NotionTable: React.FC = () => {
                 justifyContent="space-between"
                 borderRadius="8px"
                 padding="8px"
-                
               >
                 <span>{currentPhone}</span>
               </Box>
@@ -885,7 +883,6 @@ const NotionTable: React.FC = () => {
               justifyContent="space-between"
               borderRadius="8px"
               padding="8px"
-              
             >
               <span>{currentEmail}</span>
             </Box>
@@ -1134,7 +1131,7 @@ const NotionTable: React.FC = () => {
 
   return (
     <>
-     <Header/>
+      <Header />
 
       <div className="main">
         <div
@@ -1150,7 +1147,11 @@ const NotionTable: React.FC = () => {
                   type="COLUMN"
                 >
                   {(provided) => (
-                    <Thead ref={provided.innerRef} {...provided.droppableProps} bg="none">
+                    <Thead
+                      ref={provided.innerRef}
+                      {...provided.droppableProps}
+                      bg="none"
+                    >
                       <Tr>
                         <Th
                           borderBottom="0px"
@@ -1783,7 +1784,6 @@ const NotionTable: React.FC = () => {
                             position: "sticky",
                             left: 0,
                             zIndex: 2,
-                           
                           }}
                         >
                           <Box>
