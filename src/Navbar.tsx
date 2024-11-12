@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Flex, Button, Heading, useColorMode } from "@chakra-ui/react";
-import { MoonIcon, SunIcon } from "@chakra-ui/icons";
+import { Flex, Heading, useColorMode } from "@chakra-ui/react";
 import DrawerNav from "./components/Drawer";
 import { IconButton} from '@chakra-ui/react';
 import { FaSun, FaMoon } from 'react-icons/fa';
