@@ -9,11 +9,19 @@ This project replicates the functionality and design of the Notion database tabl
 ---
 
 ## Features
+Thanks for letting me know! Here’s the updated section in the README:  
+
+---
+
+## Features
 
 ### Dynamic Table Functionalities
 
 - **Add, Edit, Delete Rows and Columns**  
   Flexibly manage rows and columns, with support for various data types.
+
+- **Drag-and-Drop Reordering**  
+  Easily reorder rows and columns using a drag-and-drop interface.
 
 - **Editable Column Names**  
   Edit column names via popovers for a seamless experience.
@@ -158,7 +166,6 @@ To maintain clean and consistent code, this project uses ESLint with type-aware 
 ## Future Enhancements
 
 - Add more data type validations.
-- Drag-and-drop reordering for rows and columns.
 - Export table data to CSV or JSON format.
 
 ---
