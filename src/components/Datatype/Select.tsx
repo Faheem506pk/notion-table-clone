@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
-import { Popover, PopoverTrigger, PopoverContent, PopoverBody, Input, Select } from '@chakra-ui/react';
+import React, { useEffect, useState } from 'react';
 import styles from '../../assets/CSS/SelectDatatype.module.css'; 
-import { useLocalStorage } from "../../hooks/useLocalStorage";
+import { Popover, PopoverTrigger, PopoverContent, PopoverBody, Input, Select } from '@chakra-ui/react';
 
 interface SelectPopoverProps {
   row: { [key: string]: any }; // Row object with column data
@@ -18,15 +17,20 @@ const SelectPopover: React.FC<SelectPopoverProps> = ({
   handleBlur,
   handleKeyDown
 }) => {
+
   const [newOption, setNewOption] = useState<string>("");
-
-  // Using the useLocalStorage hook for managing select options
-  const [selectOptions, setSelectOptions] = useLocalStorage<string[]>("selectOptions", []);
-
+  const [selectOptions, setSelectOptions] = useState<string[]>(() => {
+    const savedOptions = localStorage.getItem("selectOptions");
+    return savedOptions ? JSON.parse(savedOptions) : [];
+  });
   const [editingOption, setEditingOption] = useState<{
     oldValue: string;
     newValue: string;
   } | null>(null);
+
+  useEffect(() => {
+    localStorage.setItem("selectOptions", JSON.stringify(selectOptions));
+  }, [selectOptions]);
 
   const handleAddOption = () => {
     if (newOption && !selectOptions.includes(newOption)) {
@@ -63,13 +67,10 @@ const SelectPopover: React.FC<SelectPopoverProps> = ({
       setEditingOption({ ...editingOption, newValue: e.target.value });
     }
   };
-
-  // Update the selected option in the row
   const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value;
-    // Update the selected value in the row object
-    row[col.name] = value;
-    handleChange(e); // If you want to propagate the change to the parent component
+    row[col.name] = value; // Update the selected value in the row object
+    handleChange(e); // Propagate the change to the parent component
   };
 
   return (
