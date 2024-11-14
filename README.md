@@ -1,6 +1,3 @@
-Here’s an updated `README.md` that includes **Select**, **Status**, and **MultiSelect** data types in your **Notion Table Clone** project. This ensures all features are properly documented.
-
----
 
 # Notion Table Clone
 
@@ -179,7 +176,3 @@ Feel free to fork the repository and submit pull requests. All contributions are
 ## License
 
 This project is licensed under the MIT License. See the `LICENSE` file for details.
-
----
-
-Let me know if there’s anything else you’d like to add or modify!
