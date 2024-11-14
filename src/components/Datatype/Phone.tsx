@@ -10,33 +10,34 @@ import {
   Button,
   Flex,
 } from "@chakra-ui/react";
-import { MdOutlineEmail } from "react-icons/md";
+import { LuPhone } from "react-icons/lu";
 
-interface EmailPopoverProps {
+interface PhonePopoverProps {
   rowIndex: number;
   col: { name: string }; 
   row: { [key: string]: any };
 }
 
-const EmailPopover: React.FC<EmailPopoverProps> = ({
+const PhonePopover: React.FC<PhonePopoverProps> = ({
   rowIndex,
   col,
   row,
 }) => {
-
-    const savedEmail = localStorage.getItem(`${rowIndex}_${col.name}`);
-    const currentEmail = savedEmail || row[col.name] || "";
-
-    const handleEmailChange = (newEmail: string) => {
-      localStorage.setItem(`${rowIndex}_${col.name}`, newEmail);
-
-      row[col.name] = newEmail;
-    };
-
     const [tagPopoverRow, setTagPopoverRow] = useState<{
         rowIndex: number;
         colName: string;
       } | null>(null);
+      const savedPhone = localStorage.getItem(`${rowIndex}_${col.name}`);
+      const currentPhone = savedPhone || row[col.name] || ""; // Default to empty string if no value exists
+
+    const handlePhoneChange = (newPhone: string) => {
+        // Save the new Phone  to localStorage only after the change
+        localStorage.setItem(`${rowIndex}_${col.name}`, newPhone);
+        // Update the row with the new email value
+        row[col.name] = newPhone;
+      };
+
+
 
   return (
     <Popover
@@ -59,7 +60,7 @@ const EmailPopover: React.FC<EmailPopoverProps> = ({
           borderRadius="8px"
           padding="8px"
         >
-          <span>{currentEmail}</span>
+          <span>{currentPhone}</span>
         </Box>
       </PopoverTrigger>
 
@@ -77,21 +78,20 @@ const EmailPopover: React.FC<EmailPopoverProps> = ({
         <PopoverBody padding="5px">
           <Flex direction="column" gap="4px">
             <Input
-              type="email"
-              defaultValue={currentEmail}
-              onBlur={(e) => handleEmailChange(e.target.value)}
-              placeholder="Enter email"
+              type="number"
+              defaultValue={currentPhone}
+              onBlur={(e) => handlePhoneChange(e.target.value)}
+              placeholder="Enter Phone Number"
               size="sm"
               mb="4px"
             />
-
             <Button
-              onClick={() => (window.location.href = `mailto:${currentEmail}`)}
-              colorScheme="blue"
+              onClick={() => (window.location.href = `tel:${currentPhone}`)}
+              colorScheme="green"
               variant="outline"
               size="sm"
             >
-              <MdOutlineEmail style={{ width: "17px", height: "17px" }} />
+              <LuPhone style={{ width: "17px", height: "17px" }} />
             </Button>
           </Flex>
         </PopoverBody>
@@ -100,4 +100,4 @@ const EmailPopover: React.FC<EmailPopoverProps> = ({
   );
 };
 
-export default EmailPopover;
+export default PhonePopover;

@@ -4,16 +4,15 @@ import { GrStatusGood } from 'react-icons/gr';
 
 interface StatusPopoverProps {
   rowIndex: number;
-  currentStatus: string;
-  handleStatusChange: (status: string) => void;
-  colName: string;
+  col: { name: string }; 
+  row: { [key: string]: any };
+
 }
 
 const StatusPopover: React.FC<StatusPopoverProps> = ({
   rowIndex,
-  currentStatus,
-  handleStatusChange,
-  colName,
+  col,
+  row,
 }) => {
 
   const [tagPopoverRow, setTagPopoverRow] = useState<{
@@ -21,15 +20,24 @@ const StatusPopover: React.FC<StatusPopoverProps> = ({
     colName: string;
   } | null>(null);
 
+  const savedStatus = localStorage.getItem(`${rowIndex}_${col.name}`);
+  const currentStatus = savedStatus || row[col.name] || "Inactive";
+  const handleStatusChange = (newStatus: string) => {
+    localStorage.setItem(`${rowIndex}_${col.name}`, newStatus);
+
+    row[col.name] = newStatus;
+  };
+
+
   return (
     <Popover
-      isOpen={tagPopoverRow?.rowIndex === rowIndex && tagPopoverRow?.colName === colName}
+      isOpen={tagPopoverRow?.rowIndex === rowIndex && tagPopoverRow?.colName === col.name}
       onClose={() => setTagPopoverRow(null)}
       placement="bottom-start"
     >
       <PopoverTrigger>
         <Box
-          onClick={() => setTagPopoverRow({ rowIndex, colName })}
+          onClick={() => setTagPopoverRow({ rowIndex, colName: col.name })}
           cursor="pointer"
           minHeight="20px"
           width="100%"
