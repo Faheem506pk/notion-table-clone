@@ -1,0 +1,16 @@
+.PopupInput {
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    border: none !important;
+    outline: none !important;
+    text-decoration: underline !important;
+    box-shadow: -1px 0px 10px 0px gray !important;
+    border-radius: 5px !important;
+    padding: 10px !important;
+    width: 250px !important;
+    height: 38px !important;
+    position: absolute !important;
+    background-color: white !important;
+    margin-top: -16px !important;
+  }
+  

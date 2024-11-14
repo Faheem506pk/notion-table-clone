@@ -19,6 +19,7 @@ import "react-tagsinput/react-tagsinput.css";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import Header from "./Header";
 import RowActions from "./RowActions";
+import styles from '../assets/CSS/Input.module.css';
 import ColumnPropertyEdit from "./ColumnPropertyEdit";
 import AddNewColumn from "./AddNewColumn";
 import SelectPopover from "./Datatype/Select";
@@ -405,27 +406,14 @@ const NotionTable: React.FC = () => {
       }
       return (
         <Input
+          className={styles.PopupInput}
           value={row[col.name] || ""}
           onChange={handleChange}
           onBlur={handleBlur}
           onKeyDown={handleKeyDown}
           variant="flushed"
           autoFocus
-          style={{
-            fontSize: "14px",
-            fontWeight: "600",
-            border: "none",
-            outline: "none",
-            textDecoration: "underline",
-            boxShadow: "-1px 0px 10px 0px gray  ",
-            borderRadius: " 5px",
-            padding: "10px",
-            width: "250px",
-            height: "38px",
-            position: "absolute",
-            backgroundColor: "white",
-            marginTop: "-16px",
-          }}
+          
         />
       );
     }
