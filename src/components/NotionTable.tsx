@@ -40,8 +40,6 @@ interface Row {
 const NotionTable: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { onClose } = useDisclosure();
-  const [newColumnName, setNewColumnName] = useState<string>("");
-  const [newColumnType, setNewColumnType] = useState<string>("");
   const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
   const [hoveredRowIndex, setHoveredRowIndex] = useState<number | null>(null);
 
@@ -79,7 +77,7 @@ const NotionTable: React.FC = () => {
     return storedRows
       ? JSON.parse(storedRows)
       : [
-          { Name: "", "Father Name": "", Age: null, "Date of Birth": null },
+          { Name: "qqq", "Father Name": "q", Age: null, "Date of Birth": null },
           { Name: "", "Father Name": "", Age: null, "Date of Birth": null },
           { Name: "", "Father Name": "", Age: null, "Date of Birth": null },
           { Name: "", "Father Name": "", Age: null, "Date of Birth": null },
@@ -187,8 +185,7 @@ const NotionTable: React.FC = () => {
         }))
       );
 
-      setNewColumnName("");
-      setNewColumnType("string");
+     
       onClose();
     }
     console.log(`Added column of type: ${type} with name: ${name}`);
@@ -512,6 +509,7 @@ const NotionTable: React.FC = () => {
         />
       );
     }
+    
     if (col.dataType === "phone") {
       return (
         <PhonePopover
@@ -521,7 +519,8 @@ const NotionTable: React.FC = () => {
         row={row}
       />
       );
-    } else if (col.dataType === "email") {
+    } 
+    if (col.dataType === "email") {
       return (
         <EmailPopover
         key={rowIndex}
@@ -530,7 +529,8 @@ const NotionTable: React.FC = () => {
         row={row}
       />
       );
-    } else if (col.dataType === "status") {
+    } 
+     if (col.dataType === "status") {
       return (
         <StatusPopover
           key={rowIndex}
@@ -539,7 +539,8 @@ const NotionTable: React.FC = () => {
           row={row}
         />
       );
-    } else if (col.dataType === "tags") {
+    }
+    if (col.dataType === "tags") {
       return (
         <MultiSelect
           rowIndex={rowIndex}
@@ -550,6 +551,14 @@ const NotionTable: React.FC = () => {
         />
       );
     }
+    return (
+      <div
+        onClick={handleCellClick}
+        style={{ cursor: "pointer", padding: "7px" }}
+      >
+        {row[col.name] || ""}
+      </div>
+    );
 
 
   };
@@ -681,8 +690,6 @@ const NotionTable: React.FC = () => {
                             onOpen={() => setIsOpen(true)}
                             isOpen={isOpen}
                             onClose={() => setIsOpen(false)}
-                            setNewColumnType={setNewColumnType}
-                            setNewColumnName={setNewColumnName}
                             handleAddColumn={handleAddColumn}
                           />
                         </Th>
