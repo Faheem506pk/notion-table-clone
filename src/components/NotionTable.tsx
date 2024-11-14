@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, {useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -90,28 +90,9 @@ const NotionTable: React.FC = () => {
         ];
   });
 
- 
 
-  const handleTagsInputChange = (
-    rowIndex: number,
-    colName: string,
-    tags: string[]
-  ) => {
-    const updatedRows = [...rows];
-    const updatedRow = { ...updatedRows[rowIndex] };
-    updatedRow[colName] = tags.join(",");
-    updatedRows[rowIndex] = updatedRow;
 
-    setRows(updatedRows);
 
-    localStorage.setItem("rows", JSON.stringify(updatedRows));
-  };
-
-  useEffect(() => {
-    if (newColumnName || newColumnType) {
-      console.log(`New column name: ${newColumnName}, type: ${newColumnType}`);
-    }
-  }, [newColumnName, newColumnType]);
 
   const handleMouseDown = (index: number) => (event: React.MouseEvent) => {
     const startX = event.clientX;
@@ -165,13 +146,7 @@ const NotionTable: React.FC = () => {
     colIndex: number;
   } | null>(null);
 
-  useEffect(() => {
-    localStorage.setItem("rows", JSON.stringify(rows));
-  }, [rows]);
-
-  useEffect(() => {
-    localStorage.setItem("columns", JSON.stringify(columns));
-  }, [columns]);
+ 
 
   const handleAddRowUnder = (index?: number) => {
     const newRow: Row = {};
@@ -257,9 +232,7 @@ const NotionTable: React.FC = () => {
     }
   };
 
-  const saveToLocalStorage = (key: string, data: Column[] | Row[]): void => {
-    localStorage.setItem(key, JSON.stringify(data));
-  };
+  
 
   const handleDragEnd = (result: {
     source: any;
@@ -402,18 +375,7 @@ const NotionTable: React.FC = () => {
     };
 
     if (isEditing) {
-      if (col.dataType === "select") {
-        return (
-          <SelectPopover
-            key={rowIndex}
-            row={row}
-            col={{ name: "status" }} // Set column name accordingly
-            handleChange={handleChange}
-            handleBlur={handleBlur}
-            handleKeyDown={handleKeyDown}
-          />
-        );
-      } else if (col.dataType === "date") {
+      if (col.dataType === "date") {
         return (
           <Input
             type="date"
@@ -512,6 +474,17 @@ const NotionTable: React.FC = () => {
             }}
           />
         );
+      } else  if (col.dataType === "select") {
+        return (
+          <SelectPopover
+            key={rowIndex}
+            row={row}
+            col={{ name: "status" }} // Set column name accordingly
+            handleChange={handleChange}
+            handleBlur={handleBlur}
+            handleKeyDown={handleKeyDown}
+          />
+        );
       }
       return (
         <Input
@@ -539,7 +512,6 @@ const NotionTable: React.FC = () => {
         />
       );
     }
-
     if (col.dataType === "phone") {
       return (
         <PhonePopover
@@ -573,21 +545,26 @@ const NotionTable: React.FC = () => {
           rowIndex={rowIndex}
           col={{ name: "tags" }}
           row={row}
+          rows={rows}
           setRows={setRows}
-          handleTagsInputChange={handleTagsInputChange}
         />
       );
     }
 
-    return (
-      <div
-        onClick={handleCellClick}
-        style={{ cursor: "pointer", padding: "7px" }}
-      >
-        {row[col.name] || ""}
-      </div>
-    );
+
   };
+
+  const saveToLocalStorage = (key: string, data: Column[] | Row[]): void => {
+    localStorage.setItem(key, JSON.stringify(data));
+  };
+
+  useEffect(() => {
+    localStorage.setItem("rows", JSON.stringify(rows));
+  }, [rows]);
+
+  useEffect(() => {
+    localStorage.setItem("columns", JSON.stringify(columns));
+  }, [columns]);
 
   return (
     <>
