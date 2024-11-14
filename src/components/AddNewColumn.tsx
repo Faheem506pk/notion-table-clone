@@ -13,8 +13,6 @@ interface AddNewColumnProps {
   onOpen: () => void;
   isOpen: boolean;
   onClose: () => void;
-  setNewColumnType: (type: string) => void;
-  setNewColumnName: (name: string) => void;
   handleAddColumn: (type: string, name: string) => void;
 }
 
@@ -22,13 +20,9 @@ const AddNewColumn: React.FC<AddNewColumnProps> = ({
   onOpen,
   isOpen,
   onClose,
-  setNewColumnType,
-  setNewColumnName,
   handleAddColumn
 }) => {
   const handleColumnAdd = (type: string, name: string) => {
-    setNewColumnType(type);
-    setNewColumnName(name);
     handleAddColumn(type, name);
   };
 
