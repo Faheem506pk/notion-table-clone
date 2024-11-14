@@ -11,6 +11,7 @@ import {
   Flex,
 } from "@chakra-ui/react";
 import { LuPhone } from "react-icons/lu";
+import { useLocalStorage } from "../../hooks/useLocalStorage"; 
 
 interface PhonePopoverProps {
   rowIndex: number;
@@ -23,21 +24,20 @@ const PhonePopover: React.FC<PhonePopoverProps> = ({
   col,
   row,
 }) => {
-    const [tagPopoverRow, setTagPopoverRow] = useState<{
-        rowIndex: number;
-        colName: string;
-      } | null>(null);
-      const savedPhone = localStorage.getItem(`${rowIndex}_${col.name}`);
-      const currentPhone = savedPhone || row[col.name] || ""; // Default to empty string if no value exists
+  const [tagPopoverRow, setTagPopoverRow] = useState<{
+    rowIndex: number;
+    colName: string;
+  } | null>(null);
 
-    const handlePhoneChange = (newPhone: string) => {
-        // Save the new Phone  to localStorage only after the change
-        localStorage.setItem(`${rowIndex}_${col.name}`, newPhone);
-        // Update the row with the new email value
-        row[col.name] = newPhone;
-      };
+  const [currentPhone, setCurrentPhone] = useLocalStorage<string>(
+    `${rowIndex}_${col.name}`,
+    row[col.name] || ""
+  );
 
-
+  const handlePhoneChange = (newPhone: string) => {
+    setCurrentPhone(newPhone); 
+    row[col.name] = newPhone; 
+  };
 
   return (
     <Popover
@@ -78,7 +78,7 @@ const PhonePopover: React.FC<PhonePopoverProps> = ({
         <PopoverBody padding="5px">
           <Flex direction="column" gap="4px">
             <Input
-              type="number"
+              type="tel"
               defaultValue={currentPhone}
               onBlur={(e) => handlePhoneChange(e.target.value)}
               placeholder="Enter Phone Number"

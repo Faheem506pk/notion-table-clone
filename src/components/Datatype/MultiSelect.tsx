@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Box,
   Flex,
@@ -8,11 +8,13 @@ import {
   PopoverContent,
   PopoverBody,
 } from "@chakra-ui/react";
-import TagsInput from "react-tagsinput"; // Assuming you have the TagsInput component imported
+import TagsInput from "react-tagsinput"; 
+import { useLocalStorage } from "../../hooks/useLocalStorage"; 
 
 interface Row {
   [key: string]: any;
 }
+
 interface TagPopoverProps {
   rowIndex: number;
   col: { name: string };
@@ -33,25 +35,12 @@ const MultiSelect: React.FC<TagPopoverProps> = ({
     colName: string;
   } | null>(null);
 
-  const handleTagsInputChange = (
-    rowIndex: number,
-    colName: string,
-    tags: string[]
-  ) => {
-    const updatedRows = [...rows];
-    const updatedRow = { ...updatedRows[rowIndex] };
-    updatedRow[colName] = tags.join(",");
-    updatedRows[rowIndex] = updatedRow;
-
-    setRows(updatedRows);
-
-    localStorage.setItem("rows", JSON.stringify(updatedRows));
-  };
-
-  const [badgeColors, setBadgeColors] = useState<Record<string, string>>(() => {
-    const storedColors = localStorage.getItem("badgeColors");
-    return storedColors ? JSON.parse(storedColors) : {};
-  });
+  
+  const [storedRows, setStoredRows] = useLocalStorage<Row[]>("rows", rows);
+  const [badgeColors, setBadgeColors] = useLocalStorage<Record<string, string>>(
+    "badgeColors",
+    {}
+  );
 
   const tagColorSchemes = [
     "red",
@@ -62,40 +51,43 @@ const MultiSelect: React.FC<TagPopoverProps> = ({
     "orange",
     "teal",
     "pink",
+    "cyan",
+    "indigo",
+    "fuchsia",
   ];
 
   const getRandomColorScheme = (tag: string) => {
     if (!badgeColors[tag]) {
       const newColor =
         tagColorSchemes[Math.floor(Math.random() * tagColorSchemes.length)];
-      setBadgeColors((prevColors) => {
-        const updatedColors = { ...prevColors, [tag]: newColor };
-        localStorage.setItem("badgeColors", JSON.stringify(updatedColors));
-        return updatedColors;
-      });
+      setBadgeColors((prevColors) => ({
+        ...prevColors,
+        [tag]: newColor,
+      }));
       return newColor;
     }
     return badgeColors[tag];
   };
 
-  useEffect(() => {
-    // Retrieve badge colors and rows data from localStorage when the component mounts
-    const storedBadgeColors = localStorage.getItem("badgeColors");
-    const storedRows = localStorage.getItem("rows");
+  const handleTagsInputChange = (
+    rowIndex: number,
+    colName: string,
+    tags: string[]
+  ) => {
+    const updatedRows = [...storedRows];
+    const updatedRow = { ...updatedRows[rowIndex] };
+    updatedRow[colName] = tags.join(",");
+    updatedRows[rowIndex] = updatedRow;
 
-    if (storedBadgeColors) {
-      setBadgeColors(JSON.parse(storedBadgeColors));
-    }
-
-    if (storedRows) {
-      setRows(JSON.parse(storedRows));
-    }
-  }, [setRows]);
+    setStoredRows(updatedRows); 
+    setRows(updatedRows); 
+  };
 
   return (
     <Popover
       isOpen={
-        tagPopoverRow?.rowIndex === rowIndex && tagPopoverRow?.colName === col.name
+        tagPopoverRow?.rowIndex === rowIndex &&
+        tagPopoverRow?.colName === col.name
       }
       onClose={() => setTagPopoverRow(null)}
       placement="bottom-start"

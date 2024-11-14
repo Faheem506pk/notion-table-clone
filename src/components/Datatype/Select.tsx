@@ -1,5 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Popover, PopoverTrigger, PopoverContent, PopoverBody, Input, Select } from '@chakra-ui/react';
+import styles from '../../assets/CSS/SelectDatatype.module.css'; 
+import { useLocalStorage } from "../../hooks/useLocalStorage";
 
 interface SelectPopoverProps {
   row: { [key: string]: any }; // Row object with column data
@@ -16,20 +18,15 @@ const SelectPopover: React.FC<SelectPopoverProps> = ({
   handleBlur,
   handleKeyDown
 }) => {
-
   const [newOption, setNewOption] = useState<string>("");
-  const [selectOptions, setSelectOptions] = useState<string[]>(() => {
-    const savedOptions = localStorage.getItem("selectOptions");
-    return savedOptions ? JSON.parse(savedOptions) : [];
-  });
+
+  // Using the useLocalStorage hook for managing select options
+  const [selectOptions, setSelectOptions] = useLocalStorage<string[]>("selectOptions", []);
+
   const [editingOption, setEditingOption] = useState<{
     oldValue: string;
     newValue: string;
   } | null>(null);
-
-  useEffect(() => {
-    localStorage.setItem("selectOptions", JSON.stringify(selectOptions));
-  }, [selectOptions]);
 
   const handleAddOption = () => {
     if (newOption && !selectOptions.includes(newOption)) {
@@ -67,20 +64,29 @@ const SelectPopover: React.FC<SelectPopoverProps> = ({
     }
   };
 
+  // Update the selected option in the row
+  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value;
+    // Update the selected value in the row object
+    row[col.name] = value;
+    handleChange(e); // If you want to propagate the change to the parent component
+  };
+
   return (
     <Popover>
       <PopoverTrigger>
         <Input
-          value={row[col.name] || "Select..."} // Show placeholder if no value is selected
+          value={row[col.name] || ""} // Show placeholder if no value is selected
           type="text"
           readOnly
+          className={styles.SelectInput}
         />
       </PopoverTrigger>
       <PopoverContent>
         <PopoverBody>
           <Select
             value={row[col.name] || ""} // Default to empty string if no selection
-            onChange={handleChange}
+            onChange={handleSelectChange} // Use the updated change handler
             onBlur={handleBlur}
             onKeyDown={handleKeyDown}
           >

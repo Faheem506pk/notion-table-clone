@@ -11,10 +11,11 @@ import {
   Flex,
 } from "@chakra-ui/react";
 import { MdOutlineEmail } from "react-icons/md";
+import { useLocalStorage } from "../../hooks/useLocalStorage"; // Import the custom hook
 
 interface EmailPopoverProps {
   rowIndex: number;
-  col: { name: string }; 
+  col: { name: string };
   row: { [key: string]: any };
 }
 
@@ -23,20 +24,18 @@ const EmailPopover: React.FC<EmailPopoverProps> = ({
   col,
   row,
 }) => {
+  
+  const [email, setEmail] = useLocalStorage<string>(`${rowIndex}_${col.name}`, row[col.name] || "");
 
-    const savedEmail = localStorage.getItem(`${rowIndex}_${col.name}`);
-    const currentEmail = savedEmail || row[col.name] || "";
+  const handleEmailChange = (newEmail: string) => {
+    setEmail(newEmail); 
+    row[col.name] = newEmail; 
+  };
 
-    const handleEmailChange = (newEmail: string) => {
-      localStorage.setItem(`${rowIndex}_${col.name}`, newEmail);
-
-      row[col.name] = newEmail;
-    };
-
-    const [tagPopoverRow, setTagPopoverRow] = useState<{
-        rowIndex: number;
-        colName: string;
-      } | null>(null);
+  const [tagPopoverRow, setTagPopoverRow] = useState<{
+    rowIndex: number;
+    colName: string;
+  } | null>(null);
 
   return (
     <Popover
@@ -59,7 +58,7 @@ const EmailPopover: React.FC<EmailPopoverProps> = ({
           borderRadius="8px"
           padding="8px"
         >
-          <span>{currentEmail}</span>
+          <span>{email}</span> 
         </Box>
       </PopoverTrigger>
 
@@ -78,15 +77,15 @@ const EmailPopover: React.FC<EmailPopoverProps> = ({
           <Flex direction="column" gap="4px">
             <Input
               type="email"
-              defaultValue={currentEmail}
-              onBlur={(e) => handleEmailChange(e.target.value)}
+              value={email} 
+              onChange={(e) => handleEmailChange(e.target.value)}
               placeholder="Enter email"
               size="sm"
               mb="4px"
             />
 
             <Button
-              onClick={() => (window.location.href = `mailto:${currentEmail}`)}
+              onClick={() => (window.location.href = `mailto:${email}`)}
               colorScheme="blue"
               variant="outline"
               size="sm"

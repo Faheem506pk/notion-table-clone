@@ -19,7 +19,7 @@ import "react-tagsinput/react-tagsinput.css";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import Header from "./Header";
 import RowActions from "./RowActions";
-import styles from '../assets/CSS/Input.module.css';
+import styles from "../assets/CSS/main.module.css";
 import ColumnPropertyEdit from "./ColumnPropertyEdit";
 import AddNewColumn from "./AddNewColumn";
 import SelectPopover from "./Datatype/Select";
@@ -30,6 +30,7 @@ import PhonePopover from "./Datatype/Phone";
 import DateInput from "./Datatype/Date";
 import NumberInput from "./Datatype/Number";
 import CnicInput from "./Datatype/CNIC";
+
 
 interface Column {
   name: string;
@@ -58,8 +59,8 @@ const NotionTable: React.FC = () => {
       : [
           { name: "Name", dataType: "string", width: 150 },
           { name: "Father Name", dataType: "string", width: 150 },
-          { name: "Age", dataType: "number", width: 100 },
           { name: "Date of Birth", dataType: "date", width: 150 },
+          { name: "Multi Select", dataType: "tags", width: 100 },
         ];
   });
 
@@ -70,10 +71,22 @@ const NotionTable: React.FC = () => {
       : Array.from({ length: 7 }, () => ({
           Name: "",
           "Father Name": "",
-          Age: null,
           "Date of Birth": null,
+          "Multi Select": "",
         }));
   });
+
+  const saveToLocalStorage = (key: string, data: Column[] | Row[]): void => {
+    localStorage.setItem(key, JSON.stringify(data));
+  };
+
+  useEffect(() => {
+    localStorage.setItem("rows", JSON.stringify(rows));
+  }, [rows]);
+
+  useEffect(() => {
+    localStorage.setItem("columns", JSON.stringify(columns));
+  }, [columns]);
 
   // //------------------------------------------------------------------------------
   // //========================== Column handle  ====================================
@@ -245,6 +258,7 @@ const NotionTable: React.FC = () => {
     document.addEventListener("mousemove", handleMouseMove);
     document.addEventListener("mouseup", handleMouseUp);
   };
+
   // //------------------------------------------------------------------------------
   // //========================== Drag handle  ====================================
   // //------------------------------------------------------------------------------
@@ -274,7 +288,7 @@ const NotionTable: React.FC = () => {
   };
 
   // //------------------------------------------------------------------------------
-  // //======================== table Cells handle  ==================================
+  // //======================== table Cells handle  ================================
   // //------------------------------------------------------------------------------
 
   const renderInputField = (
@@ -368,39 +382,28 @@ const NotionTable: React.FC = () => {
       if (col.dataType === "date") {
         return (
           <DateInput
-          value={row[col.name]}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          onKeyDown={handleKeyDown}
-        />
+            value={row[col.name]}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
+          />
         );
       } else if (col.dataType === "number") {
         return (
           <NumberInput
-          value={row[col.name]}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          onKeyDown={handleKeyDown}
-        />
+            value={row[col.name]}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
+          />
         );
       } else if (col.dataType === "cnic") {
         return (
           <CnicInput
-          value={row[col.name]}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          onKeyDown={handleKeyDown}
-        />
-        );
-      } else if (col.dataType === "select") {
-        return (
-          <SelectPopover
-            key={rowIndex}
-            row={row}
-            col={{ name: "status" }} // Set column name accordingly
-            handleChange={handleChange}
-            handleBlur={handleBlur}
-            handleKeyDown={handleKeyDown}
+            value={row[col.name]}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
           />
         );
       }
@@ -413,7 +416,19 @@ const NotionTable: React.FC = () => {
           onKeyDown={handleKeyDown}
           variant="flushed"
           autoFocus
-          
+        />
+      );
+    }
+
+    if (col.dataType === "select") {
+      return (
+        <SelectPopover
+          key={rowIndex}
+          row={row}
+          col={{ name: "status" }} // Set column name accordingly
+          handleChange={handleChange}
+          handleBlur={handleBlur}
+          handleKeyDown={handleKeyDown}
         />
       );
     }
@@ -469,18 +484,6 @@ const NotionTable: React.FC = () => {
     );
   };
 
-  const saveToLocalStorage = (key: string, data: Column[] | Row[]): void => {
-    localStorage.setItem(key, JSON.stringify(data));
-  };
-
-  useEffect(() => {
-    localStorage.setItem("rows", JSON.stringify(rows));
-  }, [rows]);
-
-  useEffect(() => {
-    localStorage.setItem("columns", JSON.stringify(columns));
-  }, [columns]);
-
   return (
     <>
       <Header />
@@ -521,7 +524,6 @@ const NotionTable: React.FC = () => {
                               style={{
                                 display: "flex",
                                 alignItems: "center",
-
                                 gap: "15px",
                               }}
                             >
@@ -662,13 +664,7 @@ const NotionTable: React.FC = () => {
 
                       <Tr>
                         <Td borderBottom="0px" borderTop="0px"></Td>
-                        <div
-                          style={{
-                            position: "sticky",
-                            left: 0,
-                            zIndex: 2,
-                          }}
-                        >
+                        <div style={{ position: "sticky", left: 0, zIndex: 2 }}>
                           <Box>
                             <Button
                               leftIcon={<FaPlus />}

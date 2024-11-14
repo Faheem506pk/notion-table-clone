@@ -1,12 +1,21 @@
-import React, { useState } from 'react';
-import { Popover, PopoverTrigger, PopoverContent, PopoverArrow, PopoverBody, Box, Flex, Button } from '@chakra-ui/react';
-import { GrStatusGood } from 'react-icons/gr';
+import React, { useState } from "react";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+  PopoverArrow,
+  PopoverBody,
+  Box,
+  Flex,
+  Button,
+} from "@chakra-ui/react";
+import { GrStatusGood } from "react-icons/gr";
+import { useLocalStorage } from "../../hooks/useLocalStorage"; 
 
 interface StatusPopoverProps {
   rowIndex: number;
-  col: { name: string }; 
+  col: { name: string };
   row: { [key: string]: any };
-
 }
 
 const StatusPopover: React.FC<StatusPopoverProps> = ({
@@ -14,24 +23,28 @@ const StatusPopover: React.FC<StatusPopoverProps> = ({
   col,
   row,
 }) => {
-
   const [tagPopoverRow, setTagPopoverRow] = useState<{
     rowIndex: number;
     colName: string;
   } | null>(null);
 
-  const savedStatus = localStorage.getItem(`${rowIndex}_${col.name}`);
-  const currentStatus = savedStatus || row[col.name] || "Inactive";
+
+  const [currentStatus, setCurrentStatus] = useLocalStorage<string>(
+    `${rowIndex}_${col.name}`,
+    row[col.name] || "Inactive" 
+  );
+
   const handleStatusChange = (newStatus: string) => {
-    localStorage.setItem(`${rowIndex}_${col.name}`, newStatus);
-
-    row[col.name] = newStatus;
+    setCurrentStatus(newStatus); 
+    row[col.name] = newStatus; 
   };
-
 
   return (
     <Popover
-      isOpen={tagPopoverRow?.rowIndex === rowIndex && tagPopoverRow?.colName === col.name}
+      isOpen={
+        tagPopoverRow?.rowIndex === rowIndex &&
+        tagPopoverRow?.colName === col.name
+      }
       onClose={() => setTagPopoverRow(null)}
       placement="bottom-start"
     >
@@ -48,11 +61,11 @@ const StatusPopover: React.FC<StatusPopoverProps> = ({
           padding="8px"
           backgroundColor="white"
         >
-          <span style={{ display: 'flex', alignItems: 'center' }}>
-            {currentStatus === 'Active' ? (
-              <GrStatusGood style={{ marginRight: '8px', color: 'green' }} />
+          <span style={{ display: "flex", alignItems: "center" }}>
+            {currentStatus === "Active" ? (
+              <GrStatusGood style={{ marginRight: "8px", color: "green" }} />
             ) : (
-              <GrStatusGood style={{ marginRight: '8px', color: 'red' }} />
+              <GrStatusGood style={{ marginRight: "8px", color: "red" }} />
             )}
             {currentStatus}
           </span>
@@ -60,7 +73,7 @@ const StatusPopover: React.FC<StatusPopoverProps> = ({
       </PopoverTrigger>
 
       <PopoverContent
-        width={'150px'}
+        width={"150px"}
         color="white"
         borderRadius="10px"
         boxShadow="lg"
@@ -73,21 +86,21 @@ const StatusPopover: React.FC<StatusPopoverProps> = ({
         <PopoverBody padding="5px">
           <Flex direction="column" gap="4px">
             <Button
-              onClick={() => handleStatusChange('Active')}
+              onClick={() => handleStatusChange("Active")}
               colorScheme="green"
               variant="outline"
               size="sm"
             >
-              <GrStatusGood style={{ marginRight: '8px', color: 'green' }} />
+              <GrStatusGood style={{ marginRight: "8px", color: "green" }} />
               Set Active
             </Button>
             <Button
-              onClick={() => handleStatusChange('Inactive')}
+              onClick={() => handleStatusChange("Inactive")}
               colorScheme="red"
               variant="outline"
               size="sm"
             >
-              <GrStatusGood style={{ marginRight: '8px', color: 'red' }} />
+              <GrStatusGood style={{ marginRight: "8px", color: "red" }} />
               Set Inactive
             </Button>
           </Flex>
