@@ -41,33 +41,44 @@ import { TfiShine } from "react-icons/tfi";
 import { LuPhone } from "react-icons/lu";
 
 
-interface ColumnProps {
-  col: {
-    name: string;
-    dataType: string;
-  };
-  index: number;
-  handleChangeColumnName: (index: number, newName: string) => void;
-  handleChangeColumnType: (index: number, newType: string) => void;
-  sortColumn: (index: number, direction: "asc" | "desc") => void;
-  handleMouseDown: (index: number) => (event: React.MouseEvent) => void;
-  handleDeleteColumn:(columnName: string) => void;
+interface Column {
+  name: string;
+  dataType: string;
+  width: number; // Assuming you are tracking the column width as well
 }
+
+interface ColumnProps {
+  col: Column; // The column data passed as a prop
+  index: number; // Index of the column in the columns array
+  columns: Column[]; // Array of all columns
+  setColumns: React.Dispatch<React.SetStateAction<Column[]>>; // Setter function to update columns state
+  handleChangeColumnName: (index: number, newName: string) => void; // Function to handle column name changes
+  sortColumn: (index: number, direction: "asc" | "desc") => void; // Function to handle column sorting
+  handleMouseDown: (index: number) => (event: React.MouseEvent) => void; // Mouse down handler for resizing columns
+  handleDeleteColumn: (columnName: string) => void; // Function to handle column deletion
+}
+
 
 const ColumnPropertyEdit: React.FC<ColumnProps> = ({
   col,
   index,
+  columns,
+  setColumns,
   handleChangeColumnName,
-  handleChangeColumnType,
   sortColumn,
   handleMouseDown,
   handleDeleteColumn
 }) => {
     const [isAlertOpen, setIsAlertOpen] = useState(false);
-
     const openAlertDialog = () => setIsAlertOpen(true);
     const closeAlertDialog = () => setIsAlertOpen(false);
     const cancelRef = useRef<HTMLButtonElement | null>(null);
+
+    const handleChangeColumnType = (index: number, newDataType: string) => {
+      const updatedColumns = [...columns];
+      updatedColumns[index].dataType = newDataType;
+      setColumns(updatedColumns);
+    };
 
     const confirmDelete = (columnName: string) => {
         handleDeleteColumn(columnName);

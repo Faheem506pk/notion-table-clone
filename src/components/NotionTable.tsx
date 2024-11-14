@@ -1,4 +1,4 @@
-import React, {useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -26,6 +26,9 @@ import MultiSelect from "./Datatype/MultiSelect";
 import StatusPopover from "./Datatype/Status";
 import EmailPopover from "./Datatype/Email";
 import PhonePopover from "./Datatype/Phone";
+import DateInput from "./Datatype/Date";
+import NumberInput from "./Datatype/Number";
+import CnicInput from "./Datatype/CNIC";
 
 interface Column {
   name: string;
@@ -42,85 +45,10 @@ const NotionTable: React.FC = () => {
   const { onClose } = useDisclosure();
   const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
   const [hoveredRowIndex, setHoveredRowIndex] = useState<number | null>(null);
-
-  const handleSelectAllRows = () => {
-    const newSelectedRows = new Set(selectedRows);
-    if (newSelectedRows.size === rows.length) {
-      // Deselect all
-      newSelectedRows.clear();
-    } else {
-      // Select all
-      rows.forEach((_, index) => newSelectedRows.add(index));
-    }
-    setSelectedRows(newSelectedRows);
-  };
-
-  const handleDeleteSelectedRows = () => {
-    const remainingRows = rows.filter((_, index) => !selectedRows.has(index));
-    setRows(remainingRows); // Update rows state
-    setSelectedRows(new Set()); // Clear selection
-  };
-
-  const handleSelectRow = (rowIndex: number) => {
-    const newSelectedRows = new Set(selectedRows);
-
-    if (newSelectedRows.has(rowIndex)) {
-      newSelectedRows.delete(rowIndex);
-    } else {
-      newSelectedRows.add(rowIndex);
-    }
-    setSelectedRows(newSelectedRows);
-  };
-
-  const [rows, setRows] = useState<Row[]>(() => {
-    const storedRows = localStorage.getItem("rows");
-    return storedRows
-      ? JSON.parse(storedRows)
-      : [
-          { Name: "qqq", "Father Name": "q", Age: null, "Date of Birth": null },
-          { Name: "", "Father Name": "", Age: null, "Date of Birth": null },
-          { Name: "", "Father Name": "", Age: null, "Date of Birth": null },
-          { Name: "", "Father Name": "", Age: null, "Date of Birth": null },
-          { Name: "", "Father Name": "", Age: null, "Date of Birth": null },
-          { Name: "", "Father Name": "", Age: null, "Date of Birth": null },
-          { Name: "", "Father Name": "", Age: null, "Date of Birth": null },
-          { Name: "", "Father Name": "", Age: null, "Date of Birth": null },
-        ];
-  });
-
-
-
-
-
-  const handleMouseDown = (index: number) => (event: React.MouseEvent) => {
-    const startX = event.clientX;
-    const startWidth = columns[index].width;
-
-    const handleMouseMove = (moveEvent: MouseEvent) => {
-      const newWidth = Math.max(startWidth + moveEvent.clientX - startX, 50);
-      setColumns((prevColumns) =>
-        prevColumns.map((col, i) =>
-          i === index ? { ...col, width: newWidth } : col
-        )
-      );
-    };
-
-    const handleMouseUp = () => {
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleMouseUp);
-    };
-
-    document.addEventListener("mousemove", handleMouseMove);
-    document.addEventListener("mouseup", handleMouseUp);
-  };
-
-  const handleAddRow = () => {
-    const newRow: Row = {};
-    columns.forEach((col) => {
-      newRow[col.name] = "";
-    });
-    setRows([...rows, newRow]);
-  };
+  const [editingCell, setEditingCell] = useState<{
+    rowIndex: number;
+    colIndex: number;
+  } | null>(null);
 
   const [columns, setColumns] = useState<Column[]>(() => {
     const storedColumns = localStorage.getItem("columns");
@@ -134,33 +62,21 @@ const NotionTable: React.FC = () => {
         ];
   });
 
-  const handleDeleteRow = (index: number) => {
-    const updatedRows = rows.filter((_, i) => i !== index);
-    setRows(updatedRows);
-  };
+  const [rows, setRows] = useState<Row[]>(() => {
+    const storedRows = localStorage.getItem("rows");
+    return storedRows
+      ? JSON.parse(storedRows)
+      : Array.from({ length: 7 }, () => ({
+          Name: "",
+          "Father Name": "",
+          Age: null,
+          "Date of Birth": null,
+        }));
+  });
 
-  const [editingCell, setEditingCell] = useState<{
-    rowIndex: number;
-    colIndex: number;
-  } | null>(null);
-
- 
-
-  const handleAddRowUnder = (index?: number) => {
-    const newRow: Row = {};
-    columns.forEach((col) => {
-      newRow[col.name] = "";
-    });
-
-    if (typeof index === "number") {
-      const updatedRows = [...rows];
-      updatedRows.splice(index + 1, 0, newRow);
-      setRows(updatedRows);
-    } else {
-      setRows([...rows, newRow]);
-    }
-  };
-
+  // //------------------------------------------------------------------------------
+  // //========================== Column handle  ====================================
+  // //------------------------------------------------------------------------------
   const handleAddColumn = (type: string, name: string) => {
     if (name) {
       let newName = name;
@@ -169,7 +85,6 @@ const NotionTable: React.FC = () => {
         newName = `${name}${counter}`;
         counter++;
       }
-
       const newColumn: Column = {
         name: newName,
         dataType: type,
@@ -177,24 +92,15 @@ const NotionTable: React.FC = () => {
       };
 
       setColumns((prevColumns) => [...prevColumns, newColumn]);
-
       setRows((prevRows) =>
         prevRows.map((row) => ({
           ...row,
           [newName]: type === "select" ? "" : "",
         }))
       );
-
-     
       onClose();
     }
     console.log(`Added column of type: ${type} with name: ${name}`);
-  };
-
-  const handleChangeColumnType = (index: number, newDataType: string) => {
-    const updatedColumns = [...columns];
-    updatedColumns[index].dataType = newDataType;
-    setColumns(updatedColumns);
   };
 
   const handleDeleteColumn = (columnName: string) => {
@@ -229,32 +135,6 @@ const NotionTable: React.FC = () => {
     }
   };
 
-  
-
-  const handleDragEnd = (result: {
-    source: any;
-    destination: any;
-    type: any;
-  }) => {
-    const { source, destination, type } = result;
-
-    if (!destination) return;
-
-    if (type === "COLUMN") {
-      const reorderedColumns = Array.from(columns);
-      const [movedColumn] = reorderedColumns.splice(source.index, 1);
-      reorderedColumns.splice(destination.index, 0, movedColumn);
-      setColumns(reorderedColumns);
-      saveToLocalStorage("columns", reorderedColumns);
-    } else {
-      const reorderedRows = Array.from(rows);
-      const [movedRow] = reorderedRows.splice(source.index, 1);
-      reorderedRows.splice(destination.index, 0, movedRow);
-      setRows(reorderedRows);
-      saveToLocalStorage("rows", reorderedRows);
-    }
-  };
-
   const sortColumn = (colIndex: number, order: "asc" | "desc") => {
     const sortedRows = [...rows].sort((a, b) => {
       const valA = a[columns[colIndex].name];
@@ -283,6 +163,118 @@ const NotionTable: React.FC = () => {
     });
     setRows(sortedRows);
   };
+
+  // //------------------------------------------------------------------------------
+  // //========================== Row handle  ====================================
+  // //------------------------------------------------------------------------------
+
+  const handleAddRow = () => {
+    const newRow: Row = {};
+    columns.forEach((col) => {
+      newRow[col.name] = "";
+    });
+    setRows([...rows, newRow]);
+  };
+
+  const handleDeleteRow = (index: number) => {
+    const updatedRows = rows.filter((_, i) => i !== index);
+    setRows(updatedRows);
+  };
+
+  const handleAddRowUnder = (index?: number) => {
+    const newRow: Row = {};
+    columns.forEach((col) => {
+      newRow[col.name] = "";
+    });
+
+    if (typeof index === "number") {
+      const updatedRows = [...rows];
+      updatedRows.splice(index + 1, 0, newRow);
+      setRows(updatedRows);
+    } else {
+      setRows([...rows, newRow]);
+    }
+  };
+
+  const handleSelectAllRows = () => {
+    const newSelectedRows = new Set(selectedRows);
+    if (newSelectedRows.size === rows.length) {
+      newSelectedRows.clear();
+    } else {
+      rows.forEach((_, index) => newSelectedRows.add(index));
+    }
+    setSelectedRows(newSelectedRows);
+  };
+
+  const handleDeleteSelectedRows = () => {
+    const remainingRows = rows.filter((_, index) => !selectedRows.has(index));
+    setRows(remainingRows); // Update rows state
+    setSelectedRows(new Set()); // Clear selection
+  };
+
+  const handleSelectRow = (rowIndex: number) => {
+    const newSelectedRows = new Set(selectedRows);
+
+    if (newSelectedRows.has(rowIndex)) {
+      newSelectedRows.delete(rowIndex);
+    } else {
+      newSelectedRows.add(rowIndex);
+    }
+    setSelectedRows(newSelectedRows);
+  };
+
+  const handleMouseDown = (index: number) => (event: React.MouseEvent) => {
+    const startX = event.clientX;
+    const startWidth = columns[index].width;
+
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      const newWidth = Math.max(startWidth + moveEvent.clientX - startX, 50);
+      setColumns((prevColumns) =>
+        prevColumns.map((col, i) =>
+          i === index ? { ...col, width: newWidth } : col
+        )
+      );
+    };
+
+    const handleMouseUp = () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+  };
+  // //------------------------------------------------------------------------------
+  // //========================== Drag handle  ====================================
+  // //------------------------------------------------------------------------------
+
+  const handleDragEnd = (result: {
+    source: any;
+    destination: any;
+    type: any;
+  }) => {
+    const { source, destination, type } = result;
+
+    if (!destination) return;
+
+    if (type === "COLUMN") {
+      const reorderedColumns = Array.from(columns);
+      const [movedColumn] = reorderedColumns.splice(source.index, 1);
+      reorderedColumns.splice(destination.index, 0, movedColumn);
+      setColumns(reorderedColumns);
+      saveToLocalStorage("columns", reorderedColumns);
+    } else {
+      const reorderedRows = Array.from(rows);
+      const [movedRow] = reorderedRows.splice(source.index, 1);
+      reorderedRows.splice(destination.index, 0, movedRow);
+      setRows(reorderedRows);
+      saveToLocalStorage("rows", reorderedRows);
+    }
+  };
+
+  // //------------------------------------------------------------------------------
+  // //======================== table Cells handle  ==================================
+  // //------------------------------------------------------------------------------
 
   const renderInputField = (
     row: Row,
@@ -374,104 +366,32 @@ const NotionTable: React.FC = () => {
     if (isEditing) {
       if (col.dataType === "date") {
         return (
-          <Input
-            type="date"
-            value={row[col.name] || ""}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            onKeyDown={handleKeyDown}
-            variant="flushed"
-            autoFocus
-            style={{
-              fontSize: "14px",
-              fontWeight: "600",
-              border: "none",
-              outline: "none",
-              textDecoration: "underline",
-              boxShadow: "-1px 0px 10px 0px gray  ",
-              borderRadius: " 5px",
-              padding: "10px",
-              width: "250px",
-              height: "38px",
-              position: "absolute",
-              backgroundColor: "white",
-              marginTop: "-16px",
-            }}
-          />
+          <DateInput
+          value={row[col.name]}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          onKeyDown={handleKeyDown}
+        />
         );
       } else if (col.dataType === "number") {
         return (
-          <Input
-            type="number"
-            value={row[col.name] || ""}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            onKeyDown={handleKeyDown}
-            variant="flushed"
-            autoFocus
-            style={{
-              fontSize: "14px",
-              fontWeight: "600",
-              border: "none",
-              outline: "none",
-              textDecoration: "underline",
-              boxShadow: "-1px 0px 10px 0px gray  ",
-              borderRadius: " 5px",
-              padding: "10px",
-              width: "250px",
-              height: "38px",
-              position: "absolute",
-              backgroundColor: "white",
-              marginTop: "-16px",
-            }}
-          />
+          <NumberInput
+          value={row[col.name]}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          onKeyDown={handleKeyDown}
+        />
         );
       } else if (col.dataType === "cnic") {
         return (
-          <Input
-            type="text"
-            pattern="\d{5}-\d{7}-\d" // CNIC pattern
-            placeholder="XXXXX-XXXXXXX-X"
-            value={row[col.name] || ""}
-            maxLength={15} // Limits input to 13 digits plus two hyphens
-            onChange={(e) => {
-              const cnic = e.target.value;
-
-              // Automatically add hyphens as user types
-              if (/^\d{5}$/.test(cnic)) {
-                e.target.value = cnic + "-";
-              } else if (/^\d{5}-\d{7}$/.test(cnic)) {
-                e.target.value = cnic + "-";
-              }
-
-              handleChange(e); // Update the input state
-
-              // Save to localStorage if CNIC is complete
-              if (cnic.length === 15) {
-                localStorage.setItem("cnic", cnic);
-              }
-            }}
-            onBlur={handleBlur}
-            onKeyDown={handleKeyDown}
-            variant="flushed"
-            autoFocus
-            style={{
-              fontSize: "14px",
-              fontWeight: "600",
-              border: "none",
-              outline: "none",
-              boxShadow: "-1px 0px 10px 0px gray",
-              borderRadius: "5px",
-              padding: "10px",
-              width: "250px",
-              height: "38px",
-              position: "absolute",
-              backgroundColor: "white",
-              marginTop: "-16px",
-            }}
-          />
+          <CnicInput
+          value={row[col.name]}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          onKeyDown={handleKeyDown}
+        />
         );
-      } else  if (col.dataType === "select") {
+      } else if (col.dataType === "select") {
         return (
           <SelectPopover
             key={rowIndex}
@@ -509,28 +429,28 @@ const NotionTable: React.FC = () => {
         />
       );
     }
-    
+
     if (col.dataType === "phone") {
       return (
         <PhonePopover
-        key={rowIndex}
-        rowIndex={rowIndex}
-        col={{ name: "phone" }}
-        row={row}
-      />
+          key={rowIndex}
+          rowIndex={rowIndex}
+          col={{ name: "phone" }}
+          row={row}
+        />
       );
-    } 
+    }
     if (col.dataType === "email") {
       return (
         <EmailPopover
-        key={rowIndex}
-        rowIndex={rowIndex}
-        col={{ name: "email" }}
-        row={row}
-      />
+          key={rowIndex}
+          rowIndex={rowIndex}
+          col={{ name: "email" }}
+          row={row}
+        />
       );
-    } 
-     if (col.dataType === "status") {
+    }
+    if (col.dataType === "status") {
       return (
         <StatusPopover
           key={rowIndex}
@@ -559,8 +479,6 @@ const NotionTable: React.FC = () => {
         {row[col.name] || ""}
       </div>
     );
-
-
   };
 
   const saveToLocalStorage = (key: string, data: Column[] | Row[]): void => {
@@ -578,7 +496,6 @@ const NotionTable: React.FC = () => {
   return (
     <>
       <Header />
-
       <div className="main">
         <div
           style={{ overflowX: "auto", marginLeft: "auto", marginRight: "auto" }}
@@ -673,9 +590,8 @@ const NotionTable: React.FC = () => {
                                   handleChangeColumnName={
                                     handleChangeColumnName
                                   }
-                                  handleChangeColumnType={
-                                    handleChangeColumnType
-                                  }
+                                  columns={columns}
+                                  setColumns={setColumns}
                                   sortColumn={sortColumn}
                                   handleDeleteColumn={handleDeleteColumn}
                                   handleMouseDown={handleMouseDown}
