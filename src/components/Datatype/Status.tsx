@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Popover, PopoverTrigger, PopoverContent, PopoverArrow, PopoverBody, Box, Flex, Button } from '@chakra-ui/react';
 import { GrStatusGood } from 'react-icons/gr';
 
@@ -6,8 +6,6 @@ interface StatusPopoverProps {
   rowIndex: number;
   currentStatus: string;
   handleStatusChange: (status: string) => void;
-  tagPopoverRow: { rowIndex: number; colName: string } | null;
-  setTagPopoverRow: React.Dispatch<React.SetStateAction<{ rowIndex: number; colName: string } | null>>;
   colName: string;
 }
 
@@ -15,10 +13,14 @@ const StatusPopover: React.FC<StatusPopoverProps> = ({
   rowIndex,
   currentStatus,
   handleStatusChange,
-  tagPopoverRow,
-  setTagPopoverRow,
   colName,
 }) => {
+
+  const [tagPopoverRow, setTagPopoverRow] = useState<{
+    rowIndex: number;
+    colName: string;
+  } | null>(null);
+
   return (
     <Popover
       isOpen={tagPopoverRow?.rowIndex === rowIndex && tagPopoverRow?.colName === colName}

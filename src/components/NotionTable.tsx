@@ -663,8 +663,6 @@ const NotionTable: React.FC = () => {
           rowIndex={rowIndex}
           currentStatus={currentStatus}
           handleStatusChange={handleStatusChange}
-          tagPopoverRow={tagPopoverRow}
-          setTagPopoverRow={setTagPopoverRow}
           colName="status" // Set the column name accordingly
         />
       );
