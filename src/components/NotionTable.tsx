@@ -10,17 +10,11 @@ import {
   Th,
   Td,
   Flex,
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-  PopoverBody,
   useDisclosure,
-  PopoverArrow,
   Text,
 } from "@chakra-ui/react";
 import { FaPlus } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
-import { LuPhone } from "react-icons/lu";
 import "react-tagsinput/react-tagsinput.css";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import Header from "./Header";
