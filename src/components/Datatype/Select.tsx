@@ -29,8 +29,7 @@ const SelectPopover: React.FC<SelectPopoverProps> = ({
   const [error, setError] = useState<string | null>(null);
 
   const getRandomColorScheme = (tag: string) => {
-    // Always return a random color for new tags
-    const lightColors = ['#E3F2FD', '#FFEBEE', '#F1F8E9', '#FFF3E0', '#E8F5E9']; // Lighter color palette
+    const lightColors = ['#E3F2FD', '#FFEBEE', '#F1F8E9', '#FFF3E0', '#E8F5E9'];
     if (!badgeColors[tag]) {
       const newColor = lightColors[Math.floor(Math.random() * lightColors.length)];
       setBadgeColors((prevColors) => ({
@@ -55,9 +54,9 @@ const SelectPopover: React.FC<SelectPopoverProps> = ({
 
   const handleEditOption = (option: string) => {
     if (editingOption?.oldValue === option) {
-      setEditingOption(null); // Exit edit mode if already in edit mode
+      setEditingOption(null);
     } else {
-      setEditingOption({ oldValue: option, newValue: option }); // Enter edit mode with the option value
+      setEditingOption({ oldValue: option, newValue: option });
     }
   };
 
@@ -81,8 +80,8 @@ const SelectPopover: React.FC<SelectPopoverProps> = ({
   };
 
   const handleOptionClick = (option: string) => {
-    row[col.name] = option; // Update the selected value in the row object
-    handleChange({ target: { value: option } } as React.ChangeEvent<HTMLSelectElement>); // Propagate the change to the parent component
+    row[col.name] = option;
+    handleChange({ target: { value: option } } as React.ChangeEvent<HTMLSelectElement>);
     setError(null);
   };
 
@@ -100,35 +99,34 @@ const SelectPopover: React.FC<SelectPopoverProps> = ({
   return (
     <Popover>
       <PopoverTrigger>
-      <Box
-  onClick={() => setTagPopoverRow({ rowIndex: row.id, colName: col.name })}
-  cursor="pointer"
-  minHeight="20px"
-  width="100%"
-  paddingLeft={"10px"}
->
-  <Flex wrap="wrap" gap="4px">
-    {row[col.name]
-      ?.toString()
-      .split(",")
-      .filter((tag: string) => tag) 
-      .map((tag: string, i: React.Key) => (
-        <Badge
-          padding={1}
-          borderRadius={4}
-          key={i}
-          bg={badgeColors[tag] || getRandomColorScheme(tag)} 
-          color="black" 
-          fontWeight="400"
-          style={{ textTransform: 'none' }} 
+        <Box
+          onClick={() => setTagPopoverRow({ rowIndex: row.id, colName: col.name })}
+          cursor="pointer"
+          minHeight="20px"
+          width="100%"
+          paddingLeft={"10px"}
+          backgroundColor={tagPopoverRow.rowIndex === row.id ? 'transparent' : 'transparent'}
         >
-          {tag.trim()}
-        </Badge>
-      ))}
-  </Flex>
-</Box>
-
-
+          <Flex wrap="wrap" gap="4px">
+            {row[col.name]
+              ?.toString()
+              .split(",")
+              .filter((tag: string) => tag)
+              .map((tag: string, i: React.Key) => (
+                <Badge
+                  padding={1}
+                  borderRadius={4}
+                  key={i}
+                  bg={badgeColors[tag] || getRandomColorScheme(tag)}
+                  color="black"
+                  fontWeight="400"
+                  style={{ textTransform: 'none' }}
+                >
+                  {tag.trim()}
+                </Badge>
+              ))}
+          </Flex>
+        </Box>
       </PopoverTrigger>
       <PopoverContent>
         <PopoverBody>
@@ -152,6 +150,12 @@ const SelectPopover: React.FC<SelectPopoverProps> = ({
               borderRadius="md"
             />
           </div>
+
+          {error && (
+            <Box color="red" fontSize="sm" mt={2}>
+              {error}
+            </Box>
+          )}
 
           <DragDropContext
             onDragEnd={(result) => {

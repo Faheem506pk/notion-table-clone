@@ -53,8 +53,6 @@ const NotionTable: React.FC = () => {
     const savedOptions = localStorage.getItem('selectOptions');
     return savedOptions ? JSON.parse(savedOptions) : [];
   });
-  const { colorMode } = useColorMode();
-
   useEffect(() => {
     try {
       localStorage.setItem('selectOptions', JSON.stringify(selectOptions));
@@ -63,6 +61,20 @@ const NotionTable: React.FC = () => {
     }
   }, [selectOptions]);
 
+
+  const [tagsOptions, setTagsOptions] = useState<string[]>(() => {
+    const savedOptions = localStorage.getItem('tagsOptions');
+    return savedOptions ? JSON.parse(savedOptions) : [];
+  });
+  useEffect(() => {
+    try {
+      localStorage.setItem('tagsOptions', JSON.stringify(tagsOptions));
+    } catch (e) {
+      console.error('Error saving options to local storage:', e);
+    }
+  }, [tagsOptions]);
+  
+  const { colorMode } = useColorMode();
   const [editingCell, setEditingCell] = useState<{
     rowIndex: number;
     colIndex: number;
@@ -409,6 +421,12 @@ const NotionTable: React.FC = () => {
           onKeyDown={handleKeyDown}
           variant="flushed"
           autoFocus
+          bg={colorMode === 'light' ? 'white' : '#1b202b'}
+          boxShadow={colorMode === 'light' ? '-1px 0px 20px 0px rgb(158, 158, 158)' : 'none'}
+          sx={{
+            boxShadow: colorMode === 'light' ? '-1px 0px 20px 0px rgb(158, 158, 158)!important' : '-1px 0px 20px 0px rgb(40, 40, 40)!important'
+          }}
+         
         />
       );
     }
@@ -467,6 +485,8 @@ const NotionTable: React.FC = () => {
           row={row}
           rows={rows}
           setRows={setRows}
+          tagsOptions={tagsOptions}
+          setTagsOptions={setTagsOptions}
         />
       );
     }
