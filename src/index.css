@@ -3,41 +3,35 @@
 
 
 *{
-    margin: 0;
-    padding: 0;
-    font-size: 14px;
+  margin: 0;
+  padding: 0;
+  font-size: 14px;
 }
 
 
-thead th {
-  position: sticky;
-  top: 0;
-  background-color: white; /* Ensure the background matches the table */
-  z-index: 2;
-  
-}
+
 .notion-row {
-  transition: background-color 0.3s ease;
+transition: background-color 0.3s ease;
 }
 
 .notion-row:hover {
-  background-color: #ffffff; /* Change the background color on hover */
+background-color: #ffffff; /* Change the background color on hover */
 }
 
 #popover-content{
 
-  width: 150px;
+width: 150px;
 }
 
 
 
 .TaskNameHeading {
-  cursor: pointer;
-  font-size: 40px;
-  font-weight: bold;
-  border: none;
-  outline: none;
-  color: #37352F ;
+cursor: pointer;
+font-size: 40px;
+font-weight: bold;
+border: none;
+outline: none;
+color: #37352F ;
 }
 
 
@@ -46,63 +40,63 @@ thead th {
 .inner-headings{
 margin-left: auto;
 margin-right: auto;
-  max-width: 708px;
-  text-align: start;
+max-width: 708px;
+text-align: start;
 
 
 }
 
 .table-container{
-  
-  margin-left: auto;
-  margin-right: auto;
+
+margin-left: auto;
+margin-right: auto;
 }
 
-  
-  .notion-table th,
-  .notion-table td {
-  
-    padding: 0px; /* Add padding for better spacing */
 
-  }
+.notion-table th,
+.notion-table td {
+
+  padding: 0px; /* Add padding for better spacing */
+
+}
+
+.main{
+
+ display: flex;
  
-  .main{
+  
+}
 
-   display: flex;
-   
-    
-  }
-
-  .table-container {
-    max-height: calc(100vh ); /* Adjust the height as needed */
-    overflow-y: auto; /* Allow vertical scrolling */
-    overflow-x: hidden; /* Hide horizontal scrollbar */
-    position: "sticky";
-    Top: "0";
-   
-    
+.table-container {
+  max-height: calc(100vh ); /* Adjust the height as needed */
+  overflow-y: auto; /* Allow vertical scrolling */
+  overflow-x: hidden; /* Hide horizontal scrollbar */
+  position: "sticky";
+  Top: "0";
+ 
+  
 }
 
 /* Hide scrollbar for Chrome, Safari, and Opera */
 .table-container::-webkit-scrollbar {
-    width: 0; /* Set width to 0 to hide */
+  width: 0; /* Set width to 0 to hide */
 }
 
 /* Hide scrollbar for Firefox */
 .table-container {
-    scrollbar-width: none; /* Hide scrollbar for Firefox */
+  scrollbar-width: none; /* Hide scrollbar for Firefox */
 }
 
 /* Hide scrollbar for IE and Edge */
 .table-container {
-    -ms-overflow-style: none; /* Hide scrollbar for Internet Explorer and Edge */
+  -ms-overflow-style: none; /* Hide scrollbar for Internet Explorer and Edge */
 }
 
 @media screen and (max-width: 768px) {
 
-  .headings{
-    margin-left: 56px;
-  }
-
-
+.headings{
+  margin-left: 56px;
 }
+}
+
+

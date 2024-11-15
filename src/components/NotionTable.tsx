@@ -30,6 +30,8 @@ import PhonePopover from "./Datatype/Phone";
 import DateInput from "./Datatype/Date";
 import NumberInput from "./Datatype/Number";
 import CnicInput from "./Datatype/CNIC";
+import { useLocalStorage } from "../hooks/useLocalStorage";
+import { useColorMode } from '@chakra-ui/react';
 
 
 interface Column {
@@ -47,46 +49,38 @@ const NotionTable: React.FC = () => {
   const { onClose } = useDisclosure();
   const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
   const [hoveredRowIndex, setHoveredRowIndex] = useState<number | null>(null);
+  const [selectOptions, setSelectOptions] = useState<string[]>(() => {
+    const savedOptions = localStorage.getItem('selectOptions');
+    return savedOptions ? JSON.parse(savedOptions) : [];
+  });
+  const { colorMode } = useColorMode();
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('selectOptions', JSON.stringify(selectOptions));
+    } catch (e) {
+      console.error('Error saving options to local storage:', e);
+    }
+  }, [selectOptions]);
+
   const [editingCell, setEditingCell] = useState<{
     rowIndex: number;
     colIndex: number;
   } | null>(null);
 
-  const [columns, setColumns] = useState<Column[]>(() => {
-    const storedColumns = localStorage.getItem("columns");
-    return storedColumns
-      ? JSON.parse(storedColumns)
-      : [
-          { name: "Name", dataType: "string", width: 150 },
-          { name: "Father Name", dataType: "string", width: 150 },
-          { name: "Date of Birth", dataType: "date", width: 150 },
-          { name: "Multi Select", dataType: "tags", width: 100 },
-        ];
-  });
+  const [columns, setColumns] = useLocalStorage<Column[]>("columns", [
+    { name: "Name", dataType: "string", width: 150 },
+    { name: "Father Name", dataType: "string", width: 150 },
+    { name: "Date of Birth", dataType: "date", width: 150 },
+    { name: "Multi Select", dataType: "tags", width: 100 },
+  ]);
 
-  const [rows, setRows] = useState<Row[]>(() => {
-    const storedRows = localStorage.getItem("rows");
-    return storedRows
-      ? JSON.parse(storedRows)
-      : Array.from({ length: 7 }, () => ({
-          Name: "",
-          "Father Name": "",
-          "Date of Birth": null,
-          "Multi Select": "",
-        }));
-  });
-
-  const saveToLocalStorage = (key: string, data: Column[] | Row[]): void => {
-    localStorage.setItem(key, JSON.stringify(data));
-  };
-
-  useEffect(() => {
-    localStorage.setItem("rows", JSON.stringify(rows));
-  }, [rows]);
-
-  useEffect(() => {
-    localStorage.setItem("columns", JSON.stringify(columns));
-  }, [columns]);
+  const [rows, setRows] = useLocalStorage<Row[]>("rows", Array.from({ length: 7 }, () => ({
+    Name: "",
+    "Father Name": "",
+    "Date of Birth": null,
+    "Multi Select": "",
+  })));
 
   // //------------------------------------------------------------------------------
   // //========================== Column handle  ====================================
@@ -263,11 +257,7 @@ const NotionTable: React.FC = () => {
   // //========================== Drag handle  ====================================
   // //------------------------------------------------------------------------------
 
-  const handleDragEnd = (result: {
-    source: any;
-    destination: any;
-    type: any;
-  }) => {
+  const handleDragEnd = (result: { source: any; destination: any; type: any }) => {
     const { source, destination, type } = result;
 
     if (!destination) return;
@@ -276,16 +266,15 @@ const NotionTable: React.FC = () => {
       const reorderedColumns = Array.from(columns);
       const [movedColumn] = reorderedColumns.splice(source.index, 1);
       reorderedColumns.splice(destination.index, 0, movedColumn);
-      setColumns(reorderedColumns);
-      saveToLocalStorage("columns", reorderedColumns);
+      setColumns(reorderedColumns); // This will update both state and localStorage
     } else {
       const reorderedRows = Array.from(rows);
       const [movedRow] = reorderedRows.splice(source.index, 1);
       reorderedRows.splice(destination.index, 0, movedRow);
-      setRows(reorderedRows);
-      saveToLocalStorage("rows", reorderedRows);
+      setRows(reorderedRows); // This will update both state and localStorage
     }
   };
+
 
   // //------------------------------------------------------------------------------
   // //======================== table Cells handle  ================================
@@ -311,6 +300,10 @@ const NotionTable: React.FC = () => {
         switch (e.key) {
           case "Enter":
             handleBlur();
+            e.preventDefault();
+            if (rowIndex + 1 < rows.length) {
+              setEditingCell({ rowIndex: rowIndex + 1, colIndex });
+            }
             break;
           case "Tab":
             e.preventDefault();
@@ -420,18 +413,7 @@ const NotionTable: React.FC = () => {
       );
     }
 
-    if (col.dataType === "select") {
-      return (
-        <SelectPopover
-          key={rowIndex}
-          row={row}
-          col={{ name: "status" }} // Set column name accordingly
-          handleChange={handleChange}
-          handleBlur={handleBlur}
-          handleKeyDown={handleKeyDown}
-        />
-      );
-    }
+    
 
     if (col.dataType === "phone") {
       return (
@@ -460,6 +442,20 @@ const NotionTable: React.FC = () => {
           rowIndex={rowIndex}
           col={{ name: "email" }}
           row={row}
+        />
+      );
+    }
+
+
+    if (col.dataType === "select") {
+      return (
+        <SelectPopover
+          key={rowIndex}
+          row={row}
+          col={{ name: "status" }} // Set column name accordingly
+          handleChange={handleChange}
+          selectOptions={selectOptions}
+          setSelectOptions={setSelectOptions}
         />
       );
     }
@@ -495,114 +491,128 @@ const NotionTable: React.FC = () => {
           <Box p={5}>
             <DragDropContext onDragEnd={handleDragEnd}>
               <Table className="notion-table">
-                <Droppable
-                  droppableId="columns"
-                  direction="horizontal"
-                  type="COLUMN"
+              <Droppable
+  droppableId="columns"
+  direction="horizontal"
+  type="COLUMN"
+>
+  {(provided) => (
+    <Thead
+      ref={provided.innerRef}
+      {...provided.droppableProps}
+      bg={colorMode === 'light' ? 'white' : '#1a202c'}
+      
+    >
+      <Tr >
+        <Th
+          borderBottom="0px"
+          justifyContent="flex-end"
+          alignItems="right"
+          position="sticky"
+          top="0"
+          zIndex="2"
+          bg={colorMode === 'light' ? 'white' : '#1a202c'}
+        >
+          <Flex
+            justifyContent="flex-end"
+            alignItems="center"
+            width="125px"
+            height="32px"
+            paddingRight={"10.5px"}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "15px",
+              }}
+            >
+              {selectedRows.size > 0 && (
+                <Text
+                  bg="none"
+                  color="gray.300"
+                  cursor="pointer"
+                  width={"15px"}
+                  onClick={handleDeleteSelectedRows}
                 >
-                  {(provided) => (
-                    <Thead
-                      ref={provided.innerRef}
-                      {...provided.droppableProps}
-                      bg="none"
-                    >
-                      <Tr>
-                        <Th
-                          borderBottom="0px"
-                          justifyContent="flex-end"
-                          alignItems="right"
-                          bg="none"
-                        >
-                          <Flex
-                            justifyContent="flex-end"
-                            alignItems="center"
-                            width="125px"
-                            height="32px"
-                            paddingRight={"10.5px"}
-                          >
-                            <div
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "15px",
-                              }}
-                            >
-                              {selectedRows.size > 0 && (
-                                <Text
-                                  bg="none"
-                                  color="gray.300"
-                                  cursor="pointer"
-                                  width={"15px"}
-                                  onClick={handleDeleteSelectedRows}
-                                >
-                                  <MdDelete
-                                    color="gray.300"
-                                    style={{ width: "20px", height: "20px" }}
-                                  />
-                                </Text>
-                              )}
-                              {selectedRows.size > 0 && (
-                                <input
-                                  style={{ width: "15px", height: "15px" }}
-                                  type="checkbox"
-                                  onChange={() => {
-                                    handleSelectAllRows();
-                                  }}
-                                />
-                              )}
-                            </div>
-                          </Flex>
-                        </Th>
-                        {columns.map((col, index) => (
-                          <Draggable
-                            key={col.name}
-                            draggableId={col.name}
-                            index={index}
-                          >
-                            {(provided) => (
-                              <Th
-                                key={index}
-                                borderColor="gray.200"
-                                width={col.width}
-                                textColor="gray.400"
-                                position="sticky"
-                                top="0"
-                                zIndex="2"
-                                ref={provided.innerRef}
-                                {...provided.draggableProps}
-                                {...provided.dragHandleProps}
-                                bg="none"
-                              >
-                                <ColumnPropertyEdit
-                                  key={index}
-                                  col={col}
-                                  index={index}
-                                  handleChangeColumnName={
-                                    handleChangeColumnName
-                                  }
-                                  columns={columns}
-                                  setColumns={setColumns}
-                                  sortColumn={sortColumn}
-                                  handleDeleteColumn={handleDeleteColumn}
-                                  handleMouseDown={handleMouseDown}
-                                />
-                              </Th>
-                            )}
-                          </Draggable>
-                        ))}
-                        {provided.placeholder}
-                        <Th bg="none">
-                          <AddNewColumn
-                            onOpen={() => setIsOpen(true)}
-                            isOpen={isOpen}
-                            onClose={() => setIsOpen(false)}
-                            handleAddColumn={handleAddColumn}
-                          />
-                        </Th>
-                      </Tr>
-                    </Thead>
-                  )}
-                </Droppable>
+                  <MdDelete
+                    color="gray.300"
+                    style={{ width: "20px", height: "20px" }}
+                  />
+                </Text>
+              )}
+              {selectedRows.size > 0 && (
+                <input
+                  style={{ width: "15px", height: "15px" }}
+                  type="checkbox"
+                  onChange={() => {
+                    handleSelectAllRows();
+                  }}
+                />
+              )}
+            </div>
+          </Flex>
+        </Th>
+        {columns.map((col, index) => (
+          <Draggable
+            key={col.name}
+            draggableId={col.name}
+            index={index}
+          >
+            {(provided) => (
+              <Th
+                key={index}
+                borderColor="gray.200"
+                width={col.width}
+                textColor="gray.400"
+                position="sticky"
+                top="0"
+                zIndex="2"
+                ref={provided.innerRef}
+                {...provided.draggableProps}
+                {...provided.dragHandleProps}
+                style={{
+                  ...provided.draggableProps.style, // Ensures proper drag styles
+                }}
+                bg={colorMode === 'light' ? 'white' : '#1a202c'}
+              >
+                <ColumnPropertyEdit
+                  key={index}
+                  col={col}
+                  index={index}
+                  handleChangeColumnName={handleChangeColumnName}
+                  columns={columns}
+                  setColumns={setColumns}
+                  sortColumn={sortColumn}
+                  handleDeleteColumn={handleDeleteColumn}
+                  handleMouseDown={handleMouseDown}
+                />
+              </Th>
+            )}
+          </Draggable>
+        ))}
+       {provided.placeholder }
+        <Th
+          borderBottom={"none"}
+          position="sticky"
+          top="0"
+          zIndex="2"
+          bg={colorMode === 'light' ? 'white' : '#1a202c'}
+        >
+          <AddNewColumn
+            onOpen={() => setIsOpen(true)}
+            isOpen={isOpen}
+            onClose={() => setIsOpen(false)}
+            handleAddColumn={handleAddColumn}
+          />
+        </Th>
+        {/* Add background color none to the placeholder */}
+        
+      </Tr>
+    </Thead>
+  )}
+</Droppable>
+
                 <Droppable droppableId="rows" type="ROW">
                   {(provided) => (
                     <Tbody ref={provided.innerRef} {...provided.droppableProps}>
@@ -617,13 +627,17 @@ const NotionTable: React.FC = () => {
                               key={rowIndex}
                               onMouseEnter={() => setHoveredRowIndex(rowIndex)}
                               onMouseLeave={() => setHoveredRowIndex(null)}
+                               ref={provided.innerRef}
+                                {...provided.draggableProps}
+                              style={{
+                                ...provided.draggableProps.style, // Ensures proper drag styles
+                              }}
                             >
                               <Td
                                 borderBottom="0px"
                                 width="125px"
                                 height="32px"
-                                ref={provided.innerRef}
-                                {...provided.draggableProps}
+                               
                                 {...provided.dragHandleProps}
                               >
                                 <RowActions
@@ -641,10 +655,11 @@ const NotionTable: React.FC = () => {
                                 <Td
                                   key={colIndex}
                                   borderRight="1px"
+                                  borderTop="1px"
                                   borderColor="gray.200"
                                   width="199px"
                                   height="32px"
-                                  textColor="gray.600"
+                                  
                                   fontWeight="medium"
                                 >
                                   {renderInputField(
@@ -655,7 +670,7 @@ const NotionTable: React.FC = () => {
                                   )}
                                 </Td>
                               ))}
-                              <Td></Td>
+                              <Td borderTop="1px"  borderColor="gray.200"></Td>
                             </Tr>
                           )}
                         </Draggable>
