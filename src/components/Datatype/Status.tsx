@@ -8,9 +8,11 @@ import {
   Box,
   Flex,
   Button,
+  Text,
+  useToast,
 } from "@chakra-ui/react";
 import { GrStatusGood } from "react-icons/gr";
-import { useLocalStorage } from "../../hooks/useLocalStorage"; 
+import { useLocalStorage } from "../../hooks/useLocalStorage";
 
 interface StatusPopoverProps {
   rowIndex: number;
@@ -28,15 +30,37 @@ const StatusPopover: React.FC<StatusPopoverProps> = ({
     colName: string;
   } | null>(null);
 
-
   const [currentStatus, setCurrentStatus] = useLocalStorage<string>(
     `${rowIndex}_${col.name}`,
-    row[col.name] || "Inactive" 
+    row[col.name] || "Inactive"
   );
 
+  const [error, setError] = useState<string | null>(null);
+  const toast = useToast();
+
   const handleStatusChange = (newStatus: string) => {
-    setCurrentStatus(newStatus); 
-    row[col.name] = newStatus; 
+    try {
+      setCurrentStatus(newStatus);
+      row[col.name] = newStatus;
+      setError(null); 
+      toast({
+        title: "Status Updated",
+        description: `The status was successfully updated to ${newStatus}.`,
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (err) {
+      console.error("Error updating status:", err);
+      setError("Failed to update the status. Please try again.");
+      toast({
+        title: "Error",
+        description: "Failed to update the status. Please try again.",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    }
   };
 
   return (
@@ -104,6 +128,11 @@ const StatusPopover: React.FC<StatusPopoverProps> = ({
               Set Inactive
             </Button>
           </Flex>
+          {error && (
+            <Text color="red.500" fontSize="sm" mt="2">
+              {error}
+            </Text>
+          )}
         </PopoverBody>
       </PopoverContent>
     </Popover>
