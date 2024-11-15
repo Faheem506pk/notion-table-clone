@@ -20,14 +20,13 @@ const SelectPopover: React.FC<SelectPopoverProps> = ({
   setSelectOptions
 }) => {
   const [newOption, setNewOption] = useState<string>('');
-  const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [badgeColors, setBadgeColors] = useLocalStorage<Record<string, string>>('badgeColors', {});
-  const [tagPopoverRow, setTagPopoverRow] = useState<{ rowIndex: number | null, colName: string | null }>({ rowIndex: null, colName: null });
+  const [setTagPopoverRow] = useState<{ rowIndex: number | null, colName: string | null }>({ rowIndex: null, colName: null });
   const [editingOption, setEditingOption] = useState<{
     oldValue: string;
     newValue: string;
   } | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [setError] = useState<string | null>(null);
 
   const getRandomColorScheme = (tag: string) => {
     // Always return a random color for new tags
