@@ -118,7 +118,7 @@ or
 yarn dev  
 ```  
 
-🌐 Open your browser and navigate to **`http://localhost:3000`**.  
+🌐 Open your browser and navigate to **`http://localhost:5173`**.  
 
 ---
 
