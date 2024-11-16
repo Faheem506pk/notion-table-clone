@@ -94,6 +94,8 @@ const NotionTable: React.FC = () => {
     "Multi Select": "",
   })));
 
+
+
   // //------------------------------------------------------------------------------
   // //========================== Column handle  ====================================
   // //------------------------------------------------------------------------------
@@ -508,6 +510,7 @@ const NotionTable: React.FC = () => {
         <div
           style={{ overflowX: "auto", marginLeft: "auto", marginRight: "auto" }}
           className="table-container"
+          data-theme={colorMode} // Set the theme for dynamic styling
         >
           <Box p={5}>
             <DragDropContext onDragEnd={handleDragEnd}>
@@ -586,6 +589,7 @@ const NotionTable: React.FC = () => {
                 borderColor="gray.200"
                 width={col.width}
                 textColor="gray.400"
+                
                 position="sticky"
                 top="0"
                 zIndex="2"
