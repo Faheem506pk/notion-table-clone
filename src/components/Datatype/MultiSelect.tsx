@@ -176,8 +176,9 @@ const MultiSelect: React.FC<TagPopoverProps> = ({
           cursor="pointer"
           minHeight="20px"
           width="100%"
+         
         >
-         <Flex wrap="wrap" gap="4px">
+         <Flex wrap="wrap" gap="4px" >
   {row[col.name]
     ?.toString()
     .split(",")
@@ -190,7 +191,8 @@ const MultiSelect: React.FC<TagPopoverProps> = ({
         bg={badgeColors[tag] || getRandomColorScheme(tag)} // Use tag as key
         color="black"
         fontWeight="400"
-        style={{ textTransform: "none" }}
+        
+        style={{ textTransform: "none" }}  
       >
         {tag.trim()}
       </Badge>

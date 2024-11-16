@@ -1,6 +1,6 @@
 import React from 'react';
 import { Input } from '@chakra-ui/react';
-
+import { useColorMode } from "@chakra-ui/react";
 interface DateInputProps {
   value: string;
   onChange: React.ChangeEventHandler<HTMLInputElement>;
@@ -9,6 +9,7 @@ interface DateInputProps {
 }
 
 const DateInput: React.FC<DateInputProps> = ({ value, onChange, onBlur, onKeyDown }) => {
+  const { colorMode } = useColorMode();
   return (
     <Input
       type="date"
@@ -18,6 +19,7 @@ const DateInput: React.FC<DateInputProps> = ({ value, onChange, onBlur, onKeyDow
       onKeyDown={onKeyDown}
       variant="flushed"
       autoFocus
+      bg={colorMode === "light" ? "white" : "#1a202c"}
       style={{
         fontSize: "14px",
         fontWeight: "600",
@@ -30,7 +32,7 @@ const DateInput: React.FC<DateInputProps> = ({ value, onChange, onBlur, onKeyDow
         width: "250px",
         height: "38px",
         position: "absolute",
-        backgroundColor: "white",
+       
         marginTop: "-16px",
       }}
     />

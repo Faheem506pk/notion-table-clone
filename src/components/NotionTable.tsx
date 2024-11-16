@@ -460,6 +460,7 @@ const NotionTable: React.FC = () => {
           rowIndex={rowIndex}
           col={{ name: "email" }}
           row={row}
+          
         />
       );
     }
@@ -470,7 +471,7 @@ const NotionTable: React.FC = () => {
         <SelectPopover
           key={rowIndex}
           row={row}
-          col={{ name: "status" }} // Set column name accordingly
+          col={{ name: "select" }} // Set column name accordingly
           handleChange={handleChange}
           selectOptions={selectOptions}
           setSelectOptions={setSelectOptions}
@@ -493,7 +494,7 @@ const NotionTable: React.FC = () => {
     return (
       <div
         onClick={handleCellClick}
-        style={{ cursor: "pointer", padding: "7px" }}
+        style={{ cursor: "pointer", padding: "7px" , backgroundColor: "none" }}
       >
         {row[col.name] || ""}
       </div>

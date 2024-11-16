@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Popover,
   PopoverTrigger,
@@ -7,12 +7,12 @@ import {
   PopoverBody,
   Box,
   Flex,
-  Button,
-  Text,
+  Badge,
   useToast,
+  Text,
 } from "@chakra-ui/react";
 import { GrStatusGood } from "react-icons/gr";
-import { useLocalStorage } from "../../hooks/useLocalStorage";
+import { useColorMode } from "@chakra-ui/react";
 
 interface StatusPopoverProps {
   rowIndex: number;
@@ -29,11 +29,14 @@ const StatusPopover: React.FC<StatusPopoverProps> = ({
     rowIndex: number;
     colName: string;
   } | null>(null);
-
-  const [currentStatus, setCurrentStatus] = useLocalStorage<string>(
-    `${rowIndex}_${col.name}`,
-    row[col.name] || "Inactive"
-  );
+  const { colorMode } = useColorMode();
+  const [currentStatus, setCurrentStatus] = useState<string>(() => {
+    const storedStatus = localStorage.getItem(`${rowIndex}_${col.name}`);
+    if (storedStatus) {
+      return storedStatus; // Return value from localStorage if it exists
+    }
+    return row[col.name] || "Inactive"; // Fallback to row data or "Inactive"
+  });
 
   const [error, setError] = useState<string | null>(null);
   const toast = useToast();
@@ -42,7 +45,8 @@ const StatusPopover: React.FC<StatusPopoverProps> = ({
     try {
       setCurrentStatus(newStatus);
       row[col.name] = newStatus;
-      setError(null); 
+      localStorage.setItem(`${rowIndex}_${col.name}`, newStatus); // Save to localStorage
+      setError(null);
       toast({
         title: "Status Updated",
         description: `The status was successfully updated to ${newStatus}.`,
@@ -63,18 +67,21 @@ const StatusPopover: React.FC<StatusPopoverProps> = ({
     }
   };
 
+  useEffect(() => {
+    // Update the localStorage whenever the status changes
+    if (currentStatus) {
+      localStorage.setItem(`${rowIndex}_${col.name}`, currentStatus);
+    }
+  }, [currentStatus, rowIndex, col.name]);
+
   return (
     <Popover
-      isOpen={
-        tagPopoverRow?.rowIndex === rowIndex &&
-        tagPopoverRow?.colName === col.name
-      }
+      isOpen={tagPopoverRow?.rowIndex === rowIndex && tagPopoverRow?.colName === col.name}
       onClose={() => setTagPopoverRow(null)}
       placement="bottom-start"
     >
       <PopoverTrigger>
         <Box
-          onClick={() => setTagPopoverRow({ rowIndex, colName: col.name })}
           cursor="pointer"
           minHeight="20px"
           width="100%"
@@ -83,16 +90,25 @@ const StatusPopover: React.FC<StatusPopoverProps> = ({
           justifyContent="space-between"
           borderRadius="8px"
           padding="8px"
-          backgroundColor="white"
+          bg={colorMode === "light" ? "white" : "#1a202c"}
+          onClick={() => setTagPopoverRow({ rowIndex, colName: col.name })}
         >
-          <span style={{ display: "flex", alignItems: "center" }}>
-            {currentStatus === "Active" ? (
-              <GrStatusGood style={{ marginRight: "8px", color: "green" }} />
-            ) : (
-              <GrStatusGood style={{ marginRight: "8px", color: "red" }} />
-            )}
+          <Badge
+            colorScheme={currentStatus === "Active" ? "green" : "red"}
+            borderRadius="full"
+            padding="4px 8px"
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+          >
+            <GrStatusGood
+              style={{
+                marginRight: "8px",
+                color: currentStatus === "Active" ? "green" : "red",
+              }}
+            />
             {currentStatus}
-          </span>
+          </Badge>
         </Box>
       </PopoverTrigger>
 
@@ -105,28 +121,37 @@ const StatusPopover: React.FC<StatusPopoverProps> = ({
         border="1px solid"
         borderColor="gray.400"
         marginTop="-8px"
+        bg={colorMode === "light" ? "white" : "#1a202c"}
       >
         <PopoverArrow />
         <PopoverBody padding="5px">
-          <Flex direction="column" gap="4px">
-            <Button
+          <Flex direction="column" gap="8px">
+            <Badge
               onClick={() => handleStatusChange("Active")}
               colorScheme="green"
-              variant="outline"
-              size="sm"
+              cursor="pointer"
+              borderRadius="full"
+              padding="4px 8px"
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
             >
               <GrStatusGood style={{ marginRight: "8px", color: "green" }} />
-              Set Active
-            </Button>
-            <Button
+              Active
+            </Badge>
+            <Badge
               onClick={() => handleStatusChange("Inactive")}
               colorScheme="red"
-              variant="outline"
-              size="sm"
+              cursor="pointer"
+              borderRadius="full"
+              padding="4px 8px"
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
             >
               <GrStatusGood style={{ marginRight: "8px", color: "red" }} />
-              Set Inactive
-            </Button>
+              Inactive
+            </Badge>
           </Flex>
           {error && (
             <Text color="red.500" fontSize="sm" mt="2">
