@@ -1,132 +1,159 @@
+# **Notion Table Clone**  
 
-# Notion Table Clone
-
-This project replicates the functionality and design of the Notion database table using React, TypeScript, and Vite. It is styled for a clean and minimalistic appearance while ensuring robust features and a seamless user experience.
-
----
-
-## Features
-Thanks for letting me know! Here’s the updated section in the README:  
+> 🌟 A sleek and powerful Notion-inspired database table clone, built with **React**, **TypeScript**, and **Vite**.  
+> 🌐 [**Live Demo**](https://notiontableclone.vercel.app/) | **Version**: 1.1.1  
 
 ---
 
-## Features
+## 🚀 **Features**  
 
-### Dynamic Table Functionalities
+### ⚡ **Dynamic Table Functionalities**  
 
-- **Add, Edit, Delete Rows and Columns**  
-  Flexibly manage rows and columns, with support for various data types.
+- **📝 Add, Edit, Delete Rows and Columns**  
+  Flexibly manage rows and columns with support for multiple data types.  
 
-- **Drag-and-Drop Reordering**  
-  Easily reorder rows and columns using a drag-and-drop interface.
+- **📦 Drag-and-Drop Reordering**  
+  Effortlessly reorder rows and columns with a smooth drag-and-drop interface.  
 
-- **Editable Column Names**  
-  Edit column names via popovers for a seamless experience.
+- **✏️ Editable Column Names**  
+  Modify column names via intuitive popovers.  
 
-- **Resizable Columns**  
-  Adjust column widths dynamically.
+- **📏 Resizable Columns**  
+  Customize column widths dynamically.  
 
-### Supported Data Types
+### 🛠️ **Supported Data Types**  
 
 1. **Text**: Standard editable text fields.  
-2. **Email**: Editable with a button for redirection and storage in local storage.  
-3. **Phone Number**: Includes:  
+2. **Email**:  
+   - Editable.  
+   - Button for redirection.  
+   - Auto-save to local storage.  
+3. **Phone Number**:  
    - Country code selection via API.  
-   - Editable phone numbers.  
-   - Button for direct dialing or redirection.  
-   - Saves to local storage.  
+   - Editable.  
+   - Button for dialing or redirection.  
+   - Auto-save to local storage.  
 4. **CNIC**: Formatted as `xxxxx-xxxxxxx-x`.  
-5. **Tags**: Dynamically add, edit, and delete tags.  
-6. **Select**: Dropdown with predefined options for single selection.  
-7. **Status**: Visual indicators for different states (e.g., Active, Inactive).  
-8. **MultiSelect**: Dropdown allowing multiple options to be selected.
+5. **Tags**: Add, edit, and delete tags dynamically.  
+6. **Select**: Predefined single-selection dropdown.  
+7. **Status**: Visual indicators (e.g., Active, Inactive).  
+8. **MultiSelect**: Dropdown supporting multiple selections.  
 
-### Theme Support
+### 🌙 **Theme Support**  
 
-- Built-in **Dark and Light Mode** toggle for enhanced usability.
+- Built-in **Dark and Light Mode** toggle for enhanced accessibility and usability.  
 
-### Clean and Intuitive Design
+### 🎨 **Clean & Intuitive Design**  
 
-- **Minimalistic UI** inspired by Notion's database table.  
-- Clear lines and structured layout.
-
----
-
-## Getting Started
-
-### Prerequisites
-
-Ensure you have the following installed:
-- [Node.js](https://nodejs.org/)
-- [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/)
-
-### Installation
-
-1. Clone the repository:
-
-   ```bash
-   git clone https://github.com/yourusername/notion-table-clone.git
-   ```
-
-2. Navigate to the project directory:
-
-   ```bash
-   cd notion-table-clone
-   ```
-
-3. Install dependencies:
-
-   ```bash
-   npm install
-   ```
-
-   or
-
-   ```bash
-   yarn install
-   ```
-
-### Running the Project
-
-Start the development server:
-
-```bash
-npm run dev
-```
-
-or
-
-```bash
-yarn dev
-```
-
-Open your browser and navigate to `http://localhost:3000`.
+- Minimalistic UI inspired by Notion’s database table.  
+- Structured layout with clear lines for a polished look.  
 
 ---
 
-## Technologies Used
+## 📦 **Dependencies**  
 
-- **React**: For building the user interface.
-- **TypeScript**: For static typing.
-- **Vite**: For fast builds and development.
-- **Chakra UI**: For consistent and responsive design.
-- **React Icons**: For flexible iconography.
+The project relies on the following dependencies and dev dependencies from `package.json`:  
+
+### **Dependencies**  
+| Package                        | Version    | Description                                  |  
+|--------------------------------|------------|----------------------------------------------|  
+| `@chakra-ui/react`             | ^2.10.3    | UI component library.                        |  
+| `@chakra-ui/icons`             | ^2.2.4     | Chakra UI icons.                             |  
+| `@emotion/react`               | ^11.13.3   | Emotion for styling.                         |  
+| `@emotion/styled`              | ^11.13.0   | Styled components.                           |  
+| `@fortawesome/react-fontawesome` | ^0.2.2  | Font Awesome integration for React.          |  
+| `react-beautiful-dnd`          | ^13.1.1    | Drag-and-drop capabilities.                  |  
+| `react-table`                  | ^7.8.0     | Table management library.                    |  
+| `react-tag-autocomplete`       | ^7.3.0     | Tag input field with autocomplete.           |  
+
+### **Dev Dependencies**  
+| Package                        | Version    | Description                                  |  
+|--------------------------------|------------|----------------------------------------------|  
+| `@eslint/js`                   | ^9.13.0    | ESLint for linting JavaScript.               |  
+| `@vitejs/plugin-react`         | ^4.3.3     | Vite plugin for React.                       |  
+| `typescript`                   | ~5.6.2     | Static type checking for JavaScript.         |  
+| `eslint`                       | ^9.13.0    | Linting utility.                             |  
+
+For the full list of dependencies, check the `package.json` file in the repository.  
 
 ---
 
-## Future Enhancements
+## 🛠️ **Getting Started**  
 
-- Add more data type validations.
-- Export table data to CSV or JSON format.
+### ✅ **Prerequisites**  
+
+Make sure you have the following installed:  
+- [**Node.js**](https://nodejs.org/)  
+- [**npm**](https://www.npmjs.com/) or [**yarn**](https://yarnpkg.com/)  
+
+### 📥 **Installation**  
+
+1. Clone the repository:  
+   ```bash  
+   git clone https://github.com/faheem506pk/notion-table-clone.git  
+   ```  
+
+2. Navigate to the project directory:  
+   ```bash  
+   cd notion-table-clone  
+   ```  
+
+3. Install dependencies:  
+   ```bash  
+   npm install  
+   ```  
+   or  
+   ```bash  
+   yarn install  
+   ```  
+
+### ▶️ **Running the Project**  
+
+Start the development server:  
+```bash  
+npm run dev  
+```  
+or  
+```bash  
+yarn dev  
+```  
+
+🌐 Open your browser and navigate to **`http://localhost:3000`**.  
 
 ---
 
-## Contributing
+## 💻 **Technologies Used**  
 
-Feel free to fork the repository and submit pull requests. All contributions are welcome!
+| Technology   | Description                           |  
+|--------------|---------------------------------------|  
+| **React**    | For building dynamic user interfaces. |  
+| **TypeScript** | Adds static typing to JavaScript.   |  
+| **Vite**     | Fast development build tool.          |  
+| **Chakra UI** | For responsive and consistent design.|  
+| **React Icons** | Flexible and customizable icons.   |  
 
 ---
 
-## License
+## 🎯 **Future Enhancements**  
 
-This project is licensed under the MIT License. See the `LICENSE` file for details.
+- ✅ Add more data type validations.  
+- ✅ Export table data to CSV or JSON formats.  
+
+---
+
+## 🤝 **Contributing**  
+
+We welcome contributions! 🎉  
+1. Fork the repository.  
+2. Create a new branch: `git checkout -b feature-name`.  
+3. Commit your changes: `git commit -m "Add some feature"`.  
+4. Push to the branch: `git push origin feature-name`.  
+5. Submit a pull request.  
+
+---
+
+## 📜 **License**  
+
+This project is licensed under the [MIT License](LICENSE).  
+
+---
