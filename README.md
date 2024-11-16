@@ -35,7 +35,7 @@
    - Auto-save to local storage.  
 4. **CNIC**: Formatted as `xxxxx-xxxxxxx-x`.  
 5. **Tags**: Add, edit, and delete tags dynamically.  
-6. **Select**: Predefined single-selection dropdown.  
+6. **Select**: Defined your own single-selection dropdown.  
 7. **Status**: Visual indicators (e.g., Active, Inactive).  
 8. **MultiSelect**: Dropdown supporting multiple selections.  
 
