@@ -1,7 +1,7 @@
 # **Notion Table Clone**  
 
 > 🌟 A sleek and powerful Notion-inspired database table clone, built with **React**, **TypeScript**, and **Vite**.  
-> 🌐 [**Live Demo**](https://notiontableclone.vercel.app/) | **Version**: 1.1.1  
+> 🌐 [**Live Demo**](https://jotion.vercel.app/) | **Version**: 1.1.1  
 
 ---
 
