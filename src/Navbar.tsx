@@ -6,7 +6,7 @@ import { FaSun, FaMoon } from 'react-icons/fa';
 
 const Navbar: React.FC = () => {
   const { colorMode, toggleColorMode } = useColorMode();
-  const [pageName, setPageName] = useState(localStorage.getItem('pageName') || 'Page Name');
+  const [pageName, setPageName] = useState(localStorage.getItem('pageName') || 'qotion');
   const [isEditingPageName, setIsEditingPageName] = useState(false);
   
 
