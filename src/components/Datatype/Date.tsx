@@ -19,7 +19,7 @@ const DateInput: React.FC<DateInputProps> = ({ value, onChange, onBlur, onKeyDow
       onKeyDown={onKeyDown}
       variant="flushed"
       autoFocus
-      bg={colorMode === "light" ? "white" : "#1a202c"}
+      bg={colorMode === "light" ? "white" : "#191919"}
       style={{
         fontSize: "14px",
         fontWeight: "600",

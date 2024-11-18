@@ -1,12 +1,21 @@
-import { extendTheme, ThemeConfig } from '@chakra-ui/react';
+import { extendTheme, ThemeConfig } from "@chakra-ui/react";
 
-// Define the color mode configuration
 const config: ThemeConfig = {
-  initialColorMode: 'light', // Default color mode
-  useSystemColorMode: false, // Use the system's color mode preference
+  initialColorMode: "light",
+  useSystemColorMode: false,
 };
 
-// Extend the theme with custom configurations
-const theme = extendTheme({ config });
+const theme = extendTheme({
+  config,
+  styles: {
+    global: (props: any) => ({
+      "html, body": {
+        bg: props.colorMode === "dark" ? "#191919" : "white", // Explicit background for light and dark modes
+        color: props.colorMode === "dark" ? "white" : "black", // Explicit text color
+        transition: "background-color 0.2s ease-in-out, color 0.2s ease-in-out", // Smooth transitions for both
+      },
+    }),
+  },
+});
 
 export default theme;

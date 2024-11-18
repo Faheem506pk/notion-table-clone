@@ -90,7 +90,7 @@ const StatusPopover: React.FC<StatusPopoverProps> = ({
           justifyContent="space-between"
           borderRadius="8px"
           padding="8px"
-          bg={colorMode === "light" ? "white" : "#1a202c"}
+          bg={colorMode === "light" ? "white" : "#191919"}
           onClick={() => setTagPopoverRow({ rowIndex, colName: col.name })}
         >
           <Badge
@@ -121,7 +121,7 @@ const StatusPopover: React.FC<StatusPopoverProps> = ({
         border="1px solid"
         borderColor="gray.400"
         marginTop="-8px"
-        bg={colorMode === "light" ? "white" : "#1a202c"}
+        bg={colorMode === "light" ? "white" : "#191919"}
       >
         <PopoverArrow />
         <PopoverBody padding="5px">
